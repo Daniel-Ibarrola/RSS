@@ -2,3 +2,4 @@
 venv/
 src/rss.egg-info/
 *.pyc
+*.xml
