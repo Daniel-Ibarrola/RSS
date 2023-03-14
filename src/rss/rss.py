@@ -92,10 +92,30 @@ class RSSFeed:
 
         return entry_1, entry_2
 
+    def _create_entry_tag(self, entry):
+        """ Creates the 'entry' tag that stores the main body.
+        """
+        self._add_text_tag(entry, "id", "S42212T1678745171458-1678745225150")
+        self._add_text_tag(entry, "updated", self._date.isoformat())
+
+        title = self._date.strftime("%d %b %Y %H:%M:%S") + " " + self._event
+        title += " en " + self._location.name + " - Actualización"
+        self._add_text_tag(entry, "title", title)
+
+        author = self._root.createElement("author")
+        entry.appendChild(author)
+        self._add_text_tag(author, "name", "Cires A.C.")
+
+        coords = str(self._location.geocoords[0]) + " " + str(self._location.geocoords[1])
+        self._add_text_tag(entry, "georss:point", coords)
+        self._add_text_tag(entry, "georss:elev", "0")
+
+        self._add_text_tag(entry, "summary", self._event)
+
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
         """
-        self._create_header()
+        entry_1, entry_2 = self._create_header()
 
         self._content = self._root.toprettyxml(indent=indentation)
 
