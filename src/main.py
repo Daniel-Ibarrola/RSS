@@ -10,6 +10,7 @@ def main():
     with client:
         client.connect()
         client.run(daemon=True)
+
         try:
             client.join()
         except KeyboardInterrupt:
