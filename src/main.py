@@ -1,11 +1,14 @@
 from rss.client import TCPClient
+from rss.logger import get_module_logger
+
+logger = get_module_logger(__name__)
 
 
 def main():
     ip, port = "localhost", 12345
     client = TCPClient(ip, port, logging=True)
     client.msg_time = 5
-    print("Starting client")
+    logger.info("Starting client")
 
     with client:
         client.connect()

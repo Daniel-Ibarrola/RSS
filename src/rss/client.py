@@ -6,6 +6,10 @@ import struct
 import threading
 import time
 
+from rss.logger import get_module_logger
+
+logger = get_module_logger(__name__)
+
 
 @dataclasses.dataclass(frozen=True)
 class Disconnected:
@@ -52,7 +56,7 @@ class TCPClient:
             except ConnectionError:
                 time.sleep(2)
 
-        self._log(f"{self.__class__.__name__}: connected to {(self.ip, self.port)}")
+        self._log(f"{self.__class__.__name__}: connected to {(self.ip, self.port)}", "info")
 
     def set_timeout(self, timeout: float):
         """ Set a timeout for sending and receiving messages.
@@ -67,10 +71,15 @@ class TCPClient:
         msg += "\r\n"
         return msg.encode("utf-8")
 
-    def _log(self, msg: str):
+    def _log(self, msg: str, level: str = "debug"):
         # TODO: add proper logging
         if self._logging:
-            print(msg)
+            if level == "info":
+                logger.info(msg)
+            elif level == "debug":
+                logger.debug(msg)
+            else:
+                raise ValueError
 
     def _send(self):
         """ Send a recognition message to the server every 30 seconds.
@@ -84,7 +93,7 @@ class TCPClient:
                 break
             time.sleep(self.msg_time)
 
-        self._log("Send thread stopped")
+        self._log("Send thread stopped", "debug")
 
     def _receive(self):
         """ Receive data and put it in another server. """
@@ -96,7 +105,7 @@ class TCPClient:
             except ConnectionError:
                 break
 
-        self._log("Receive thread stopped")
+        self._log("Receive thread stopped", "debug")
 
     def _reconnect(self):
         """ Reconnect to the server in case."""
@@ -107,7 +116,7 @@ class TCPClient:
                 time.sleep(2)
                 continue
 
-            self._log(f"Client disconnected at {error.time}")
+            self._log(f"Client disconnected at {error.time}", "info")
             self._stop = True
             self.join(reconnect=False)
             self.connect()
@@ -131,10 +140,10 @@ class TCPClient:
         """ Stop all the threads. """
         self._stop = True
         self._stop_reconnect = True
-        self._log(f"{self.__class__.__name__}: stopping")
+        self._log(f"{self.__class__.__name__}: stopping", "info")
 
         self.join()
-        self._log(f"{self.__class__.__name__}: disconnected")
+        self._log(f"{self.__class__.__name__}: disconnected", "info")
 
     def join(self, reconnect=True):
         self._rcv_thread.join()

@@ -4,3 +4,4 @@ src/rss.egg-info/
 *.pyc
 *.xml
 sasmex/
+logs/
