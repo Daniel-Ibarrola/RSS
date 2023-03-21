@@ -1,0 +1,18 @@
+
+[Unit]
+Description=Program to update SASMEX RSS feed
+
+[Service]
+Restart=on-failure
+# Update user accordingly
+User=daniel
+# Update following paths
+WorkingDirectory=/home/daniel/PycharmProjects/RSS/
+#EnvironmentFile=/home/daniel/PycharmProjects/earthworm/tools/rss.env
+
+# Update paths accordingly as well as args
+ExecStart=/home/daniel/PycharmProjects/RSS/venv/bin/python \
+    /home/daniel/PycharmProjects/RSS/src/main.py
+
+[Install]
+WantedBy=multi-user.target

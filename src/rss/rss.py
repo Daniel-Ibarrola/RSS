@@ -97,8 +97,8 @@ class RSSFeed:
         self._add_text_tag(entry, "id", "S42212T1678745171458-1678745225150")
         self._add_text_tag(entry, "updated", self._date.isoformat())  # TODO: use date of file creation
 
-        title = self._date.strftime("%d %b %Y %H:%M:%S") + " " + self._event
-        title += " en " + self._location.name + " - Actualización"
+        # TODO: get event type?
+        title = self._date.strftime("%d %b %Y %H:%M:%S") + " Sismo Fuerte"
         self._add_text_tag(entry, "title", title)
 
         author = self._root.createElement("author")

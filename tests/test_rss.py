@@ -48,7 +48,7 @@ def entry_tag(content):
     return f"""<entry>
 <id>S42212T1678745171458-1678745225150</id>
 <updated>2023-03-13T16:07:05</updated>
-<title>13 Mar 2023 16:07:05 Sismo ligero en Salina Cruz Oaxaca - Actualización</title>
+<title>13 Mar 2023 16:07:05 Sismo Fuerte</title>
 <author>
 <name>Cires A.C.</name>
 </author>
