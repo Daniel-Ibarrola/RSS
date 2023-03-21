@@ -64,6 +64,8 @@ class RSSFeed:
         """
         feed = self._root.createElement("feed")
         feed.setAttribute("xml:lang", "es-MX")
+        feed.setAttribute("xmlns:georss", "http://www.georss.org/georss")
+        feed.setAttribute("xmlns", "http://www.w3.org/2005/Atom")
         self._root.appendChild(feed)
 
         self._add_text_tag(feed, "id", "https://rss.sasmex.net")
@@ -85,18 +87,15 @@ class RSSFeed:
         self._add_text_tag(author, "name", "Cires A.C.")
         self._add_text_tag(author, "email", "infoCAP@cires-ac.mx")
 
-        entry_1 = self._root.createElement("entry")
-        entry_2 = self._root.createElement("entry")
-        feed.appendChild(entry_1)
-        feed.appendChild(entry_2)
-
-        return entry_1, entry_2
+        entry = self._root.createElement("entry")
+        feed.appendChild(entry)
+        return entry
 
     def _create_entry_tag(self, entry):
         """ Creates the 'entry' tag that stores the main body.
         """
         self._add_text_tag(entry, "id", "S42212T1678745171458-1678745225150")
-        self._add_text_tag(entry, "updated", self._date.isoformat())
+        self._add_text_tag(entry, "updated", self._date.isoformat())  # TODO: use date of file creation
 
         title = self._date.strftime("%d %b %Y %H:%M:%S") + " " + self._event
         title += " en " + self._location.name + " - Actualización"
@@ -124,81 +123,100 @@ class RSSFeed:
         content.setAttribute("type", "text/xml")
 
         alert = self._root.createElement("alert")
+        alert.setAttribute("xmlns", "urn:oasis:names:tc:emergency:cap:1.1")
         content.appendChild(alert)
 
         text_tags = [
+            # TODO: where to get identifier?
             ("identifier", "S42212T1678745171458-1678745225150"),
             ("sender", "sasmex.net"),
             ("sent", self._date.isoformat()),
             ("status", "Actual"),
             ("msgType", "Alert"),
             ("scope", "Public"),
+            ("code", "IPAWSv1.0"),
+            ("note", "Requested by=Cires,Activated by=AGG"),
+            # TODO: check references date
             ("references", "sasmex.net,S42212T1678745171458-1678745225148," + self._date.isoformat())
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
 
+        return content, alert
+
+    def _create_info_tag(self):
+
         info = self._root.createElement("info")
-        alert.appendChild(info)
 
         text_tags = [
             ("language", "es-MX"),
             ("category", "Geo"),
             ("event", self._event),
+            # TODO: check responseType and urgency
+            ("responseType", "Prepare"),
             ("urgency", "Past"),
             ("severity", "Minor"),
             ("certainty", "Observed"),
+            # TODO: check this dates
+            ("effective", self._date.isoformat()),
             ("expires", self._date.isoformat()),
             ("senderName", "Sistema de Alerta Sísmica Mexicano"),
-            ("headline", self._event + " en " + self._location.name),
-            ("description", self._get_description()),
-            ("web", "http://sasmex.net")
+            ("headline", "Alerta Sísmica"),
+            ("description", "SASMEX registró un sismo"),
+            ("instruction", "Realice procedimiento en caso de sismo"),
+            ("web", "http://sasmex.net"),
+            ("contact", "CIRES"),
         ]
         for tag in text_tags:
             self._add_text_tag(info, tag[0], tag[1])
 
+        event_code = self._root.createElement("eventCode")
+        self._add_text_tag(event_code, "valueName", "SAME")
+        self._add_text_tag(event_code, "value", "EQW")
+        info.appendChild(event_code)
+
         parameter_tags = [
             ("Id", "S42212T1678745171458-1678745225150"),
+            ("EAS", "1"),
             ("EventID", "S42212T1678745171458"),
-            ("layer:Google:Region:0.1", self._location.name),
-            ("SsnInfo", "Esperando información")
         ]
         for tag in parameter_tags:
             self._add_parameter_tag(info, tag[0], tag[1])
 
+        # Resource tag
+        resource = self._root.createElement("resource")
+        self._add_text_tag(resource, "resourceDesc", "Image file (GIF)")
+        self._add_text_tag(resource, "mimeType", "image/gif")
+        self._add_text_tag(resource, "uri", "http://www.sasmex.net/sismos/getAdvisoryImage")
+        info.appendChild(resource)
+
+        # Area tag
         area = self._root.createElement("area")
+        self._add_text_tag(area, "areaDesc", "Zona de emisión de alerta")
+        # TODO: get polygons
+        self._add_text_tag(area, "polygon", "16.12,-94.36,18.30,-94.06,16.97,-91.50,15.45,-93.27,16.12,-94.36")
+
+        geocode = self._root.createElement("geocode")
+        self._add_text_tag(geocode, "valueName", "SAME")
+        self._add_text_tag(geocode, "value", "009000")
+        area.appendChild(geocode)
+
         info.appendChild(area)
 
-        # TODO: some values should not be hardcoded
-        descr = f"Sismo Registrado por la estación 42212 Mazatán SV localizada a 25 km al Oeste Suroeste" \
-                f" de Salina Cruz, Oaxaca; 55 km al Suroeste de Juchitan, Oaxaca"
-        self._add_text_tag(area, "areaDesc", descr)
-
-        coords = str(self._location.geocoords[0]) + "," + str(self._location.geocoords[1]) + " 50.0"
-        self._add_text_tag(area, "circle", coords)
-
-        return content
-
-    def _get_description(self):
-        return f"El {self._date.strftime('%d %b %Y %H:%M:%S')} el SASMEX registró un sismo que fue evaluado" \
-               f" y confirmado por sensores próximos a su epicentro. La estimación de sus " \
-               f"efectos es de un {self._event.lower()}. La estación más cercana al epicentro que " \
-               f"detectó el sismo es la número {self._nearest}, localizada a 25 km al" \
-               f" Oeste Suroeste de {self._location.name}, 55 km al Suroeste de Juchitan, Oaxaca."
+        return info
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
         """
-        entry_1, entry_2 = self._create_header()
-        self._create_entry_tag(entry_1)
-        self._create_entry_tag(entry_2)
+        entry = self._create_header()
+        self._create_entry_tag(entry)
 
-        content_tag_1 = self._create_content_tag()
-        content_tag_2 = self._create_content_tag()
-        entry_1.appendChild(content_tag_1)
-        entry_2.appendChild(content_tag_2)
+        content_tag, alert_tag = self._create_content_tag()
+        info_tag = self._create_info_tag()
+        alert_tag.appendChild(info_tag)
+        entry.appendChild(content_tag)
 
-        self._content = self._root.toprettyxml(indent=indentation)
+        self._content = self._root.toprettyxml(indent=indentation, encoding="UTF-8").decode()
 
     def write(self, filename: str) -> None:
         """ Write the feed to a file.

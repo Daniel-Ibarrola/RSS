@@ -68,6 +68,7 @@ class TCPClient:
         return msg.encode("utf-8")
 
     def _log(self, msg: str):
+        # TODO: add proper logging
         if self._logging:
             print(msg)
 

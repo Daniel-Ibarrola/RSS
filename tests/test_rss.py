@@ -25,8 +25,8 @@ def get_feed():
 
 
 def header(entry):
-    return f"""<?xml version="1.0" ?>
-<feed xml:lang="es-MX">
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<feed xml:lang="es-MX" xmlns:georss="http://www.georss.org/georss" xmlns="http://www.w3.org/2005/Atom">
 <id>https://rss.sasmex.net</id>
 <link type="text/html" rel="alternate" href="https://rss.sasmex.net"/>
 <link type="application/atom+xml" rel="self" href="https://rss.sasmex.net/sasmex2.xml"/>
@@ -59,61 +59,80 @@ def entry_tag(content):
 """
 
 
-def content_tag():
+def content_tag(info):
     return f"""<content type="text/xml">
-<alert>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
 <identifier>S42212T1678745171458-1678745225150</identifier>
 <sender>sasmex.net</sender>
 <sent>2023-03-13T16:07:05</sent>
 <status>Actual</status>
 <msgType>Alert</msgType>
 <scope>Public</scope>
-<references>sasmex.net,S42212T1678745171458-1678745225148,2023-03-13T16:07:05</references>
-<info>
-<language>es-MX</language>
-<category>Geo</category>
-<event>Sismo ligero</event>
-<urgency>Past</urgency>
-<severity>Minor</severity>
-<certainty>Observed</certainty>
-<expires>2023-03-13T16:07:05</expires>
-<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
-<headline>Sismo ligero en Salina Cruz Oaxaca</headline>
-<description>El 13 Mar 2023 16:07:05 el SASMEX registró un sismo que fue evaluado y confirmado por sensores próximos a su epicentro. La estimación de sus efectos es de un sismo ligero. La estación más cercana al epicentro que detectó el sismo es la número 42212 Mazatán SV, localizada a 25 km al Oeste Suroeste de Salina Cruz Oaxaca, 55 km al Suroeste de Juchitan, Oaxaca.</description>
-<web>http://sasmex.net</web>
-<parameter>
-<valueName>Id</valueName>
-<value>S42212T1678745171458-1678745225150</value>
-</parameter>
-<parameter>
-<valueName>EventID</valueName>
-<value>S42212T1678745171458</value>
-</parameter>
-<parameter>
-<valueName>layer:Google:Region:0.1</valueName>
-<value>Salina Cruz Oaxaca</value>
-</parameter>
-<parameter>
-<valueName>SsnInfo</valueName>
-<value>Esperando información</value>
-</parameter>
-<area>
-<areaDesc>Sismo Registrado por la estación 42212 Mazatán SV localizada a 25 km al Oeste Suroeste de Salina Cruz, Oaxaca; 55 km al Suroeste de Juchitan, Oaxaca</areaDesc>
-<circle>16.12309,-95.42281 50.0</circle>
-</area>
-</info>
+<code>IPAWSv1.0</code>
+<note>Requested by=Cires,Activated by=AGG</note>
+<references>sasmex.net,S42212T1678745171458-1678745225148,2023-03-13T16:07:05</references>{info}
 </alert>
 </content>
 """
 
 
+def info_tag():
+    return f"""<info>
+<language>es-MX</language>
+<category>Geo</category>
+<event>Sismo ligero</event>
+<responseType>Prepare</responseType>
+<urgency>Past</urgency>
+<severity>Minor</severity>
+<certainty>Observed</certainty>
+<effective>2023-03-13T16:07:05</effective>
+<expires>2023-03-13T16:07:05</expires>
+<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
+<headline>Alerta Sísmica</headline>
+<description>SASMEX registró un sismo</description>
+<instruction>Realice procedimiento en caso de sismo</instruction>
+<web>http://sasmex.net</web>
+<contact>CIRES</contact>
+<eventCode>
+<valueName>SAME</valueName>
+<value>EQW</value>
+</eventCode>
+<parameter>
+<valueName>Id</valueName>
+<value>S42212T1678745171458-1678745225150</value>
+</parameter>
+<parameter>
+<valueName>EAS</valueName>
+<value>1</value>
+</parameter>
+<parameter>
+<valueName>EventID</valueName>
+<value>S42212T1678745171458</value>
+</parameter>
+<resource>
+<resourceDesc>Image file (GIF)</resourceDesc>
+<mimeType>image/gif</mimeType>
+<uri>http://www.sasmex.net/sismos/getAdvisoryImage</uri>
+</resource>
+<area>
+<areaDesc>Zona de emisión de alerta</areaDesc>
+<polygon>16.12,-94.36,18.30,-94.06,16.97,-91.50,15.45,-93.27,16.12,-94.36</polygon>
+<geocode>
+<valueName>SAME</valueName>
+<value>009000</value>
+</geocode>
+</area>
+</info>
+"""
+
+
 def test_create_header():
-    expected = header("<entry/>\n<entry/>")
+    expected = header("<entry/>")
     expected = expected.split('\n')
 
     feed = get_feed()
     feed._create_header()
-    content = feed._root.toprettyxml(indent='')
+    content = feed._root.toprettyxml(indent='', encoding="UTF-8").decode()
     assert content.split('\n') == expected
 
 
@@ -132,20 +151,31 @@ def test_create_entry_tag():
 
 
 def test_create_content_tag():
-    expected = content_tag()
+    expected = content_tag("")
     expected = expected.split('\n')
 
     feed = get_feed()
-    content = feed._create_content_tag()
+    content, _ = feed._create_content_tag()
+
+    content_str = content.toprettyxml(indent="")
+    assert content_str.split('\n') == expected
+
+
+def test_create_info_tag():
+    expected = info_tag()
+    expected = expected.split('\n')
+
+    feed = get_feed()
+    content = feed._create_info_tag()
 
     content_str = content.toprettyxml(indent="")
     assert content_str.split('\n') == expected
 
 
 def test_create_rss_feed():
-    content = content_tag()
+    content = content_tag('\n' + info_tag())
     entry = entry_tag('\n' + content)
-    root = header(entry + '\n' + entry)
+    root = header(entry)
     expected = root.split('\n')
     expected = [s for s in expected if len(s) > 0]
 
