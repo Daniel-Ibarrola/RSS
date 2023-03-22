@@ -1,30 +1,24 @@
 from datetime import datetime
+
 from rss import rss
+from rss.alert import Alert
 
 
-def location():
-    return rss.Location(
-        name="Salina Cruz Oaxaca",
-        geocoords=(16.12309, -95.42281),
-        latitude=15.82,
-        longitude=-95.52,
-        depth=38,
-        how_far=55
+def alert():
+    return Alert(
+        time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
+        city=40,
+        region=42201,
+        polygons=[(16.12, -94.36, 18.30, -94.06, 16.97, -91.50, 15.45, -93.27, 16.12, -94.36)],
+        geocoords=(16.12309, -95.42281)
     )
 
 
 def get_feed():
-    return rss.RSSFeed(
-        event_id="S42212T1678745171458-1678747055210",
-        date=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-        location=location(),
-        event="Sismo ligero",
-        nearest="42212 Mazatán SV",
-        magnitude=4.1
-    )
+    return rss.RSSFeed(alert())
 
 
-def header(entry):
+def header(entry, updated_date):
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <feed xml:lang="es-MX" xmlns:georss="http://www.georss.org/georss" xmlns="http://www.w3.org/2005/Atom">
 <id>https://rss.sasmex.net</id>
@@ -32,7 +26,7 @@ def header(entry):
 <link type="application/atom+xml" rel="self" href="https://rss.sasmex.net/sasmex2.xml"/>
 <title>SASMEX-Cires Rss Feed</title>
 <subtitle>Sistema de Alerta Sísmica Mexicano</subtitle>
-<updated>2023-03-13T16:07:05</updated>
+<updated>{updated_date}</updated>
 <logo>https://rss.sasmex.net/ciresFeedLogo2b.png</logo>
 <icon>https://rss.sasmex.net/ciresFeedFavicon.ico</icon>
 <author>
@@ -44,17 +38,17 @@ def header(entry):
 """
 
 
-def entry_tag(content):
+def entry_tag(content, updated_date):
     return f"""<entry>
 <id>S42212T1678745171458-1678745225150</id>
-<updated>2023-03-13T16:07:05</updated>
-<title>13 Mar 2023 16:07:05 Sismo Fuerte</title>
+<updated>{updated_date}</updated>
+<title>13 Mar 2023 16:07:05 Alerta en CDMX por sismo en Costa Oax-Gro</title>
 <author>
 <name>Cires A.C.</name>
 </author>
 <georss:point>16.12309 -95.42281</georss:point>
 <georss:elev>0</georss:elev>
-<summary>Sismo ligero</summary>{content}
+<summary>Sismo</summary>{content}
 </entry>
 """
 
@@ -80,7 +74,7 @@ def info_tag():
     return f"""<info>
 <language>es-MX</language>
 <category>Geo</category>
-<event>Sismo ligero</event>
+<event>Alerta por sismo</event>
 <responseType>Prepare</responseType>
 <urgency>Past</urgency>
 <severity>Minor</severity>
@@ -127,25 +121,26 @@ def info_tag():
 
 
 def test_create_header():
-    expected = header("<entry/>")
-    expected = expected.split('\n')
-
     feed = get_feed()
     feed._create_header()
     content = feed._root.toprettyxml(indent='', encoding="UTF-8").decode()
+
+    expected = header("<entry/>", feed._updated_date)
+    expected = expected.split('\n')
+
     assert content.split('\n') == expected
 
 
 def test_create_entry_tag():
-    expected = entry_tag("")
-    expected = expected.split('\n')
-
     feed = get_feed()
     entry = feed._root.createElement("entry")
     feed._root.appendChild(entry)
     feed._create_entry_tag(entry)
-
     content = feed._root.toprettyxml(indent="")
+
+    expected = entry_tag("", feed._updated_date)
+    expected = expected.split('\n')
+
     # skip xml declaration
     assert content.split('\n')[1:] == expected
 
@@ -173,22 +168,15 @@ def test_create_info_tag():
 
 
 def test_create_rss_feed():
-    content = content_tag('\n' + info_tag())
-    entry = entry_tag('\n' + content)
-    root = header(entry)
-    expected = root.split('\n')
-    expected = [s for s in expected if len(s) > 0]
+    feed = rss.create_feed(alert=alert(), indentation="")
 
-    feed = rss.create_feed(
-        event_id="S42212T1678745171458-1678747055210",
-        date=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-        location=location(),
-        event="Sismo ligero",
-        nearest="42212 Mazatán SV",
-        magnitude=4.1,
-        indentation=""
-    )
+    content = content_tag('\n' + info_tag())
+    entry = entry_tag('\n' + content, feed._updated_date)
+    root = header(entry, feed._updated_date)
 
     feed_content = feed.content.split('\n')
     feed_content = [s for s in feed_content if len(s) > 0]
+
+    expected = root.split('\n')
+    expected = [s for s in expected if len(s) > 0]
     assert feed_content == expected

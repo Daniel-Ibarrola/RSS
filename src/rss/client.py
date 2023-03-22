@@ -19,7 +19,7 @@ class Disconnected:
 class TCPClient:
 
     def __init__(
-            self, ip: str, port: int, logging: bool = True
+            self, ip: str, port: int, data_queue: queue.Queue, logging: bool = True
     ):
         self._ip = ip
         self._port = port
@@ -33,7 +33,7 @@ class TCPClient:
         self._stop = False
         self._stop_reconnect = False
 
-        self.queue = queue.Queue()
+        self.queue = data_queue
         self.msg_time = 30
 
         self.errors = queue.Queue()

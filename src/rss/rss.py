@@ -1,37 +1,16 @@
 import datetime
-from dataclasses import dataclass
 from xml.dom import minidom
 
-
-@dataclass(frozen=True)
-class Location:
-    """ Represents the location of the earthquake. """
-    name: str
-    geocoords: tuple[float, float]
-    latitude: float
-    longitude: float
-    depth: float
-    how_far: float
+from rss.alert import Alert
 
 
 class RSSFeed:
     """ Class to write rss files."""
 
-    def __init__(
-        self,
-        event_id: str,
-        date: datetime.datetime,
-        location: Location,
-        event: str,
-        nearest: str,
-        magnitude: float
-    ):
-        self._event_id = event_id
-        self._date = date
-        self._location = location
-        self._event = event
-        self._nearest = nearest
-        self._magnitude = magnitude
+    def __init__(self, alert: Alert):
+        self._alert = alert
+        self._event_id = self._get_id(alert.time)
+        self._updated_date = datetime.datetime.now().isoformat()
 
         self._root = minidom.Document()
 
@@ -40,6 +19,11 @@ class RSSFeed:
     @property
     def content(self) -> str:
         return self._content
+
+    @staticmethod
+    def _get_id(date: datetime.datetime) -> str:
+        return f"{date.year}{date.month}{date.day}" \
+               f"{date.hour}{date.minute}{date.second}"
 
     def _add_text_tag(self, parent, tag_name, text):
         """ Add a tag that contains text"""
@@ -73,9 +57,9 @@ class RSSFeed:
         self._add_link_tag(feed, "application/atom+xml", "self", "https://rss.sasmex.net/sasmex2.xml")
 
         text_tags = [
-            ("title", "SASMEX-Cires Rss Feed"),
+            ("title", "SASMEX-CIRES RSS Feed"),
             ("subtitle", "Sistema de Alerta Sísmica Mexicano"),
-            ("updated", self._date.isoformat()),
+            ("updated", self._updated_date),
             ("logo", "https://rss.sasmex.net/ciresFeedLogo2b.png"),
             ("icon", "https://rss.sasmex.net/ciresFeedFavicon.ico"),
         ]
@@ -84,7 +68,7 @@ class RSSFeed:
 
         author = self._root.createElement("author")
         feed.appendChild(author)
-        self._add_text_tag(author, "name", "Cires A.C.")
+        self._add_text_tag(author, "name", "CIRES A.C.")
         self._add_text_tag(author, "email", "infoCAP@cires-ac.mx")
 
         entry = self._root.createElement("entry")
@@ -94,22 +78,21 @@ class RSSFeed:
     def _create_entry_tag(self, entry):
         """ Creates the 'entry' tag that stores the main body.
         """
-        self._add_text_tag(entry, "id", "S42212T1678745171458-1678745225150")
-        self._add_text_tag(entry, "updated", self._date.isoformat())  # TODO: use date of file creation
+        self._add_text_tag(entry, "id", self._event_id)
+        self._add_text_tag(entry, "updated", self._updated_date)
 
-        # TODO: get event type?
-        title = self._date.strftime("%d %b %Y %H:%M:%S") + " Sismo Fuerte"
+        title = self._alert.time.strftime("%d %b %Y %H:%M:%S") + " Sismo"
         self._add_text_tag(entry, "title", title)
 
         author = self._root.createElement("author")
         entry.appendChild(author)
-        self._add_text_tag(author, "name", "Cires A.C.")
+        self._add_text_tag(author, "name", "CIRES A.C.")
 
-        coords = str(self._location.geocoords[0]) + " " + str(self._location.geocoords[1])
+        coords = str(self._alert.geocoords[0]) + " " + str(self._alert.geocoords[1])
         self._add_text_tag(entry, "georss:point", coords)
         self._add_text_tag(entry, "georss:elev", "0")
 
-        self._add_text_tag(entry, "summary", self._event)
+        self._add_text_tag(entry, "summary", "Sismo")
 
     def _add_parameter_tag(self, parent, value_name: str, value: str):
         parameter = self._root.createElement("parameter")
@@ -127,17 +110,15 @@ class RSSFeed:
         content.appendChild(alert)
 
         text_tags = [
-            # TODO: where to get identifier?
-            ("identifier", "S42212T1678745171458-1678745225150"),
+            ("identifier", self._event_id),
             ("sender", "sasmex.net"),
-            ("sent", self._date.isoformat()),
+            ("sent", self._alert.time.isoformat()),
             ("status", "Actual"),
             ("msgType", "Alert"),
             ("scope", "Public"),
             ("code", "IPAWSv1.0"),
             ("note", "Requested by=Cires,Activated by=AGG"),
-            # TODO: check references date
-            ("references", "sasmex.net,S42212T1678745171458-1678745225148," + self._date.isoformat())
+            ("references", f"sasmex.net,{self._event_id},{self._alert.time.isoformat()}")
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
@@ -148,18 +129,17 @@ class RSSFeed:
 
         info = self._root.createElement("info")
 
+        expire_date = self._alert.time + datetime.timedelta(minutes=1)
         text_tags = [
             ("language", "es-MX"),
             ("category", "Geo"),
-            ("event", self._event),
-            # TODO: check responseType and urgency
+            ("event", "Sismo"),
             ("responseType", "Prepare"),
             ("urgency", "Past"),
-            ("severity", "Minor"),
+            ("severity", "Major"),
             ("certainty", "Observed"),
-            # TODO: check this dates
-            ("effective", self._date.isoformat()),
-            ("expires", self._date.isoformat()),
+            ("effective", self._alert.time.isoformat()),
+            ("expires", expire_date.isoformat()),
             ("senderName", "Sistema de Alerta Sísmica Mexicano"),
             ("headline", "Alerta Sísmica"),
             ("description", "SASMEX registró un sismo"),
@@ -176,7 +156,7 @@ class RSSFeed:
         info.appendChild(event_code)
 
         parameter_tags = [
-            ("Id", "S42212T1678745171458-1678745225150"),
+            ("Id", self._event_id),
             ("EAS", "1"),
             ("EventID", "S42212T1678745171458"),
         ]
@@ -225,43 +205,18 @@ class RSSFeed:
             fp.write(self._content)
 
 
-def create_feed(
-    event_id: str,
-    date: datetime.datetime,
-    location: Location,
-    event: str,
-    nearest: str,
-    magnitude: float,
-    indentation: str = '\t',
-) -> RSSFeed:
+def create_feed(alert: Alert, indentation: str = '\t') -> RSSFeed:
     """ Create and rss feed string.
 
         Parameters
         ----------
-        event_id : str
-            Id of the event
+        alert : Alert
+            The information of the alert.
 
-        date : str
-            Time when the earthquake occurred.
-
-        location : Location
-            The location of the earthquake.
-
-        event : str
-            Type of the event. Such as "Sismo ligero".
-
-        nearest : str
-            The station nearest to the epicenter.
-
-        magnitude : float
-            Magnitude of the earthquake.
-
-        indentation: str, default='\t'
+        indentation : str, default='\t'
             The indentation to use in the feed file
     """
-    rss_feed = RSSFeed(
-        event_id, date, location, event, nearest, magnitude
-    )
+    rss_feed = RSSFeed(alert)
     rss_feed.build(indentation)
     return rss_feed
 
