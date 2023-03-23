@@ -24,8 +24,7 @@ class AlertHandler:
         )
         self._stop = False
         self.new_alert_time = 60  # in seconds
-        self._wait = 1
-        # Initialize to alert with old date and fake city
+        self.wait = 1
         self._last_alert = None
 
         if alerts is None:
@@ -50,7 +49,7 @@ class AlertHandler:
                 self.alerts.put(self.last_alert)
                 self._last_alert = None
 
-            time.sleep(self._wait)
+            time.sleep(self.wait)
 
     def _update_last_alert(self, msg: bytes) -> None:
         """ Update the last alert."""
@@ -68,7 +67,7 @@ class AlertHandler:
                     time=date, city=city, region=region,
                     polygons=[POLYGONS[city]], geocoords=(0, 0)
                 )
-                # logger.info(f"New alert {self._last_alert}")
+                logger.info(f"New alert: {self._alert_str(self.last_alert)}")
             elif self._last_alert.city != city:
                 self._last_alert.polygons.append(POLYGONS[city])
 
@@ -89,6 +88,11 @@ class AlertHandler:
         date = datetime.strptime(pieces[4] + "," + pieces[5], "%Y/%m/%d,%H:%M:%S")
         return city, region, date
 
+    @staticmethod
+    def _alert_str(alert: Alert) -> str:
+        return f"Alert(time={alert.time.isoformat()}, city={alert.city}," \
+               f" region={alert.region}, n_polygons={len(alert.polygons)})"
+
     def run(self) -> None:
         self._process_thread.start()
 
@@ -106,14 +110,35 @@ class FeedWriter:
         self.alerts = alerts
         self.save_path = self._get_save_path()
 
+        self._process_thread = threading.Thread(target=self._process_alerts, daemon=True)
+        self._stop = False
+        self.wait = 1
+        self.filename = "sasmex"
+
     @staticmethod
     def _get_save_path() -> str:
         base_path = os.path.dirname(__file__)
         return os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
 
-    def _process_alert(self, alert: Alert):
-        feed = create_feed(alert)
-        write_feed_to_file(
-            os.path.join(self.save_path, f"sasmex_{feed.updated_date}.rss"),
-            feed
-        )
+    def _process_alerts(self):
+        while not self._stop:
+            try:
+                alert = self.alerts.get(timeout=1)
+            except queue.Empty:
+                time.sleep(self.wait)
+                continue
+
+            feed = create_feed(alert)
+            feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.rss")
+            write_feed_to_file(feed_path, feed)
+            logger.info(f"Feed file written in {feed_path}")
+
+    def run(self):
+        self._process_thread.start()
+
+    def join(self):
+        self._process_thread.join()
+
+    def shutdown(self):
+        self._stop = True
+        self.join()

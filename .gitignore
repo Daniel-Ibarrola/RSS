@@ -5,3 +5,4 @@ src/rss.egg-info/
 *.xml
 sasmex/
 logs/
+feeds/
