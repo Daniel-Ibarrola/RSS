@@ -42,6 +42,10 @@ def main():
 
     alert_handler.shutdown()
 
+    print("Alerts:")
+    while not alert_handler.alerts.empty():
+        print(alert_handler.alerts.get())
+
 
 if __name__ == "__main__":
     main()
