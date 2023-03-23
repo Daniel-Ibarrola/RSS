@@ -91,7 +91,7 @@ class AlertHandler:
     @staticmethod
     def _alert_str(alert: Alert) -> str:
         return f"Alert(time={alert.time.isoformat()}, city={alert.city}," \
-               f" region={alert.region}, n_polygons={len(alert.polygons)})"
+               f" region={alert.region})"
 
     def run(self) -> None:
         self._process_thread.start()

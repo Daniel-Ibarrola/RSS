@@ -121,7 +121,7 @@ class TCPClient:
             self.connect()
             self.run(daemon=True, reconnect=False)
 
-    def run(self, daemon: bool, reconnect: bool = True) -> None:
+    def run(self, daemon: bool = True, reconnect: bool = True) -> None:
         """ Start the sending and receiving threads. """
         self._stop = False
         self._stop_reconnect = False

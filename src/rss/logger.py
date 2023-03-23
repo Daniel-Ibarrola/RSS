@@ -9,6 +9,7 @@ def get_module_logger(mod_name) -> logging.Logger:
     logger = logging.getLogger(mod_name)
     stream_handler = logging.StreamHandler()
 
+    # TODO: create new log file when current file gets big
     base_path = os.path.dirname(__file__)
     log_path = os.path.abspath(os.path.join(base_path, "..", "..", "logs/rss_log.log"))
     file_handler = logging.FileHandler(log_path)

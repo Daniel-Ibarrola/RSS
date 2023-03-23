@@ -1,7 +1,7 @@
 import queue
 
 from rss.client import TCPClient
-from rss.handlers import AlertHandler
+from rss.handlers import AlertHandler, FeedWriter
 from rss.logger import get_module_logger
 
 logger = get_module_logger(__name__)
@@ -9,6 +9,7 @@ logger = get_module_logger(__name__)
 
 def main():
     # TODO: arg parser
+    # TODO: create dev and production configs
     # TODO: monitor threads
     # TODO: two clients
     ip, port = "localhost", 12345
@@ -19,23 +20,26 @@ def main():
     client.msg_time = 5
     logger.info("Starting client")
 
-    # alert_handler = AlertHandler(data_queue)
+    alert_handler = AlertHandler(data_queue)
+    alert_handler.new_alert_time = 4
+    feed_writer = FeedWriter(alert_handler.alerts)
 
     with client:
         client.connect()
-        client.run(daemon=True)
-        # alert_handler.run()
+        client.run()
+        alert_handler.run()
+        feed_writer.run()
 
         try:
             client.join()
-            # alert_handler.join()
+            alert_handler.join()
+            feed_writer.join()
         except KeyboardInterrupt:
             client.shutdown()
-            # alert_handler.shutdown()
+            alert_handler.shutdown()
+            feed_writer.shutdown()
 
-    print("Client received the following messages:")
-    while not client.queue.empty():
-        print(client.queue.get().decode().strip())
+    logger.info("Graceful shutdown")
 
 
 if __name__ == "__main__":
