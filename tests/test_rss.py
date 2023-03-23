@@ -24,13 +24,13 @@ def header(entry, updated_date):
 <id>https://rss.sasmex.net</id>
 <link type="text/html" rel="alternate" href="https://rss.sasmex.net"/>
 <link type="application/atom+xml" rel="self" href="https://rss.sasmex.net/sasmex2.xml"/>
-<title>SASMEX-Cires Rss Feed</title>
+<title>SASMEX-CIRES RSS Feed</title>
 <subtitle>Sistema de Alerta Sísmica Mexicano</subtitle>
 <updated>{updated_date}</updated>
 <logo>https://rss.sasmex.net/ciresFeedLogo2b.png</logo>
 <icon>https://rss.sasmex.net/ciresFeedFavicon.ico</icon>
 <author>
-<name>Cires A.C.</name>
+<name>CIRES A.C.</name>
 <email>infoCAP@cires-ac.mx</email>
 </author>
 {entry}
@@ -40,11 +40,11 @@ def header(entry, updated_date):
 
 def entry_tag(content, updated_date):
     return f"""<entry>
-<id>S42212T1678745171458-1678745225150</id>
+<id>20233131675</id>
 <updated>{updated_date}</updated>
 <title>13 Mar 2023 16:07:05 Alerta en CDMX por sismo en Costa Oax-Gro</title>
 <author>
-<name>Cires A.C.</name>
+<name>CIRES A.C.</name>
 </author>
 <georss:point>16.12309 -95.42281</georss:point>
 <georss:elev>0</georss:elev>
@@ -56,7 +56,7 @@ def entry_tag(content, updated_date):
 def content_tag(info):
     return f"""<content type="text/xml">
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
-<identifier>S42212T1678745171458-1678745225150</identifier>
+<identifier>20233131675</identifier>
 <sender>sasmex.net</sender>
 <sent>2023-03-13T16:07:05</sent>
 <status>Actual</status>
@@ -64,7 +64,7 @@ def content_tag(info):
 <scope>Public</scope>
 <code>IPAWSv1.0</code>
 <note>Requested by=Cires,Activated by=AGG</note>
-<references>sasmex.net,S42212T1678745171458-1678745225148,2023-03-13T16:07:05</references>{info}
+<references>sasmex.net,20233131675,2023-03-13T16:07:05</references>{info}
 </alert>
 </content>
 """
@@ -77,10 +77,10 @@ def info_tag():
 <event>Alerta por sismo</event>
 <responseType>Prepare</responseType>
 <urgency>Past</urgency>
-<severity>Minor</severity>
+<severity>Major</severity>
 <certainty>Observed</certainty>
 <effective>2023-03-13T16:07:05</effective>
-<expires>2023-03-13T16:07:05</expires>
+<expires>2023-03-13T16:08:05</expires>
 <senderName>Sistema de Alerta Sísmica Mexicano</senderName>
 <headline>Alerta Sísmica</headline>
 <description>SASMEX registró un sismo</description>
@@ -93,7 +93,7 @@ def info_tag():
 </eventCode>
 <parameter>
 <valueName>Id</valueName>
-<value>S42212T1678745171458-1678745225150</value>
+<value>20233131675</value>
 </parameter>
 <parameter>
 <valueName>EAS</valueName>

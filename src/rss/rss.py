@@ -2,6 +2,7 @@ import datetime
 from xml.dom import minidom
 
 from rss.alert import Alert
+from rss.data import CITIES, REGIONS
 
 
 class RSSFeed:
@@ -19,6 +20,10 @@ class RSSFeed:
     @property
     def content(self) -> str:
         return self._content
+
+    @property
+    def updated_date(self) -> str:
+        return self._updated_date
 
     @staticmethod
     def _get_id(date: datetime.datetime) -> str:
@@ -81,7 +86,7 @@ class RSSFeed:
         self._add_text_tag(entry, "id", self._event_id)
         self._add_text_tag(entry, "updated", self._updated_date)
 
-        title = self._alert.time.strftime("%d %b %Y %H:%M:%S") + " Sismo"
+        title = self._get_title()
         self._add_text_tag(entry, "title", title)
 
         author = self._root.createElement("author")
@@ -133,7 +138,7 @@ class RSSFeed:
         text_tags = [
             ("language", "es-MX"),
             ("category", "Geo"),
-            ("event", "Sismo"),
+            ("event", "Alerta por sismo"),
             ("responseType", "Prepare"),
             ("urgency", "Past"),
             ("severity", "Major"),
@@ -184,6 +189,13 @@ class RSSFeed:
         info.appendChild(area)
 
         return info
+
+    def _get_title(self) -> str:
+        title = self._alert.time.strftime("%d %b %Y %H:%M:%S")
+        city = CITIES[self._alert.city]
+        region = REGIONS[self._alert.region]
+        title += f" Alerta en {city} por sismo en {region}"
+        return title
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
