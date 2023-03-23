@@ -2,14 +2,22 @@ from datetime import datetime
 
 from rss import rss
 from rss.alert import Alert
+from rss.data import GeoPoint, Polygon
 
 
 def alert():
+    polygon = Polygon([
+        GeoPoint(16.12, -94.36),
+        GeoPoint(18.30, -94.06),
+        GeoPoint(16.97, -91.50),
+        GeoPoint(15.45, -93.27),
+        GeoPoint(16.12, -94.36),
+    ])
     return Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
-        polygons=[(16.12, -94.36, 18.30, -94.06, 16.97, -91.50, 15.45, -93.27, 16.12, -94.36)],
+        polygons=[polygon],
         geocoords=(16.12309, -95.42281)
     )
 

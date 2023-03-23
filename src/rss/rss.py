@@ -178,8 +178,7 @@ class RSSFeed:
         # Area tag
         area = self._root.createElement("area")
         self._add_text_tag(area, "areaDesc", "Zona de emisión de alerta")
-        # TODO: get polygons
-        self._add_text_tag(area, "polygon", "16.12,-94.36,18.30,-94.06,16.97,-91.50,15.45,-93.27,16.12,-94.36")
+        self._polygon_tags(area)
 
         geocode = self._root.createElement("geocode")
         self._add_text_tag(geocode, "valueName", "SAME")
@@ -196,6 +195,18 @@ class RSSFeed:
         region = get_region(self._alert.region)
         title += f" Alerta en {city} por sismo en {region}"
         return title
+
+    def _polygon_tags(self, parent):
+        text = ""
+        for polygon in self._alert.polygons:
+            for ii in range(len(polygon.points) - 1):
+                point = polygon.points[ii]
+                text += f"{point.lon:0.2f},{point.lat:0.2f},"
+
+            # Last point should not have comma at the end
+            point = polygon.points[-1]
+            text += f"{point.lon:0.2f},{point.lat:0.2f}"
+            self._add_text_tag(parent, "polygon", text)
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.

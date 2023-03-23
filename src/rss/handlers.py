@@ -6,21 +6,10 @@ import time
 from typing import Optional
 
 from rss.alert import Alert
+from rss.data import POLYGONS
 from rss.rss import create_feed, write_feed_to_file
 
 # TODO: get correct polygons
-POLYGONS = {
-    40: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    41: (2., 3., 4., 5., 6., 7., 8., 9., 10.,),
-    42: (11., 12., 13., 14., 15., 16., 17., 18., 19.,),
-    43: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    44: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    45: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    46: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    47: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    48: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-    49: (1., 2., 3., 4., 5., 6., 7., 8., 9.,),
-}
 
 
 class AlertHandler:

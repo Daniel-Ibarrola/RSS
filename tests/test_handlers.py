@@ -4,7 +4,6 @@ import time
 
 from rss import handlers
 from rss.alert import Alert
-from rss.rss import RSSFeed
 
 
 class TestAlertHandler:

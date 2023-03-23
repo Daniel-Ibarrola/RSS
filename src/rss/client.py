@@ -72,7 +72,6 @@ class TCPClient:
         return msg.encode("utf-8")
 
     def _log(self, msg: str, level: str = "debug"):
-        # TODO: add proper logging
         if self._logging:
             if level == "info":
                 logger.info(msg)
