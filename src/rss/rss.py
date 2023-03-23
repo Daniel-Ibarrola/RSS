@@ -2,7 +2,7 @@ import datetime
 from xml.dom import minidom
 
 from rss.alert import Alert
-from rss.data import CITIES, REGIONS
+from rss.data import CITIES, get_region
 
 
 class RSSFeed:
@@ -193,7 +193,7 @@ class RSSFeed:
     def _get_title(self) -> str:
         title = self._alert.time.strftime("%d %b %Y %H:%M:%S")
         city = CITIES[self._alert.city]
-        region = REGIONS[self._alert.region]
+        region = get_region(self._alert.region)
         title += f" Alerta en {city} por sismo en {region}"
         return title
 
