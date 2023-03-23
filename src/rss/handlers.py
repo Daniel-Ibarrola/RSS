@@ -8,8 +8,10 @@ from typing import Optional
 from rss.alert import Alert
 from rss.data import POLYGONS
 from rss.rss import create_feed, write_feed_to_file
+from rss.logger import get_module_logger
 
-# TODO: get correct polygons
+
+logger = get_module_logger(__name__)
 
 
 class AlertHandler:
@@ -52,6 +54,7 @@ class AlertHandler:
                     time=date, city=city, region=region,
                     polygons=[POLYGONS[city]], geocoords=(0, 0)
                 )
+                logger.info(f"New alert {self._last_alert}")
                 self.alerts.put(self._last_alert)
             elif self._last_alert.city != city:
                 self._last_alert.polygons.append(POLYGONS[city])
