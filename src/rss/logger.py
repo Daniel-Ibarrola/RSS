@@ -29,13 +29,12 @@ def get_module_logger(mod_name) -> logging.Logger:
     logger = logging.getLogger(mod_name)
     stream_handler = logging.StreamHandler()
 
-    # TODO: create new log file when current file gets big
     if isinstance(CONFIG, ProdConfig):
         log_file_name = "logs/sasmex_rss.log"
     elif isinstance(CONFIG, DevConfig):
         log_file_name = "logs/test.log"
     else:
-        raise ValueError
+        raise ValueError(f"Unexpected config")
 
     base_path = os.path.dirname(__file__)
     log_path = os.path.abspath(os.path.join(base_path, "..", "..", log_file_name))

@@ -46,15 +46,15 @@ def main():
         watch_dog.run()
 
         try:
+            watch_dog.join()
             client.join()
             alert_handler.join()
             feed_writer.join()
-            watch_dog.join()
         except KeyboardInterrupt:
+            watch_dog.shutdown()
             client.shutdown()
             alert_handler.shutdown()
             feed_writer.shutdown()
-            watch_dog.shutdown()
 
     logger.info("Graceful shutdown")
 

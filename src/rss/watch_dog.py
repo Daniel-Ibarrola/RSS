@@ -46,6 +46,7 @@ class WatchDog:
 
         if exit_:
             logger.info("Some threads are dead. Exiting...")
+            time.sleep(2)
             sys.exit(1)
 
     def run(self):
