@@ -5,6 +5,7 @@ import threading
 import time
 from typing import Optional, Union
 
+from rss import CONFIG
 from rss.alert import Alert
 from rss.data import POLYGONS
 from rss.rss import create_feed, write_feed_to_file
@@ -23,7 +24,7 @@ class AlertHandler:
             target=self._process_messages, daemon=True
         )
         self._stop = False
-        self.new_alert_time = 60  # in seconds
+        self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
         self.wait = 1
         self._last_alert = None
 
@@ -113,7 +114,7 @@ class FeedWriter:
         self._process_thread = threading.Thread(target=self._process_alerts, daemon=True)
         self._stop = False
         self.wait = 1
-        self.filename = "sasmex"
+        self.filename = CONFIG.FEED_FILE_NAME
 
     @staticmethod
     def _get_save_path() -> str:

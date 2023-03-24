@@ -8,8 +8,6 @@ logger = get_module_logger(__name__)
 
 
 def main():
-    # TODO: arg parser
-    # TODO: create dev and production configs
     # TODO: monitor threads
     # TODO: two clients
     ip, port = "localhost", 12345
@@ -17,11 +15,9 @@ def main():
     data_queue = queue.Queue()
 
     client = TCPClient(ip, port, data_queue, logging=True)
-    client.msg_time = 5
     logger.info("Starting client")
 
     alert_handler = AlertHandler(data_queue)
-    alert_handler.new_alert_time = 4
     feed_writer = FeedWriter(alert_handler.alerts)
 
     with client:

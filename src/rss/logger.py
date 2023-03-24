@@ -1,5 +1,7 @@
 import logging
 import os
+from rss import CONFIG
+from rss.config import DevConfig, ProdConfig
 
 
 def get_module_logger(mod_name) -> logging.Logger:
@@ -10,8 +12,15 @@ def get_module_logger(mod_name) -> logging.Logger:
     stream_handler = logging.StreamHandler()
 
     # TODO: create new log file when current file gets big
+    if isinstance(CONFIG, ProdConfig):
+        log_file_name = "logs/sasmex_rss.log"
+    elif isinstance(CONFIG, DevConfig):
+        log_file_name = "logs/test.log"
+    else:
+        raise ValueError
+
     base_path = os.path.dirname(__file__)
-    log_path = os.path.abspath(os.path.join(base_path, "..", "..", "logs/rss_log.log"))
+    log_path = os.path.abspath(os.path.join(base_path, "..", "..", log_file_name))
     file_handler = logging.FileHandler(log_path)
 
     formatter = logging.Formatter(

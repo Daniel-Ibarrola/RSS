@@ -6,6 +6,7 @@ import struct
 import threading
 import time
 
+from rss import CONFIG
 from rss.logger import get_module_logger
 
 logger = get_module_logger(__name__)
@@ -34,7 +35,7 @@ class TCPClient:
         self._stop_reconnect = False
 
         self.queue = data_queue
-        self.msg_time = 30
+        self.msg_time = CONFIG.MSG_TIME
 
         self.errors = queue.Queue()
 
