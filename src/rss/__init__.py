@@ -1,11 +1,9 @@
 import os
-from rss.config import DevConfig, ProdConfig
+from rss.config import configurations
 
 config_type = os.environ.get("CONFIG", "dev")
 
-if config_type == "dev":
-    CONFIG = DevConfig()
-elif config_type == "prod":
-    CONFIG = ProdConfig()
-else:
+try:
+    CONFIG = configurations[config_type]
+except KeyError:
     raise ValueError(f"Incorrect config type {config}")

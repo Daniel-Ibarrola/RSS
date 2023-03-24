@@ -1,4 +1,3 @@
-
 class Config:
     pass
 
@@ -9,6 +8,11 @@ class DevConfig(Config):
     FEED_FILE_NAME = "test"
     IP = "localhost"
     PORT = 12345
+    CHECK_LAST_ALERT = False
+
+
+class DevConfigSupporting(DevConfig):
+    CHECK_LAST_ALERT = True
 
 
 class ProdConfig(Config):
@@ -18,3 +22,11 @@ class ProdConfig(Config):
     # TODO: update this value
     IP = "localhost"
     PORT = 12345
+    CHECK_LAST_ALERT = False
+
+
+configurations = {
+    "dev": DevConfig(),
+    "dev-support": DevConfigSupporting(),
+    "prod": ProdConfig(),
+}

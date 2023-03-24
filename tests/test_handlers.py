@@ -1,7 +1,12 @@
 import datetime
+import os
+import pickle
 import queue
 import time
 
+import pytest
+
+import rss.handlers
 from rss import handlers
 from rss.alert import Alert
 
@@ -137,3 +142,97 @@ class TestAlertHandler:
                               polygons=[handlers.POLYGONS[40]],
                               geocoords=(0, 0)
                               )
+
+
+def clear_file():
+    base_path = os.path.dirname(__file__)
+    alert_path = os.path.join(base_path, "alert.pickle")
+    if os.path.exists(alert_path):
+        os.remove(alert_path)
+
+
+def clear_alert_file():
+    clear_file()
+    yield
+    clear_file()
+
+
+class TestFeedWriter:
+
+    @pytest.mark.usefixture("clear_alert_file")
+    def test_load_last_alert_file_does_not_exist(self):
+        base_path = os.path.dirname(__file__)
+        assert rss.handlers.FeedWriter._load_last_alert(base_path) is None
+
+    def test_load_last_alert(self):
+        alert = Alert(
+            time=datetime.datetime(2023, 3, 24),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+
+        base_path = os.path.dirname(__file__)
+        alert_path = os.path.join(base_path, "alert.pickle")
+        with open(alert_path, "wb") as fp:
+            pickle.dump(alert, fp)
+
+        alert_loaded = rss.handlers.FeedWriter._load_last_alert(base_path)
+        assert alert == alert_loaded
+
+        clear_file()
+
+    def test_check_last_alert_alerts_within_time_range(self):
+        alert1 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+        alert2 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 2),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+
+        assert not rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
+
+    def test_check_last_alert_different_polygons(self):
+        alert1 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+        alert2 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 2),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[41]],
+            geocoords=(0, 0)
+        )
+
+        assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
+
+    def test_check_last_alert_alerts_out_of_time_range(self):
+        alert1 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+        alert2 = Alert(
+            time=datetime.datetime(2023, 3, 24, 1, 0, 15),
+            city=40,
+            region=41203,
+            polygons=[handlers.POLYGONS[40]],
+            geocoords=(0, 0)
+        )
+
+        assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)

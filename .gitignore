@@ -6,3 +6,4 @@ src/rss.egg-info/
 sasmex/
 logs/
 feeds/
+*.pickle

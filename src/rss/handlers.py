@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import pickle
 import queue
 import threading
 import time
@@ -10,7 +11,6 @@ from rss.alert import Alert
 from rss.data import POLYGONS
 from rss.rss import create_feed, write_feed_to_file
 from rss.logger import get_module_logger
-
 
 logger = get_module_logger(__name__)
 
@@ -130,6 +130,7 @@ class FeedWriter:
         return os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
 
     def _process_alerts(self):
+        base_path = os.path.dirname(__file__)
         while not self._stop:
             try:
                 alert = self.alerts.get(timeout=1)
@@ -137,17 +138,53 @@ class FeedWriter:
                 time.sleep(self.wait)
                 continue
 
-            feed = create_feed(alert)
-            feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.rss")
-            write_feed_to_file(feed_path, feed)
-            logger.info(f"Feed file written in {feed_path}")
+            write_feed = True
+            if CONFIG.CHECK_LAST_ALERT:
+                write_feed = self._check_last_alert(alert, self._load_last_alert(base_path))
+            else:
+                self._save_alert(alert)
 
-    def run(self):
+            if write_feed:
+                feed = create_feed(alert)
+                feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.rss")
+                write_feed_to_file(feed_path, feed)
+                logger.info(f"Feed file written in {feed_path}")
+
+    @staticmethod
+    def _check_last_alert(alert1: Alert, alert2: Union[Alert, None]):
+        # Check if the last alert written by the other program is the same
+        # to avoid writing two repeated files.
+        if alert2 is None:
+            return True
+
+        if abs((alert1.time - alert2.time).total_seconds()) > 5 \
+                or alert1.polygons != alert2.polygons:
+            return True
+
+        return False
+
+    @staticmethod
+    def _load_last_alert(base_path) -> Union[Alert, None]:
+        alert_file = os.path.join(base_path, "alert.pickle")
+        if not os.path.exists(alert_file):
+            return None
+
+        with open(alert_file, "rb") as fp:
+            alert = pickle.load(fp)
+        return alert
+
+    @staticmethod
+    def _save_alert(alert: Alert) -> None:
+        base_path = os.path.dirname(__file__)
+        with open(os.path.join(base_path, "alert.pickle"), "wb") as fp:
+            pickle.dump(alert, fp)
+
+    def run(self) -> None:
         self._process_thread.start()
 
-    def join(self):
+    def join(self) -> None:
         self._process_thread.join()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         self._stop = True
         self.join()
