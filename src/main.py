@@ -14,7 +14,6 @@ def get_threads_dict(client: TCPClient,
                      alert_handler: AlertHandler,
                      writer: FeedWriter) -> dict[str, threading.Thread]:
     return {
-        # TODO: send and rcv threads should be updated in case of reconnection
         "client_send": client.send_thread,
         "client_rcv": client.rcv_thread,
         "reconnect": client.reconnect_thread,
@@ -28,7 +27,7 @@ def main():
 
     data_queue = queue.Queue()
 
-    client = TCPClient(ip, port, data_queue, logging=True)
+    client = TCPClient(ip, port, data_queue)
     logger.info("Starting client")
 
     alert_handler = AlertHandler(data_queue)
@@ -36,6 +35,8 @@ def main():
 
     threads = get_threads_dict(client, alert_handler, feed_writer)
     watch_dog = WatchDog(threads)
+
+    client.threads_dict = threads
 
     with client:
         client.connect()
