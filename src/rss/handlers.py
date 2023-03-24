@@ -146,7 +146,7 @@ class FeedWriter:
 
             if write_feed:
                 feed = create_feed(alert)
-                feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.rss")
+                feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.cap")
                 write_feed_to_file(feed_path, feed)
                 logger.info(f"Feed file written in {feed_path}")
 

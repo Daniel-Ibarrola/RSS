@@ -4,6 +4,7 @@ src/rss.egg-info/
 *.pyc
 *.xml
 sasmex/
-logs/
-feeds/
 *.pickle
+*.log
+*.cap
+*.rss
