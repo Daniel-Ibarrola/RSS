@@ -25,8 +25,14 @@ class ProdConfig(Config):
     CHECK_LAST_ALERT = False
 
 
+class ProdConfigSupporting(ProdConfig):
+    IP = "localhost"
+    CHECK_LAST_ALERT = True
+
+
 configurations = {
     "dev": DevConfig(),
     "dev-support": DevConfigSupporting(),
     "prod": ProdConfig(),
+    "prod-support": ProdConfigSupporting(),
 }

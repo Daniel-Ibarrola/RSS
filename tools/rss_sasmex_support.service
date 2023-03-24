@@ -7,7 +7,7 @@ Restart=on-failure
 # Update user accordingly
 User=daniel
 # Update following paths
-Environment="CONFIG=prod"
+Environment="CONFIG=prod-support"
 WorkingDirectory=/home/daniel/PycharmProjects/RSS/
 
 # Update paths accordingly as well as args
