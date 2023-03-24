@@ -20,16 +20,16 @@ class Disconnected:
 class TCPClient:
 
     def __init__(
-            self, ip: str, port: int, data_queue: queue.Queue, logging: bool = True
+            self, ip: str, port: int, data_queue: queue.Queue, logging: bool = True,
     ):
+        # TODO: delete logging argument
         self._ip = ip
         self._port = port
         self._socket = None  # type: socket.socket
         self._logging = logging
 
-        self._send_thread = None
-        self._rcv_thread = None
-        self._reconnect_thread = None
+        self._send_thread, self._rcv_thread = self._get_threads()
+        self._reconnect_thread = threading.Thread(target=self._reconnect, daemon=True)
 
         self._stop = False
         self._stop_reconnect = False
@@ -46,6 +46,18 @@ class TCPClient:
     @property
     def port(self) -> int:
         return self._port
+
+    @property
+    def send_thread(self) -> threading.Thread:
+        return self._send_thread
+
+    @property
+    def rcv_thread(self) -> threading.Thread:
+        return self._rcv_thread
+
+    @property
+    def reconnect_thread(self) -> threading.Thread:
+        return self._reconnect_thread
 
     def connect(self) -> None:
         """ Connect to the server. """
@@ -71,6 +83,12 @@ class TCPClient:
         """ Encode a message to be ready to be sent."""
         msg += "\r\n"
         return msg.encode("utf-8")
+
+    def _get_threads(self):
+        return (
+            threading.Thread(target=self._send, daemon=True),
+            threading.Thread(target=self._receive, daemon=True),
+        )
 
     def _log(self, msg: str, level: str = "debug"):
         if self._logging:
@@ -120,20 +138,18 @@ class TCPClient:
             self._stop = True
             self.join(reconnect=False)
             self.connect()
-            self.run(daemon=True, reconnect=False)
+            self._send_thread, self._rcv_thread = self._get_threads()
+            self.run(reconnect=False)
 
-    def run(self, daemon: bool = True, reconnect: bool = True) -> None:
+    def run(self, reconnect: bool = True) -> None:
         """ Start the sending and receiving threads. """
         self._stop = False
         self._stop_reconnect = False
 
-        self._send_thread = threading.Thread(target=self._send, daemon=daemon)
-        self._rcv_thread = threading.Thread(target=self._receive, daemon=daemon)
         self._send_thread.start()
         self._rcv_thread.start()
 
         if reconnect:
-            self._reconnect_thread = threading.Thread(target=self._reconnect, daemon=daemon)
             self._reconnect_thread.start()
 
     def shutdown(self) -> None:

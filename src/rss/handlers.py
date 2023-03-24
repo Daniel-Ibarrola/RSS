@@ -37,6 +37,10 @@ class AlertHandler:
     def last_alert(self) -> Union[Alert, None]:
         return self._last_alert
 
+    @property
+    def process_thread(self) -> threading.Thread:
+        return self._process_thread
+
     def _process_messages(self) -> None:
         """ Process messages and create or update alerts.
         """
@@ -115,6 +119,10 @@ class FeedWriter:
         self._stop = False
         self.wait = 1
         self.filename = CONFIG.FEED_FILE_NAME
+
+    @property
+    def process_thread(self) -> threading.Thread:
+        return self._process_thread
 
     @staticmethod
     def _get_save_path() -> str:
