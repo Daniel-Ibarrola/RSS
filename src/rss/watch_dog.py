@@ -20,11 +20,22 @@ class WatchDog:
         self.wait = 5
         self._stop = False
 
+        self.n_attempts = 0
+        self.tolerance = 4
+
     def check_threads(self):
         exit_ = False
         while not self._stop:
             for thread_name, thread in self.threads.items():
                 if not thread.is_alive():
+
+                    # receive and send threads may be dead if reconnecting. So we'll give only exit
+                    # after some time has passed
+                    if thread_name == "client_send" or thread_name == "client_rcv":
+                        if self.n_attempts < self.tolerance:
+                            self.n_attempts += 1
+                            continue
+
                     logger.info(f"Thread {thread_name} is dead")
                     exit_ = True
 
