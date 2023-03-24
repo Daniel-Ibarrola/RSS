@@ -66,13 +66,13 @@ def content_tag(info):
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
 <identifier>20233131675</identifier>
 <sender>sasmex.net</sender>
-<sent>2023-03-13T16:07:05</sent>
+<sent>2023-03-13T16:07:05-06:00</sent>
 <status>Actual</status>
 <msgType>Alert</msgType>
 <scope>Public</scope>
 <code>IPAWSv1.0</code>
 <note>Requested by=Cires,Activated by=AGG</note>
-<references>sasmex.net,20233131675,2023-03-13T16:07:05</references>{info}
+<references>sasmex.net,CIRES,2023-03-13T16:07:05-06:00</references>{info}
 </alert>
 </content>
 """
@@ -85,20 +85,16 @@ def info_tag():
 <event>Alerta por sismo</event>
 <responseType>Prepare</responseType>
 <urgency>Past</urgency>
-<severity>Major</severity>
+<severity>Severe</severity>
 <certainty>Observed</certainty>
-<effective>2023-03-13T16:07:05</effective>
-<expires>2023-03-13T16:08:05</expires>
+<effective>2023-03-13T16:07:05-06:00</effective>
+<expires>2023-03-13T16:08:05-06:00</expires>
 <senderName>Sistema de Alerta Sísmica Mexicano</senderName>
 <headline>Alerta Sísmica</headline>
 <description>SASMEX registró un sismo</description>
 <instruction>Realice procedimiento en caso de sismo</instruction>
 <web>http://sasmex.net</web>
 <contact>CIRES</contact>
-<eventCode>
-<valueName>SAME</valueName>
-<value>EQW</value>
-</eventCode>
 <parameter>
 <valueName>Id</valueName>
 <value>20233131675</value>
@@ -118,7 +114,7 @@ def info_tag():
 </resource>
 <area>
 <areaDesc>Zona de emisión de alerta</areaDesc>
-<polygon>16.12,-94.36,18.30,-94.06,16.97,-91.50,15.45,-93.27,16.12,-94.36</polygon>
+<polygon>16.12,-94.36, 18.30,-94.06, 16.97,-91.50, 15.45,-93.27, 16.12,-94.36</polygon>
 <geocode>
 <valueName>SAME</valueName>
 <value>009000</value>

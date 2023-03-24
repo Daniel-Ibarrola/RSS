@@ -117,13 +117,13 @@ class RSSFeed:
         text_tags = [
             ("identifier", self._event_id),
             ("sender", "sasmex.net"),
-            ("sent", self._alert.time.isoformat()),
+            ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),  # TODO: reformat date
             ("status", "Actual"),
             ("msgType", "Alert"),
             ("scope", "Public"),
             ("code", "IPAWSv1.0"),
             ("note", "Requested by=Cires,Activated by=AGG"),
-            ("references", f"sasmex.net,{self._event_id},{self._alert.time.isoformat()}")
+            ("references", f"sasmex.net,CIRES,{self._alert.time.isoformat(timespec='seconds')}-06:00")  # TODO: fix
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
@@ -141,10 +141,10 @@ class RSSFeed:
             ("event", "Alerta por sismo"),
             ("responseType", "Prepare"),
             ("urgency", "Past"),
-            ("severity", "Major"),
+            ("severity", "Severe"),
             ("certainty", "Observed"),
-            ("effective", self._alert.time.isoformat()),
-            ("expires", expire_date.isoformat()),
+            ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),  # TODO: effective and expires format
+            ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
             ("senderName", "Sistema de Alerta Sísmica Mexicano"),
             ("headline", "Alerta Sísmica"),
             ("description", "SASMEX registró un sismo"),
@@ -154,11 +154,6 @@ class RSSFeed:
         ]
         for tag in text_tags:
             self._add_text_tag(info, tag[0], tag[1])
-
-        event_code = self._root.createElement("eventCode")
-        self._add_text_tag(event_code, "valueName", "SAME")
-        self._add_text_tag(event_code, "value", "EQW")
-        info.appendChild(event_code)
 
         parameter_tags = [
             ("Id", self._event_id),
@@ -201,7 +196,7 @@ class RSSFeed:
         for polygon in self._alert.polygons:
             for ii in range(len(polygon.points) - 1):
                 point = polygon.points[ii]
-                text += f"{point.lon:0.2f},{point.lat:0.2f},"
+                text += f"{point.lon:0.2f},{point.lat:0.2f}, "
 
             # Last point should not have comma at the end
             point = polygon.points[-1]

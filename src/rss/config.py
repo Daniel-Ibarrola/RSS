@@ -1,13 +1,16 @@
+import os
+
+
 class Config:
     pass
 
 
 class DevConfig(Config):
-    ALERT_TIME = 4
-    MSG_TIME = 5
+    ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
+    MSG_TIME = int(os.environ.get("MSG_TIME", 5))
     FEED_FILE_NAME = "test"
-    IP = "localhost"
-    PORT = 12345
+    IP = os.environ.get("IP", "localhost")
+    PORT = int(os.environ.get("PORT", 12345))
     CHECK_LAST_ALERT = False
 
 
@@ -17,7 +20,7 @@ class DevConfigSupporting(DevConfig):
 
 class ProdConfig(Config):
     ALERT_TIME = 60
-    MSG_TIME = 30
+    MSG_TIME = 60
     FEED_FILE_NAME = "sasmex"
     # TODO: update this value
     IP = "localhost"
