@@ -143,7 +143,7 @@ class RSSFeed:
             ("urgency", "Past"),
             ("severity", "Severe"),
             ("certainty", "Observed"),
-            ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),  # TODO: effective and expires format
+            ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
             ("senderName", "Sistema de Alerta Sísmica Mexicano"),
             ("headline", "Alerta Sísmica"),

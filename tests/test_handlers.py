@@ -152,6 +152,7 @@ def clear_file():
         os.remove(alert_path)
 
 
+@pytest.fixture
 def clear_alert_file():
     clear_file()
     yield
@@ -160,11 +161,12 @@ def clear_alert_file():
 
 class TestFeedWriter:
 
-    @pytest.mark.usefixture("clear_alert_file")
+    @pytest.mark.usefixtures("clear_alert_file")
     def test_load_last_alert_file_does_not_exist(self):
         base_path = os.path.dirname(__file__)
         assert rss.handlers.FeedWriter._load_last_alert(base_path) is None
 
+    @pytest.mark.usefixtures("clear_alert_file")
     def test_load_last_alert(self):
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
@@ -181,8 +183,6 @@ class TestFeedWriter:
 
         alert_loaded = rss.handlers.FeedWriter._load_last_alert(base_path)
         assert alert == alert_loaded
-
-        clear_file()
 
     def test_check_last_alert_alerts_within_time_range(self):
         alert1 = Alert(

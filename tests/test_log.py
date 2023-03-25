@@ -14,15 +14,21 @@ def get_log_files(logs_path: str) -> list[str]:
     return log_files
 
 
-@pytest.fixture
-def clear_logs():
-    yield
+def remove_log_files():
     log_files = get_log_files(os.path.dirname(__file__))
     for logfile in log_files:
-        os.remove(logfile)
+        if os.path.exists(logfile):
+            os.remove(logfile)
 
 
-@pytest.mark.usefixture("clear_logs")
+@pytest.fixture
+def clear_logs():
+    remove_log_files()
+    yield
+    remove_log_files()
+
+
+@pytest.mark.usefixtures("clear_logs")
 def test_creates_new_log_file_after_current_gets_big():
     logs_path = os.path.dirname(__file__)
     file_name = "temp.log"
