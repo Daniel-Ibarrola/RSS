@@ -93,7 +93,7 @@ class RSSFeed:
         entry.appendChild(author)
         self._add_text_tag(author, "name", "CIRES A.C.")
 
-        coords = str(self._alert.geocoords[0]) + " " + str(self._alert.geocoords[1])
+        coords = str(self._alert.geocoords.lat) + " " + str(self._alert.geocoords.lon)
         self._add_text_tag(entry, "georss:point", coords)
         self._add_text_tag(entry, "georss:elev", "0")
 
@@ -117,13 +117,13 @@ class RSSFeed:
         text_tags = [
             ("identifier", self._event_id),
             ("sender", "sasmex.net"),
-            ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),  # TODO: reformat date
+            ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("status", "Actual"),
             ("msgType", "Alert"),
             ("scope", "Public"),
             ("code", "IPAWSv1.0"),
             ("note", "Requested by=Cires,Activated by=AGG"),
-            ("references", f"sasmex.net,CIRES,{self._alert.time.isoformat(timespec='seconds')}-06:00")  # TODO: fix
+            ("references", f"sasmex.net,CIRES,{self._alert.time.isoformat(timespec='seconds')}-06:00")
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])

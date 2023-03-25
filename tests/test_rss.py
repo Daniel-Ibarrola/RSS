@@ -18,7 +18,7 @@ def alert():
         city=40,
         region=42201,
         polygons=[polygon],
-        geocoords=(16.12309, -95.42281)
+        geocoords=GeoPoint(lat=16.12309, lon=-95.42281)
     )
 
 

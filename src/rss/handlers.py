@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 from rss import CONFIG
 from rss.alert import Alert
-from rss.data import POLYGONS
+from rss.data import POLYGONS, COORDS
 from rss.rss import create_feed, write_feed_to_file
 from rss.logger import get_module_logger
 
@@ -70,7 +70,7 @@ class AlertHandler:
             if time_diff is None or time_diff > self.new_alert_time:
                 self._last_alert = Alert(
                     time=date, city=city, region=region,
-                    polygons=[POLYGONS[city]], geocoords=(0, 0)
+                    polygons=[POLYGONS[city]], geocoords=COORDS[region]
                 )
                 logger.info(f"New alert: {self._alert_str(self.last_alert)}")
             elif self._last_alert.city != city:

@@ -9,6 +9,7 @@ import pytest
 import rss.handlers
 from rss import handlers
 from rss.alert import Alert
+from rss.data import COORDS
 
 
 class TestAlertHandler:
@@ -56,7 +57,7 @@ class TestAlertHandler:
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
     def test_alert_contains_polygons_from_all_the_required_cities(self):
@@ -76,7 +77,7 @@ class TestAlertHandler:
             polygons=[handlers.POLYGONS[40],
                       handlers.POLYGONS[41],
                       handlers.POLYGONS[42]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
     def test_process_messages(self):
@@ -108,13 +109,13 @@ class TestAlertHandler:
                   city=40,
                   region=41203,
                   polygons=[handlers.POLYGONS[40], handlers.POLYGONS[41]],
-                  geocoords=(0, 0)
+                  geocoords=COORDS[41203]
                   ),
             Alert(time=datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S"),
                   city=40,
                   region=41203,
                   polygons=[handlers.POLYGONS[40]],
-                  geocoords=(0, 0)
+                  geocoords=COORDS[41203]
                   ),
         ]
 
@@ -140,7 +141,7 @@ class TestAlertHandler:
                               city=40,
                               region=41203,
                               polygons=[handlers.POLYGONS[40]],
-                              geocoords=(0, 0)
+                              geocoords=COORDS[41203]
                               )
 
 
@@ -170,7 +171,7 @@ class TestFeedWriter:
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
         base_path = os.path.dirname(__file__)
@@ -189,14 +190,14 @@ class TestFeedWriter:
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 2),
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
         assert not rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
@@ -207,14 +208,14 @@ class TestFeedWriter:
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 2),
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[41]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
         assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
@@ -225,14 +226,14 @@ class TestFeedWriter:
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 15),
             city=40,
             region=41203,
             polygons=[handlers.POLYGONS[40]],
-            geocoords=(0, 0)
+            geocoords=COORDS[41203]
         )
 
         assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)

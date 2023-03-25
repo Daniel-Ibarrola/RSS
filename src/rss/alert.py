@@ -1,10 +1,8 @@
 import dataclasses
 import datetime
 
-from rss.data import Polygon
+from rss.data import GeoPoint, Polygon
 
-
-# TODO: get geocoords
 
 @dataclasses.dataclass(frozen=True)
 class Alert:
@@ -12,4 +10,4 @@ class Alert:
     city: int
     region: int
     polygons: list[Polygon]
-    geocoords: tuple[float, float]
+    geocoords: GeoPoint
