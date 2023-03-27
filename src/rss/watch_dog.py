@@ -1,6 +1,6 @@
 import threading
 import time
-import sys
+import os
 
 from rss.logger import get_module_logger
 
@@ -47,7 +47,8 @@ class WatchDog:
         if exit_:
             logger.info("Some threads are dead. Exiting...")
             time.sleep(2)
-            sys.exit(1)
+            # Exit application
+            os._exit(1)
 
     def run(self):
         self.check_thread.start()
