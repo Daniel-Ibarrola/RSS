@@ -192,8 +192,8 @@ class RSSFeed:
         return title
 
     def _polygon_tags(self, parent):
-        text = ""
         for polygon in self._alert.polygons:
+            text = ""
             for ii in range(len(polygon.points) - 1):
                 point = polygon.points[ii]
                 text += f"{point.lon:0.2f},{point.lat:0.2f}, "

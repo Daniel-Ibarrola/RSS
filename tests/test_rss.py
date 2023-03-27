@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rss import rss
 from rss.alert import Alert
-from rss.data import GeoPoint, Polygon
+from rss.data import GeoPoint, Polygon, POLYGONS
 
 
 def alert():
@@ -184,3 +184,26 @@ def test_create_rss_feed():
     expected = root.split('\n')
     expected = [s for s in expected if len(s) > 0]
     assert feed_content == expected
+
+
+def test_polygon_tags():
+    alert_ = Alert(
+        time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
+        city=40,
+        region=42201,
+        polygons=[POLYGONS[40], POLYGONS[41], POLYGONS[42]],
+        geocoords=GeoPoint(lat=16.12309, lon=-95.42281)
+    )
+    feed = rss.RSSFeed(alert=alert_)
+    feed_element = feed._root.createElement("feed")
+    feed._root.appendChild(feed_element)
+    feed._polygon_tags(feed_element)
+    content = feed._root.toprettyxml(indent="")
+
+    expected = [
+        '<polygon>-98.24,17.92, -97.73,19.71, -100.26,20.36, -100.80,18.72, -98.24,17.92</polygon>',
+        '<polygon>-98.08,16.01, -97.55,17.84, -101.88,19.29, -102.54,17.73, -98.08,16.01</polygon>',
+        '<polygon>-94.06,15.48, -93.87,18.35, -98.59,18.55, -98.70,15.62, -94.06,15.48</polygon>',
+    ]
+    content = [st for st in content.split('\n') if st.startswith("<polygon>")]
+    assert content == expected
