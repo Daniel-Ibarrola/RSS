@@ -22,14 +22,13 @@ class ProdConfig(Config):
     ALERT_TIME = 60
     MSG_TIME = 60
     FEED_FILE_NAME = "sasmex"
-    # TODO: update this value
-    IP = "localhost"
-    PORT = 12345
+    IP = "172.30.17.182"
+    PORT = 13084
     CHECK_LAST_ALERT = False
 
 
 class ProdConfigSupporting(ProdConfig):
-    IP = "localhost"
+    IP = "172.30.17.182"
     CHECK_LAST_ALERT = True
 
 
