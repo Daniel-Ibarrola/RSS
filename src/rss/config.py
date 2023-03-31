@@ -24,14 +24,14 @@ class ProdConfig(Config):
     MSG_TIME = 60
     ALERT_FILE_NAME = "alerta"
     NON_ALERT_FILE_NAME = "sismo"
-    # TODO: update this value
-    IP = "localhost"
-    PORT = 12345
+    FEED_FILE_NAME = "sasmex"
+    IP = "172.30.17.182"
+    PORT = 13084
     CHECK_LAST_ALERT = False
 
 
 class ProdConfigSupporting(ProdConfig):
-    IP = "localhost"
+    IP = "172.30.17.182"
     CHECK_LAST_ALERT = True
 
 
