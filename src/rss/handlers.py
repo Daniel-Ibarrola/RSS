@@ -59,8 +59,9 @@ class AlertHandler:
     def _update_last_alert(self, msg: bytes) -> None:
         """ Update the last alert."""
         msg = msg.decode().strip()
-        if msg.startswith("84,3"):
+        if msg.startswith("84,3") or msg.startswith("84,2"):
             city, region, date = self._parse_message(msg)
+            triggered = True if msg.startswith("84,3") else False
 
             if self._last_alert is not None:
                 time_diff = self._time_diff(self.last_alert.time, date)
@@ -70,7 +71,8 @@ class AlertHandler:
             if time_diff is None or time_diff > self.new_alert_time:
                 self._last_alert = Alert(
                     time=date, city=city, region=region,
-                    polygons=[POLYGONS[city]], geocoords=COORDS[region]
+                    polygons=[POLYGONS[city]], geocoords=COORDS[region],
+                    triggered=triggered
                 )
                 logger.info(f"New alert: {self._alert_str(self.last_alert)}")
             elif self._last_alert.city != city:
@@ -118,7 +120,8 @@ class FeedWriter:
         self._process_thread = threading.Thread(target=self._process_alerts, daemon=True)
         self._stop = False
         self.wait = 1
-        self.filename = CONFIG.FEED_FILE_NAME
+        self.alert_filename = CONFIG.ALERT_FILE_NAME
+        self.non_alert_filename = CONFIG.NON_ALERT_FILE_NAME
 
     @property
     def process_thread(self) -> threading.Thread:
@@ -146,7 +149,12 @@ class FeedWriter:
 
             if write_feed:
                 feed = create_feed(alert)
-                feed_path = os.path.join(self.save_path, f"{self.filename}_{feed.updated_date}.cap")
+                if alert.triggered:
+                    filename = self.alert_filename
+                else:
+                    filename = self.non_alert_filename
+
+                feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
                 write_feed_to_file(feed_path, feed)
                 logger.info(f"Feed file written in {feed_path}")
 

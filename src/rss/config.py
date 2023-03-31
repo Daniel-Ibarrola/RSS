@@ -8,7 +8,8 @@ class Config:
 class DevConfig(Config):
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
-    FEED_FILE_NAME = "test"
+    ALERT_FILE_NAME = "test_alert"
+    NON_ALERT_FILE_NAME = "test_sismo"
     IP = os.environ.get("IP", "localhost")
     PORT = int(os.environ.get("PORT", 12345))
     CHECK_LAST_ALERT = False
@@ -21,7 +22,8 @@ class DevConfigSupporting(DevConfig):
 class ProdConfig(Config):
     ALERT_TIME = 60
     MSG_TIME = 60
-    FEED_FILE_NAME = "sasmex"
+    ALERT_FILE_NAME = "alerta"
+    NON_ALERT_FILE_NAME = "sismo"
     # TODO: update this value
     IP = "localhost"
     PORT = 12345

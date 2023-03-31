@@ -125,6 +125,9 @@ def start_server():
         # Test 3: Different alerts
         ("84,3,40,41203, ,46237.1234567890\r\n", 60),
         ("84,3,40,41203, ,46237.1234567890\r\n", 180),
+
+        # Test 4: Small earthquake code
+        ("84,2,40,41203, ,46237.1234567890\r\n", 60),
     ]
 
     with server:

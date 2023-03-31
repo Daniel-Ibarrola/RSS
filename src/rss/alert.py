@@ -11,3 +11,4 @@ class Alert:
     region: int
     polygons: list[Polygon]
     geocoords: GeoPoint
+    triggered: bool = True
