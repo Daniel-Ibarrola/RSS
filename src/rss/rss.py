@@ -196,11 +196,11 @@ class RSSFeed:
             text = ""
             for ii in range(len(polygon.points) - 1):
                 point = polygon.points[ii]
-                text += f"{point.lon:0.2f},{point.lat:0.2f}, "
+                text += f"{point.lat:0.2f},{point.lon:0.2f} "
 
-            # Last point should not have comma at the end
+            # Last point should not have space at the end
             point = polygon.points[-1]
-            text += f"{point.lon:0.2f},{point.lat:0.2f}"
+            text += f"{point.lat:0.2f},{point.lon:0.2f}"
             self._add_text_tag(parent, "polygon", text)
 
     def build(self, indentation: str = '\t') -> None:

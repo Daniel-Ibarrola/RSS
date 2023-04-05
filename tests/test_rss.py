@@ -7,11 +7,11 @@ from rss.data import GeoPoint, Polygon, POLYGONS
 
 def alert():
     polygon = Polygon([
-        GeoPoint(16.12, -94.36),
-        GeoPoint(18.30, -94.06),
-        GeoPoint(16.97, -91.50),
-        GeoPoint(15.45, -93.27),
-        GeoPoint(16.12, -94.36),
+        GeoPoint(lat=16.12, lon=-94.36),
+        GeoPoint(lat=18.30, lon=-94.06),
+        GeoPoint(lat=16.97, lon=-91.50),
+        GeoPoint(lat=15.45, lon=-93.27),
+        GeoPoint(lat=16.12, lon=-94.36),
     ])
     return Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
@@ -114,7 +114,7 @@ def info_tag():
 </resource>
 <area>
 <areaDesc>Zona de emisión de alerta</areaDesc>
-<polygon>16.12,-94.36, 18.30,-94.06, 16.97,-91.50, 15.45,-93.27, 16.12,-94.36</polygon>
+<polygon>16.12,-94.36 18.30,-94.06 16.97,-91.50 15.45,-93.27 16.12,-94.36</polygon>
 <geocode>
 <valueName>SAME</valueName>
 <value>009000</value>
@@ -201,9 +201,9 @@ def test_polygon_tags():
     content = feed._root.toprettyxml(indent="")
 
     expected = [
-        '<polygon>-98.24,17.92, -97.73,19.71, -100.26,20.36, -100.80,18.72, -98.24,17.92</polygon>',
-        '<polygon>-98.08,16.01, -97.55,17.84, -101.88,19.29, -102.54,17.73, -98.08,16.01</polygon>',
-        '<polygon>-94.06,15.48, -93.87,18.35, -98.59,18.55, -98.70,15.62, -94.06,15.48</polygon>',
+        '<polygon>17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24</polygon>',
+        '<polygon>16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08</polygon>',
+        '<polygon>15.48,-94.06 18.35,-93.87 18.55,-98.59 15.62,-98.70 15.48,-94.06</polygon>',
     ]
     content = [st for st in content.split('\n') if st.startswith("<polygon>")]
     assert content == expected
