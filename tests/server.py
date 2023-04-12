@@ -56,19 +56,15 @@ class Server:
                 self.queue.append(msg)
 
     def send(self):
-        exit_ = False
-        while not self.stop:
-            for msg, wait_time in self.messages:
-                msg = self._add_time_to_msg(msg)
-                try:
-                    self.connection.sendall(msg.encode("utf-8"))
-                except ConnectionError:
-                    exit_ = True
-                    break
-                time.sleep(wait_time)
-            if exit_:
+        for msg, wait_time in self.messages:
+            msg = self._add_time_to_msg(msg)
+            try:
+                self.connection.sendall(msg.encode("utf-8"))
+            except ConnectionError:
                 break
-            print("All messages have been sent. Repeating...")
+
+            time.sleep(wait_time)
+        print("All messages have been sent. Exiting...")
 
     @staticmethod
     def _add_time_to_msg(msg: str) -> str:
@@ -110,24 +106,23 @@ def get_time() -> str:
 def start_server():
     print("TCP Server")
     server = Server("localhost", 12345)
-    server.n_messages = 30
 
     server.messages = [
         # Test 1: Skips unwanted messages
         ("84,3,40,41203, ,46237.1234567890\r\n", 2),
-        ("15,3,40,41203, ,46237.1234567890\r\n", 5),
+        ("15,3,3242,41203, ,46237.1234567890\r\n", 5),
 
-        # Test 2: Writes all polygons
-        ("84,3,40,41203, ,46237.1234567890\r\n", 0),
-        ("84,3,41,41203, ,46237.123456f789f0\r\n", 0),
-        ("84,3,42,41203, ,46237.1234567890\r\n", 5),
+        # Test 2: Different cities
+        ("84,3,41,41203, ,46237.1234567890\r\n", 0),
+        ("84,3,42,41203, ,46237.123456f789f0\r\n", 0),
+        ("84,3,43,41203, ,46237.1234567890\r\n", 5),
 
-        # Test 3: Different alerts
-        ("84,3,40,41203, ,46237.1234567890\r\n", 5),
-        ("84,3,40,41203, ,46237.1234567890\r\n", 10),
+        # Test 3: Same city ignored
+        ("84,3,40,41203, ,46237.1234567890\r\n", 1),
+        ("84,3,40,41203, ,46237.1234567890\r\n", 6),
 
         # Test 4: Small earthquake code
-        ("84,2,40,41203, ,46237.1234567890\r\n", 5),
+        ("84,2,44,41203, ,46237.1234567890\r\n", 5),
     ]
 
     with server:

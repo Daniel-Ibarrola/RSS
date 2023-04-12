@@ -24,9 +24,10 @@ class AlertHandler:
             target=self._process_messages, daemon=True
         )
         self._stop = False
+        self._cities_queue = []
+
         self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
         self.wait = 1
-        self._last_alert = None
 
         if alerts is None:
             self.alerts = queue.Queue()  # type: queue.Queue[Alert]
@@ -34,12 +35,12 @@ class AlertHandler:
             self.alerts = alerts
 
     @property
-    def last_alert(self) -> Union[Alert, None]:
-        return self._last_alert
-
-    @property
     def process_thread(self) -> threading.Thread:
         return self._process_thread
+
+    @property
+    def cities_queue(self) -> list[tuple[int, datetime]]:
+        return self._cities_queue
 
     def _process_messages(self) -> None:
         """ Process messages and create or update alerts.
@@ -47,42 +48,50 @@ class AlertHandler:
         while not self._stop:
             msg = self._get_message()
             if msg is not None:
-                self._update_last_alert(msg)
+                alert = self._get_alert(msg)
+                if alert is not None:
+                    self.alerts.put(alert)
 
-            if self.last_alert is not None and \
-                    self._time_diff(datetime.now(), self.last_alert.time) >= self.new_alert_time:
-                self.alerts.put(self.last_alert)
-                self._last_alert = None
-
+            self._flush_cities_queue()
             time.sleep(self.wait)
 
-    def _update_last_alert(self, msg: bytes) -> None:
-        """ Update the last alert."""
+    def _get_alert(self, msg: bytes) -> Union[Alert, None]:
+        """ Get an alert from a message."""
         msg = msg.decode().strip()
         if msg.startswith("84,3") or msg.startswith("84,2"):
             city, region, date = self._parse_message(msg)
             triggered = True if msg.startswith("84,3") else False
 
-            if self._last_alert is not None:
-                time_diff = self._time_diff(self.last_alert.time, date)
-            else:
-                time_diff = None
-
-            if time_diff is None or time_diff > self.new_alert_time:
-                self._last_alert = Alert(
+            if self._check_city(city):
+                alert = Alert(
                     time=date, city=city, region=region,
                     polygons=[POLYGONS[city]], geocoords=COORDS[region],
                     triggered=triggered
                 )
-                logger.info(f"New alert: {self._alert_str(self.last_alert)}")
-            elif self._last_alert.city != city:
-                self._last_alert.polygons.append(POLYGONS[city])
+                logger.info(f"New alert: {self._alert_str(alert)}")
+                self._cities_queue.append((city, date))
+                return alert
 
     def _get_message(self) -> bytes:
         try:
             return self.queue.get(timeout=1)
         except queue.Empty:
             pass
+
+    def _check_city(self, city: int) -> bool:
+        """ Checks that the given city is not in the queue"""
+        for cty, date in self._cities_queue:
+            if city == cty:
+                return False
+        return True
+
+    def _flush_cities_queue(self) -> None:
+        remove = set()
+        for ii in range(len(self._cities_queue)):
+            if self._time_diff(datetime.now(), self._cities_queue[ii][1]) >= self.new_alert_time:
+                remove.add(ii)
+
+        self._cities_queue = [c for ii, c in enumerate(self._cities_queue) if ii not in remove]
 
     @staticmethod
     def _time_diff(date1: datetime, date2: datetime) -> float:
