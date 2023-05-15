@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xml:lang="es-MX" xmlns:georss="http://www.georss.org/georss" xmlns="http://www.w3.org/2005/Atom">
+	<id>https://rss.sasmex.net</id>
+	<link type="text/html" rel="alternate" href="https://rss.sasmex.net"/>
+	<link type="application/atom+xml" rel="self" href="https://rss.sasmex.net/sasmex2.xml"/>
+	<title>SASMEX-CIRES RSS Feed</title>
+	<subtitle>Sistema de Alerta Sísmica Mexicano</subtitle>
+	<updated>2023-04-12T09:04:26.271401</updated>
+	<logo>https://rss.sasmex.net/ciresFeedLogo2b.png</logo>
+	<icon>https://rss.sasmex.net/ciresFeedFavicon.ico</icon>
+	<author>
+		<name>CIRES A.C.</name>
+		<email>infoCAP@cires-ac.mx</email>
+	</author>
+	<entry>
+		<id>20234129426</id>
+		<updated>2023-04-12T09:04:26.271401</updated>
+		<title>12 Apr 2023 09:04:26 Alerta en Colima por sismo en Atoyac Gro</title>
+		<summary>Sismo</summary>
+		<content type="text/xml">
+			<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
+				<!-- TODO: Make sure identifier is unique -->
+				<identifier>20234129426</identifier>
+				<sender>sasmex.net</sender>
+				<!-- TODO: Check dates format -->
+				<sent>2023-04-12T09:04:26-06:00</sent>
+				<status>Actual</status>
+				<msgType>Alert</msgType>
+				<scope>Public</scope>
+				<info>
+					<language>es-MX</language>
+					<category>Geo</category>
+					<!-- TODO: check event -->
+					<event>Alerta por sismo</event>
+					<!--  <responseType> must be one of [Shelter, Evacuate, Prepare, Execute, Monitor, Assess, None]. -->
+					<responseType>Prepare</responseType>
+					<urgency>Past</urgency>
+					<!-- TODO: Severity may be "Extreme". For updates could be different-->
+					<severity>Severe</severity>
+					<certainty>Observed</certainty>
+					<effective>2023-04-12T09:04:26-06:00</effective>
+					<expires>2023-04-12T09:05:26-06:00</expires>
+					<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
+					<headline>Alerta Sísmica</headline>
+					<!-- TODO: description and instruction should be more descriptive-->
+					<description>SASMEX registró un sismo</description>
+					<instruction>Realice procedimiento en caso de sismo</instruction>
+					<web>http://sasmex.net</web>
+					<contact>CIRES</contact>
+					<parameter>
+						<valueName>EAS</valueName>
+						<value>1</value>
+					</parameter>
+					<!-- TODO : May include additional parameters such as Magnitude-->
+					<area>
+						<!-- TODO: Area description is too generic -->
+						<areaDesc>Zona de emisión de alerta</areaDesc>
+						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
+					</area>
+				</info>
+			</alert>
+		</content>
+	</entry>
+</feed>

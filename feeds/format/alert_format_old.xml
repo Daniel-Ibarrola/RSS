@@ -12,11 +12,11 @@
 		<name>CIRES A.C.</name>
 		<email>infoCAP@cires-ac.mx</email>
 	</author>
-	<!-- TODO: entry tag may not be necessary. We can put alert in here  -->
 	<entry>
 		<id>20234129426</id>
 		<updated>2023-04-12T09:04:26.271401</updated>
 		<title>12 Apr 2023 09:04:26 Alerta en Colima por sismo en Atoyac Gro</title>
+		<!-- TODO: author and georss are redundant -->
 		<author>
 			<name>CIRES A.C.</name>
 		</author>
