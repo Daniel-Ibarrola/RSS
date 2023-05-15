@@ -4,6 +4,8 @@ import pytest
 from rss.client import TCPClient
 
 
+# TODO: fix tests
+
 @pytest.mark.skip(reason="Tests hang")
 def test_client_sends_and_receives_from_server():
     ip, port = "localhost", 12345

@@ -118,14 +118,13 @@ def start_server():
 
         # Test 2: Different cities
         ("84,3,41,41203, ,46237.1234567890\r\n", 0),
-        ("84,3,42,41203, ,46237.123456f789f0\r\n", 0),
         ("84,3,43,41203, ,46237.1234567890\r\n", 5),
 
         # Test 3: Same city ignored
         ("84,3,40,41203, ,46237.1234567890\r\n", 1),
         ("84,3,40,41203, ,46237.1234567890\r\n", 6),
 
-        # Test 4: Small earthquake code
+        # Test 4: Non-alert event
         ("84,2,44,41203, ,46237.1234567890\r\n", 5),
     ]
 
@@ -138,6 +137,9 @@ def start_server():
 
     print("Server received the following messages:")
     print(server.queue)
+
+    # TODO: create automated test
+    # TODO: automate google cap validator test
 
 
 if __name__ == "__main__":

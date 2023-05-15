@@ -1,7 +1,5 @@
 import os
-
 import pytest
-
 from rss.logger import check_log_file
 
 
@@ -15,6 +13,7 @@ def get_log_files(logs_path: str) -> list[str]:
 
 
 def remove_log_files():
+    # TODO: logs aren't removed
     log_files = get_log_files(os.path.dirname(__file__))
     for logfile in log_files:
         if os.path.exists(logfile):

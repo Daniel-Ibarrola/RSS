@@ -129,7 +129,6 @@ class RSSFeed:
         alert.setAttribute("xmlns", "urn:oasis:names:tc:emergency:cap:1.1")
         content.appendChild(alert)
 
-        # TODO: content tag for an update must include references and msgType = Update
         text_tags = [
             ("identifier", self._event_id),
             ("sender", "sasmex.net"),

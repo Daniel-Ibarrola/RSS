@@ -64,8 +64,10 @@ class AlertHandler:
 
             if self._check_city(city):
                 alert = Alert(
-                    time=date, city=city, region=region,
-                    polygons=[POLYGONS[city]], geocoords=COORDS[region],
+                    time=date,
+                    city=city,
+                    region=region,
+                    polygons=[POLYGONS[city]],
                     triggered=triggered
                 )
                 logger.info(f"New alert: {self._alert_str(alert)}")
@@ -165,7 +167,7 @@ class FeedWriter:
 
                 feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
                 write_feed_to_file(feed_path, feed)
-                logger.info(f"Feed file written in {feed_path}")
+                logger.info(f"Cap file written to {feed_path}")
 
     @staticmethod
     def _check_last_alert(alert1: Alert, alert2: Union[Alert, None]):
