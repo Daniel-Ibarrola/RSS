@@ -1,7 +1,6 @@
 import time
 import pytest
 
-from .server import Server
 from rss.client import TCPClient
 
 

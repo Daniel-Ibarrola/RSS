@@ -9,6 +9,10 @@ class ServerConnectionError(Exception):
 
 
 class Server:
+    """ Fake server for testing.
+
+        Generates fake messages simulating alerts.
+    """
 
     def __init__(self, ip, port):
         self.port = port
