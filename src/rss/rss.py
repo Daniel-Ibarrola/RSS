@@ -1,4 +1,6 @@
 import datetime
+import string
+import random
 from xml.dom import minidom
 
 from rss.alert import Alert
@@ -14,7 +16,6 @@ class RSSFeed:
         self._updated_date = datetime.datetime.now().isoformat()
 
         self._root = minidom.Document()
-
         self._content = ""
 
     @property
@@ -25,10 +26,30 @@ class RSSFeed:
     def updated_date(self) -> str:
         return self._updated_date
 
+    @updated_date.setter
+    def updated_date(self, date: str) -> None:
+        self._updated_date = date
+
+    @property
+    def event_id(self) -> str:
+        return self._event_id
+
+    @event_id.setter
+    def event_id(self, event: str) -> None:
+        self._event_id = event
+
     @staticmethod
     def _get_id(date: datetime.datetime) -> str:
-        return f"{date.year}{date.month}{date.day}" \
-               f"{date.hour}{date.minute}{date.second}"
+        month = f"{date.month:02d}"
+        day = f"{date.day:02d}"
+        hour = f"{date.hour:02d}"
+        minute = f"{date.minute:02d}"
+        second = f"{date.second:02d}"
+        date = str(date.year) + month + day + hour + minute + second
+        random_str = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=6))
+
+        return date + "-" + random_str
 
     def _add_text_tag(self, parent, tag_name, text):
         """ Add a tag that contains text"""
@@ -93,12 +114,6 @@ class RSSFeed:
         entry.appendChild(author)
         self._add_text_tag(author, "name", "CIRES A.C.")
 
-        coords = str(self._alert.geocoords.lat) + " " + str(self._alert.geocoords.lon)
-        self._add_text_tag(entry, "georss:point", coords)
-        self._add_text_tag(entry, "georss:elev", "0")
-
-        self._add_text_tag(entry, "summary", "Sismo")
-
     def _add_parameter_tag(self, parent, value_name: str, value: str):
         parameter = self._root.createElement("parameter")
         parent.appendChild(parameter)
@@ -114,6 +129,7 @@ class RSSFeed:
         alert.setAttribute("xmlns", "urn:oasis:names:tc:emergency:cap:1.1")
         content.appendChild(alert)
 
+        # TODO: content tag for an update must include references and msgType = Update
         text_tags = [
             ("identifier", self._event_id),
             ("sender", "sasmex.net"),
@@ -121,9 +137,6 @@ class RSSFeed:
             ("status", "Actual"),
             ("msgType", "Alert"),
             ("scope", "Public"),
-            ("code", "IPAWSv1.0"),
-            ("note", "Requested by=Cires,Activated by=AGG"),
-            ("references", f"sasmex.net,CIRES,{self._alert.time.isoformat(timespec='seconds')}-06:00")
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
@@ -156,30 +169,15 @@ class RSSFeed:
             self._add_text_tag(info, tag[0], tag[1])
 
         parameter_tags = [
-            ("Id", self._event_id),
-            ("EAS", "1"),
             ("EventID", "S42212T1678745171458"),
         ]
         for tag in parameter_tags:
             self._add_parameter_tag(info, tag[0], tag[1])
 
-        # Resource tag
-        resource = self._root.createElement("resource")
-        self._add_text_tag(resource, "resourceDesc", "Image file (GIF)")
-        self._add_text_tag(resource, "mimeType", "image/gif")
-        self._add_text_tag(resource, "uri", "http://www.sasmex.net/sismos/getAdvisoryImage")
-        info.appendChild(resource)
-
         # Area tag
         area = self._root.createElement("area")
         self._add_text_tag(area, "areaDesc", "Zona de emisión de alerta")
         self._polygon_tags(area)
-
-        geocode = self._root.createElement("geocode")
-        self._add_text_tag(geocode, "valueName", "SAME")
-        self._add_text_tag(geocode, "value", "009000")
-        area.appendChild(geocode)
-
         info.appendChild(area)
 
         return info

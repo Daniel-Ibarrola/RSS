@@ -1,11 +1,14 @@
 from datetime import datetime
+from bs4 import BeautifulSoup
+import pytest
 
 from rss import rss
 from rss.alert import Alert
 from rss.data import GeoPoint, Polygon, POLYGONS
 
 
-def alert():
+@pytest.fixture
+def cap_xml():
     polygon = Polygon([
         GeoPoint(lat=16.12, lon=-94.36),
         GeoPoint(lat=18.30, lon=-94.06),
@@ -13,197 +16,86 @@ def alert():
         GeoPoint(lat=15.45, lon=-93.27),
         GeoPoint(lat=16.12, lon=-94.36),
     ])
-    return Alert(
+    alert = Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
         polygons=[polygon],
-        geocoords=GeoPoint(lat=16.12309, lon=-95.42281)
     )
+    feed = rss.RSSFeed(alert)
+    # Set event id to avoid test failing due to randomness
+    feed.event_id = "TESTEVENT"
+    # We set updated date so we can test it later
+    feed.updated_date = datetime(2023, 5, 15, 12, 0, 0).isoformat()
+
+    feed.build()
+    data = BeautifulSoup(feed.content, "xml")
+    return data
 
 
-def get_feed():
-    return rss.RSSFeed(alert())
+def test_header_feed_tag(cap_xml):
+    assert cap_xml.feed.title.string == "SASMEX-CIRES RSS Feed"
+    assert cap_xml.feed.updated.string == datetime(2023, 5, 15, 12, 0, 0).isoformat()
+    assert len(cap_xml.find_all("alert")) == 1
 
 
-def header(entry, updated_date):
-    return f"""<?xml version="1.0" encoding="UTF-8"?>
-<feed xml:lang="es-MX" xmlns:georss="http://www.georss.org/georss" xmlns="http://www.w3.org/2005/Atom">
-<id>https://rss.sasmex.net</id>
-<link type="text/html" rel="alternate" href="https://rss.sasmex.net"/>
-<link type="application/atom+xml" rel="self" href="https://rss.sasmex.net/sasmex2.xml"/>
-<title>SASMEX-CIRES RSS Feed</title>
-<subtitle>Sistema de Alerta Sísmica Mexicano</subtitle>
-<updated>{updated_date}</updated>
-<logo>https://rss.sasmex.net/ciresFeedLogo2b.png</logo>
-<icon>https://rss.sasmex.net/ciresFeedFavicon.ico</icon>
-<author>
-<name>CIRES A.C.</name>
-<email>infoCAP@cires-ac.mx</email>
-</author>
-{entry}
-</feed>
-"""
+def test_entry_title(cap_xml):
+    title = cap_xml.feed.entry.title
+    assert title.string == "13 Mar 2023 16:07:05 Alerta en CDMX por sismo en Costa Oax-Gro"
 
 
-def entry_tag(content, updated_date):
-    return f"""<entry>
-<id>20233131675</id>
-<updated>{updated_date}</updated>
-<title>13 Mar 2023 16:07:05 Alerta en CDMX por sismo en Costa Oax-Gro</title>
-<author>
-<name>CIRES A.C.</name>
-</author>
-<georss:point>16.12309 -95.42281</georss:point>
-<georss:elev>0</georss:elev>
-<summary>Sismo</summary>{content}
-</entry>
-"""
+def test_alert_tag(cap_xml):
+    alert = cap_xml.feed.entry.content.alert
+    sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5).\
+        isoformat(timespec="seconds") + "-06:00"
+
+    assert alert.identifier.string == "TESTEVENT"
+    assert alert.sender.string == "sasmex.net"
+    assert alert.sent.string == sent_time
+    assert alert.status.string == "Actual"
+    assert alert.msgType.string == "Alert"
+    assert alert.scope.string == "Public"
 
 
-def content_tag(info):
-    return f"""<content type="text/xml">
-<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
-<identifier>20233131675</identifier>
-<sender>sasmex.net</sender>
-<sent>2023-03-13T16:07:05-06:00</sent>
-<status>Actual</status>
-<msgType>Alert</msgType>
-<scope>Public</scope>
-<code>IPAWSv1.0</code>
-<note>Requested by=Cires,Activated by=AGG</note>
-<references>sasmex.net,CIRES,2023-03-13T16:07:05-06:00</references>{info}
-</alert>
-</content>
-"""
+def test_info_tag(cap_xml):
+    info = cap_xml.feed.entry.alert.info
+    effective_date = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5).\
+        isoformat(timespec="seconds") + "-06:00"
+    expire_date = datetime(year=2023, month=3, day=13, hour=16, minute=8, second=5).\
+        isoformat(timespec="seconds") + "-06:00"
+
+    assert info.language.string == "es-MX"
+    assert info.category.string == "Geo"
+    assert info.event.string == "Alerta por sismo"
+    assert info.responseType.string == "Prepare"
+    assert info.urgency.string == "Past"
+    assert info.severity.string == "Severe"
+    assert info.effective.string == effective_date
+    assert info.expires.string == expire_date
+    assert info.headline.string == "Alerta Sísmica"
+    assert info.description.string == "SASMEX registró un sismo"
+    assert info.instruction.string == "Realice procedimiento en caso de sismo"
+    assert info.web.string == "http://sasmex.net"
+    assert info.contact.string == "CIRES"
+
+    area = info.area
+    assert area.areaDesc.string == "Zona de emisión de alerta"
+    assert area.polygon.string == "16.12,-94.36 18.30,-94.06 16.97,-91.50 15.45,-93.27 16.12,-94.36"
 
 
-def info_tag():
-    return f"""<info>
-<language>es-MX</language>
-<category>Geo</category>
-<event>Alerta por sismo</event>
-<responseType>Prepare</responseType>
-<urgency>Past</urgency>
-<severity>Severe</severity>
-<certainty>Observed</certainty>
-<effective>2023-03-13T16:07:05-06:00</effective>
-<expires>2023-03-13T16:08:05-06:00</expires>
-<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
-<headline>Alerta Sísmica</headline>
-<description>SASMEX registró un sismo</description>
-<instruction>Realice procedimiento en caso de sismo</instruction>
-<web>http://sasmex.net</web>
-<contact>CIRES</contact>
-<parameter>
-<valueName>Id</valueName>
-<value>20233131675</value>
-</parameter>
-<parameter>
-<valueName>EAS</valueName>
-<value>1</value>
-</parameter>
-<parameter>
-<valueName>EventID</valueName>
-<value>S42212T1678745171458</value>
-</parameter>
-<resource>
-<resourceDesc>Image file (GIF)</resourceDesc>
-<mimeType>image/gif</mimeType>
-<uri>http://www.sasmex.net/sismos/getAdvisoryImage</uri>
-</resource>
-<area>
-<areaDesc>Zona de emisión de alerta</areaDesc>
-<polygon>16.12,-94.36 18.30,-94.06 16.97,-91.50 15.45,-93.27 16.12,-94.36</polygon>
-<geocode>
-<valueName>SAME</valueName>
-<value>009000</value>
-</geocode>
-</area>
-</info>
-"""
-
-
-def test_create_header():
-    feed = get_feed()
-    feed._create_header()
-    content = feed._root.toprettyxml(indent='', encoding="UTF-8").decode()
-
-    expected = header("<entry/>", feed._updated_date)
-    expected = expected.split('\n')
-
-    assert content.split('\n') == expected
-
-
-def test_create_entry_tag():
-    feed = get_feed()
-    entry = feed._root.createElement("entry")
-    feed._root.appendChild(entry)
-    feed._create_entry_tag(entry)
-    content = feed._root.toprettyxml(indent="")
-
-    expected = entry_tag("", feed._updated_date)
-    expected = expected.split('\n')
-
-    # skip xml declaration
-    assert content.split('\n')[1:] == expected
-
-
-def test_create_content_tag():
-    expected = content_tag("")
-    expected = expected.split('\n')
-
-    feed = get_feed()
-    content, _ = feed._create_content_tag()
-
-    content_str = content.toprettyxml(indent="")
-    assert content_str.split('\n') == expected
-
-
-def test_create_info_tag():
-    expected = info_tag()
-    expected = expected.split('\n')
-
-    feed = get_feed()
-    content = feed._create_info_tag()
-
-    content_str = content.toprettyxml(indent="")
-    assert content_str.split('\n') == expected
-
-
-def test_create_rss_feed():
-    feed = rss.create_feed(alert=alert(), indentation="")
-
-    content = content_tag('\n' + info_tag())
-    entry = entry_tag('\n' + content, feed._updated_date)
-    root = header(entry, feed._updated_date)
-
-    feed_content = feed.content.split('\n')
-    feed_content = [s for s in feed_content if len(s) > 0]
-
-    expected = root.split('\n')
-    expected = [s for s in expected if len(s) > 0]
-    assert feed_content == expected
-
-
-def test_polygon_tags():
-    alert_ = Alert(
+def test_multiple_polygons():
+    alert = Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
         polygons=[POLYGONS[40], POLYGONS[41], POLYGONS[42]],
-        geocoords=GeoPoint(lat=16.12309, lon=-95.42281)
     )
-    feed = rss.RSSFeed(alert=alert_)
-    feed_element = feed._root.createElement("feed")
-    feed._root.appendChild(feed_element)
-    feed._polygon_tags(feed_element)
-    content = feed._root.toprettyxml(indent="")
+    feed = rss.RSSFeed(alert=alert)
+    feed.build()
 
-    expected = [
-        '<polygon>17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24</polygon>',
-        '<polygon>16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08</polygon>',
-        '<polygon>15.48,-94.06 18.35,-93.87 18.55,-98.59 15.62,-98.70 15.48,-94.06</polygon>',
-    ]
-    content = [st for st in content.split('\n') if st.startswith("<polygon>")]
-    assert content == expected
+    data = BeautifulSoup(feed.content, "xml")
+    polygons = data.find_all("polygon")
+    assert len(polygons) == 3
+    assert polygons[0].string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
+    assert polygons[1].string == "16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08"
+    assert polygons[2].string == "15.48,-94.06 18.35,-93.87 18.55,-98.59 15.62,-98.70 15.48,-94.06"

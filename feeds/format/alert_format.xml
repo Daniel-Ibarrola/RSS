@@ -16,7 +16,6 @@
 		<id>20234129426</id>
 		<updated>2023-04-12T09:04:26.271401</updated>
 		<title>12 Apr 2023 09:04:26 Alerta en Colima por sismo en Atoyac Gro</title>
-		<summary>Sismo</summary>
 		<content type="text/xml">
 			<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
 				<!-- TODO: Make sure identifier is unique -->
@@ -42,7 +41,7 @@
 					<expires>2023-04-12T09:05:26-06:00</expires>
 					<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
 					<headline>Alerta Sísmica</headline>
-					<!-- TODO: description and instruction should be more descriptive-->
+					<!-- TODO: description and instruction are too generic-->
 					<description>SASMEX registró un sismo</description>
 					<instruction>Realice procedimiento en caso de sismo</instruction>
 					<web>http://sasmex.net</web>
