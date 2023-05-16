@@ -10,10 +10,16 @@ from rss.data import CITIES, get_region
 class RSSFeed:
     """ Class to write rss files."""
 
-    def __init__(self, alert: Alert):
+    def __init__(
+            self, alert: Alert,
+            type: str = "alert",
+            refs: list[tuple[str, datetime.datetime]] = None
+    ):
         self._alert = alert
         self._event_id = self._get_id(alert.time)
         self._updated_date = datetime.datetime.now().isoformat()
+        self._type = type
+        self._refs = refs
 
         self._root = minidom.Document()
         self._content = ""
@@ -129,36 +135,69 @@ class RSSFeed:
         alert.setAttribute("xmlns", "urn:oasis:names:tc:emergency:cap:1.1")
         content.appendChild(alert)
 
+        if self._type == "test":
+            status = "Test"
+        else:
+            status = "Actual"
+
+        sender = "sasmex.net"
+        msg_type = "Alert"
+        if self._type == "update":
+            msg_type = "Update"
         text_tags = [
             ("identifier", self._event_id),
-            ("sender", "sasmex.net"),
+            ("sender", sender),
             ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
-            ("status", "Actual"),
-            ("msgType", "Alert"),
+            ("status", status),
+            ("msgType", msg_type),
             ("scope", "Public"),
         ]
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
 
+        if self._type == "update" and self._refs is not None:
+            references = self._get_references(sender)
+            self._add_text_tag(alert, "references", references)
+
         return content, alert
 
+    def _get_references(self, sender: str) -> str:
+        references = ""
+        for ii in range(len(self._refs) - 1):
+            ref_id = self._refs[ii][0]
+            date = self._refs[ii][1].isoformat(timespec="seconds") + "-06:00"
+            references += sender + "," + ref_id + "," + date + " "
+
+        ref_id = self._refs[-1][0]
+        date = self._refs[-1][1].isoformat(timespec="seconds") + "-06:00"
+        references += sender + "," + ref_id + "," + date
+
+        return references
+
     def _create_info_tag(self):
-
         info = self._root.createElement("info")
-
         expire_date = self._alert.time + datetime.timedelta(minutes=1)
+
+        event = "Alerta por sismo"
+        severity = "Severe"
+        headline = "Alerta Sísmica"
+        if self._type == "event":
+            event = "Sismo"
+            severity = "Minor"
+            headline = "Sismo"
+
         text_tags = [
             ("language", "es-MX"),
             ("category", "Geo"),
-            ("event", "Alerta por sismo"),
+            ("event", event),
             ("responseType", "Prepare"),
             ("urgency", "Past"),
-            ("severity", "Severe"),
+            ("severity", severity),
             ("certainty", "Observed"),
             ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
             ("senderName", "Sistema de Alerta Sísmica Mexicano"),
-            ("headline", "Alerta Sísmica"),
+            ("headline", headline),
             ("description", "SASMEX registró un sismo"),
             ("instruction", "Realice procedimiento en caso de sismo"),
             ("web", "http://sasmex.net"),
@@ -168,7 +207,7 @@ class RSSFeed:
             self._add_text_tag(info, tag[0], tag[1])
 
         parameter_tags = [
-            ("EventID", "S42212T1678745171458"),
+            ("EAS", "1"),
         ]
         for tag in parameter_tags:
             self._add_parameter_tag(info, tag[0], tag[1])
@@ -220,7 +259,10 @@ class RSSFeed:
             fp.write(self._content)
 
 
-def create_feed(alert: Alert, indentation: str = '\t') -> RSSFeed:
+def create_feed(alert: Alert,
+                indentation: str = '\t',
+                type: str = "alert"
+                ) -> RSSFeed:
     """ Create and rss feed string.
 
         Parameters
@@ -230,6 +272,10 @@ def create_feed(alert: Alert, indentation: str = '\t') -> RSSFeed:
 
         indentation : str, default='\t'
             The indentation to use in the feed file
+
+        type : {"event", "alert", "update", "test"}
+            If the feed is an event that didn't trigger an alert,
+            a new alert, an update of a previous one, or a test.
     """
     rss_feed = RSSFeed(alert)
     rss_feed.build(indentation)

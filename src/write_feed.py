@@ -1,6 +1,6 @@
 import datetime
 
-from rss.data import POLYGONS, GeoPoint
+from rss.data import POLYGONS
 from rss.alert import Alert
 from rss.rss import create_feed, write_feed_to_file
 
@@ -10,8 +10,7 @@ if __name__ == "__main__":
         time=datetime.datetime.now(),
         city=40,
         region=41208,
-        polygons=[POLYGONS[40], POLYGONS[41], POLYGONS[42]],
-        geocoords=GeoPoint(17.161, -100.6340)
+        polygons=[POLYGONS[40]],
     )
-    feed = create_feed(alert)
+    feed = create_feed(alert, type="test")
     write_feed_to_file("test.xml", feed)

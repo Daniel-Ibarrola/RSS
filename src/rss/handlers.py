@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 from rss import CONFIG
 from rss.alert import Alert
-from rss.data import POLYGONS, COORDS
+from rss.data import POLYGONS
 from rss.rss import create_feed, write_feed_to_file
 from rss.logger import get_module_logger
 
@@ -58,6 +58,7 @@ class AlertHandler:
     def _get_alert(self, msg: bytes) -> Union[Alert, None]:
         """ Get an alert from a message."""
         msg = msg.decode().strip()
+        # TODO: update codes for events
         if msg.startswith("84,3") or msg.startswith("84,2"):
             city, region, date = self._parse_message(msg)
             triggered = True if msg.startswith("84,3") else False
