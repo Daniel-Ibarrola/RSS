@@ -35,18 +35,18 @@
 					<event>Alerta por sismo</event>
 					<!--  <responseType> must be one of [Shelter, Evacuate, Prepare, Execute, Monitor, Assess, None]. -->
 					<responseType>Prepare</responseType>
-					<urgency>Past</urgency>
+					<!-- Urgency = [Immediate, Expected, Future, Past, Unknown] -->
+					<urgency>Immediate</urgency>
 					<!-- Severity = ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]-->
 					<severity>Severe</severity>
 					<!-- Certainty = [Observed, Likely, Possible, Unlikely, Unknown]-->
 					<certainty>Observed</certainty>
 					<effective>2023-04-12T09:04:26-06:00</effective>
 					<expires>2023-04-12T09:05:26-06:00</expires>
-					<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
-					<headline>Alerta Sísmica</headline>
-					<!-- TODO: description and instruction are too generic-->
-					<description>SASMEX registró un sismo</description>
-					<instruction>Realice procedimiento en caso de sismo</instruction>
+					<senderName>SASMEX-CIRES</senderName>
+					<headline>Alerta Sismica</headline>
+					<description>SASMEX registro sismo</description>
+					<instruction>Realice procedimiento por sismo</instruction>
 					<web>http://sasmex.net</web>
 					<contact>CIRES</contact>
 					<!-- A system-specific additional parameter associated with the alert message -->
@@ -55,8 +55,8 @@
 						<value>1</value>
 					</parameter>
 					<area>
-						<!-- TODO: Area description is too generic -->
-						<areaDesc>Zona de emisión de alerta</areaDesc>
+						<!-- Area description is too generic -->
+						<areaDesc>Zona de emision de alerta</areaDesc>
 						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
 					</area>
 				</info>

@@ -35,7 +35,7 @@
 					<responseType>Prepare</responseType>
 					<urgency>Past</urgency>
 					<!-- TODO: Severity may be "Extreme". For updates could be different-->
-					<severity>Severe</severity>
+					<severity>Minor</severity>
 					<certainty>Observed</certainty>
 					<effective>2023-04-12T09:04:26-06:00</effective>
 					<expires>2023-04-12T09:05:26-06:00</expires>

@@ -16,5 +16,6 @@ trailing record of changes to an alert.
 ## References
 
 - [Cap validator](https://cap-validator.appspot.com/)
+- [Cap for the web](https://docs.google.com/document/u/0/d/1J7bz05S6C1c5WvCd4m6f9asGoKqUpa2OUsaqx4SPKzM/pub)
 - [Google public alerts](https://developers.google.com/public-alerts/guides/introduction)
 - [Updating Alerts](https://docs.oasis-open.org/emergency-adopt/cap-feeds/v1.0/cn02/cap-feeds-v1.0-cn02.html#_Toc382489987)
