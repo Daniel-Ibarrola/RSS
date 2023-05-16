@@ -37,7 +37,7 @@ def get_module_logger(mod_name) -> logging.Logger:
         raise ValueError(f"Unexpected config")
 
     base_path = os.path.dirname(__file__)
-    log_path = os.path.abspath(os.path.join(base_path, "..", "..", log_file_name))
+    log_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", log_file_name))
     check_log_file(log_path, log_file_name, size=1000000)  # Size in mb
 
     file_handler = logging.FileHandler(log_path)

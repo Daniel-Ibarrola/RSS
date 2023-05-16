@@ -6,9 +6,8 @@ import time
 
 import pytest
 
-import rss.handlers
-from rss import handlers
-from rss.alert import Alert
+from rss.cap import handlers
+from rss.cap.alert import Alert
 
 
 class TestAlertHandler:
@@ -139,7 +138,7 @@ class TestFeedWriter:
     @pytest.mark.usefixtures("clear_alert_file")
     def test_load_last_alert_file_does_not_exist(self):
         base_path = os.path.dirname(__file__)
-        assert rss.handlers.FeedWriter._load_last_alert(base_path) is None
+        assert handlers.FeedWriter._load_last_alert(base_path) is None
 
     @pytest.mark.usefixtures("clear_alert_file")
     def test_load_last_alert(self):
@@ -155,7 +154,7 @@ class TestFeedWriter:
         with open(alert_path, "wb") as fp:
             pickle.dump(alert, fp)
 
-        alert_loaded = rss.handlers.FeedWriter._load_last_alert(base_path)
+        alert_loaded = handlers.FeedWriter._load_last_alert(base_path)
         assert alert == alert_loaded
 
     def test_check_last_alert_alerts_within_time_range(self):
@@ -172,7 +171,7 @@ class TestFeedWriter:
             polygons=[handlers.POLYGONS[40]],
         )
 
-        assert not rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
+        assert not handlers.FeedWriter._check_last_alert(alert1, alert2)
 
     def test_check_last_alert_different_polygons(self):
         alert1 = Alert(
@@ -188,7 +187,7 @@ class TestFeedWriter:
             polygons=[handlers.POLYGONS[41]],
         )
 
-        assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
+        assert handlers.FeedWriter._check_last_alert(alert1, alert2)
 
     def test_check_last_alert_alerts_out_of_time_range(self):
         alert1 = Alert(
@@ -204,4 +203,4 @@ class TestFeedWriter:
             polygons=[handlers.POLYGONS[40]],
         )
 
-        assert rss.handlers.FeedWriter._check_last_alert(alert1, alert2)
+        assert handlers.FeedWriter._check_last_alert(alert1, alert2)

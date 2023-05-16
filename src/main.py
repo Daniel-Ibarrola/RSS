@@ -2,10 +2,10 @@ import queue
 import threading
 
 from rss import CONFIG
-from rss.client import TCPClient
-from rss.handlers import AlertHandler, FeedWriter
-from rss.logger import get_module_logger
-from rss.watch_dog import WatchDog
+from rss.cap.client import TCPClient
+from rss.cap.handlers import AlertHandler, FeedWriter
+from rss.utils.logger import get_module_logger
+from rss.utils.watch_dog import WatchDog
 
 logger = get_module_logger(__name__)
 

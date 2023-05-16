@@ -1,3 +1,8 @@
+
+
 # Test
 pytest==7.2.2
 pytest-mock==3.10.0
+beautifulsoup4==4.12.2
+lxml==4.9.2
+

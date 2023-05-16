@@ -2,9 +2,9 @@ import datetime
 import os
 import sys
 
-from rss.data import POLYGONS
-from rss.alert import Alert
-from rss.rss import create_feed, write_feed_to_file
+from rss.cap.data import POLYGONS
+from rss.cap.alert import Alert
+from rss.cap.rss import create_feed, write_feed_to_file
 
 
 if __name__ == "__main__":

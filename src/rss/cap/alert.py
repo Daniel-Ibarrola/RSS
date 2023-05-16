@@ -1,7 +1,7 @@
 import dataclasses
 import datetime
 
-from rss.data import GeoPoint, Polygon
+from rss.cap.data import Polygon
 
 
 @dataclasses.dataclass(frozen=True)

@@ -1,6 +1,6 @@
 import threading
 import time
-from rss import watch_dog
+from rss.utils import watch_dog
 
 
 def function_that_raises_error():
@@ -10,7 +10,7 @@ def function_that_raises_error():
 
 
 def test_calls_exit_when_a_thread_dies(mocker):
-    mock_exit = mocker.patch("rss.watch_dog.os._exit")
+    mock_exit = mocker.patch("rss.utils.watch_dog.os._exit")
     thread = threading.Thread(target=function_that_raises_error, daemon=True)
 
     dog = watch_dog.WatchDog()
@@ -25,7 +25,7 @@ def test_calls_exit_when_a_thread_dies(mocker):
 
 
 def test_receive_and_send_threads_do_not_exit_on_first_time(mocker):
-    mock_exit = mocker.patch("rss.watch_dog.os._exit")
+    mock_exit = mocker.patch("rss.utils.watch_dog.os._exit")
     thread = threading.Thread(target=function_that_raises_error, daemon=True)
 
     dog = watch_dog.WatchDog()

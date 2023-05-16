@@ -1,7 +1,7 @@
 import time
 import pytest
 
-from rss.client import TCPClient
+from rss.cap.client import TCPClient
 
 
 # TODO: fix tests

@@ -2,9 +2,9 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import pytest
 
-from rss import rss
-from rss.alert import Alert
-from rss.data import GeoPoint, Polygon, POLYGONS
+from rss.cap import rss
+from rss.cap.alert import Alert
+from rss.cap.data import GeoPoint, Polygon, POLYGONS
 
 
 @pytest.fixture

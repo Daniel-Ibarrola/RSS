@@ -3,8 +3,8 @@ import string
 import random
 from xml.dom import minidom
 
-from rss.alert import Alert
-from rss.data import CITIES, get_region
+from rss.cap.alert import Alert
+from rss.cap.data import CITIES, get_region
 
 
 class RSSFeed:

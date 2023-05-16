@@ -1,6 +1,6 @@
 import os
 import pytest
-from rss.logger import check_log_file
+from rss.utils.logger import check_log_file
 
 
 def get_log_files(logs_path: str) -> list[str]:

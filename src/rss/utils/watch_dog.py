@@ -2,7 +2,7 @@ import threading
 import time
 import os
 
-from rss.logger import get_module_logger
+from rss.utils.logger import get_module_logger
 
 logger = get_module_logger(__name__)
 
