@@ -22,9 +22,7 @@ def cap_xml():
         region=42201,
         polygons=[polygon],
     )
-    feed = rss.RSSFeed(alert)
-    # Set event id to avoid test failing due to randomness
-    feed.event_id = "TESTEVENT"
+    feed = rss.RSSFeed(alert, "TESTEVENT")
     # We set updated date so we can test it later
     feed.updated_date = datetime(2023, 5, 15, 12, 0, 0).isoformat()
 
@@ -94,7 +92,7 @@ def sample_alert():
 
 
 def test_multiple_polygons(sample_alert):
-    feed = rss.RSSFeed(alert=sample_alert)
+    feed = rss.RSSFeed(alert=sample_alert, alert_id="TEST_ID")
     feed.build()
 
     data = BeautifulSoup(feed.content, "xml")
@@ -106,7 +104,7 @@ def test_multiple_polygons(sample_alert):
 
 
 def test_create_test_feed(sample_alert):
-    feed = rss.RSSFeed(alert=sample_alert, type="test")
+    feed = rss.RSSFeed(alert=sample_alert, alert_id="TEST_ID", type="test")
     feed.build()
 
     data = BeautifulSoup(feed.content, "xml")
@@ -119,7 +117,7 @@ def test_update_feed(sample_alert):
         ("REF_ID_1", datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5)),
         ("REF_ID_2", datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10)),
     ]
-    feed = rss.RSSFeed(alert=sample_alert, type="update", refs=refs)
+    feed = rss.RSSFeed(alert=sample_alert, alert_id="TEST_ID", type="update", refs=refs)
     feed.build()
 
     data = BeautifulSoup(feed.content, "xml")
@@ -133,7 +131,7 @@ def test_update_feed(sample_alert):
 
 
 def test_event_feed(sample_alert):
-    feed = rss.RSSFeed(alert=sample_alert, type="event")
+    feed = rss.RSSFeed(alert=sample_alert, alert_id="TEST_ID", type="event")
     feed.build()
 
     data = BeautifulSoup(feed.content, "xml")

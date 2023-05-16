@@ -1,6 +1,4 @@
 import datetime
-import string
-import random
 from xml.dom import minidom
 
 from rss.cap.alert import Alert
@@ -11,12 +9,14 @@ class RSSFeed:
     """ Class to write rss files."""
 
     def __init__(
-            self, alert: Alert,
+            self,
+            alert: Alert,
+            alert_id: str,
             type: str = "alert",
             refs: list[tuple[str, datetime.datetime]] = None
     ):
         self._alert = alert
-        self._event_id = self._get_id(alert.time)
+        self._event_id = alert_id
         self._updated_date = datetime.datetime.now().isoformat()
         self._type = type
         self._refs = refs
@@ -43,19 +43,6 @@ class RSSFeed:
     @event_id.setter
     def event_id(self, event: str) -> None:
         self._event_id = event
-
-    @staticmethod
-    def _get_id(date: datetime.datetime) -> str:
-        month = f"{date.month:02d}"
-        day = f"{date.day:02d}"
-        hour = f"{date.hour:02d}"
-        minute = f"{date.minute:02d}"
-        second = f"{date.second:02d}"
-        date = str(date.year) + month + day + hour + minute + second
-        random_str = ''.join(random.choices(
-            string.ascii_uppercase + string.digits, k=6))
-
-        return date + "-" + random_str
 
     def _add_text_tag(self, parent, tag_name, text):
         """ Add a tag that contains text"""
@@ -191,7 +178,7 @@ class RSSFeed:
             ("category", "Geo"),
             ("event", event),
             ("responseType", "Prepare"),
-            ("urgency", "Past"),
+            ("urgency", "Immediate"),
             ("severity", severity),
             ("certainty", "Observed"),
             ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),

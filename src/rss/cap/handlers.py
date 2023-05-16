@@ -1,7 +1,10 @@
+import copy
 from datetime import datetime
 import os
 import pickle
 import queue
+import random
+import string
 import threading
 import time
 from typing import Optional, Union
@@ -24,7 +27,7 @@ class AlertHandler:
             target=self._process_messages, daemon=True
         )
         self._stop = False
-        self._cities_queue = []
+        self._updates = []  # type: list[Alert]
 
         self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
         self.wait = 1
@@ -39,8 +42,8 @@ class AlertHandler:
         return self._process_thread
 
     @property
-    def cities_queue(self) -> list[tuple[int, datetime]]:
-        return self._cities_queue
+    def updates(self) -> list[Alert]:
+        return self._updates
 
     def _process_messages(self) -> None:
         """ Process messages and create or update alerts.
@@ -50,9 +53,8 @@ class AlertHandler:
             if msg is not None:
                 alert = self._get_alert(msg)
                 if alert is not None:
-                    self.alerts.put(alert)
-
-            self._flush_cities_queue()
+                    self.alerts.put((alert, copy.deepcopy(self.updates)))
+                    self.updates.append(alert)
             time.sleep(self.wait)
 
     def _get_alert(self, msg: bytes) -> Union[Alert, None]:
@@ -61,40 +63,36 @@ class AlertHandler:
         # TODO: update codes for events
         if msg.startswith("84,3") or msg.startswith("84,2"):
             city, region, date = self._parse_message(msg)
-            triggered = True if msg.startswith("84,3") else False
+            is_event = True if msg.startswith("84,2") else False
 
+            self._flush_updates()
             if self._check_city(city):
                 alert = Alert(
                     time=date,
                     city=city,
                     region=region,
                     polygons=[POLYGONS[city]],
-                    triggered=triggered
+                    id=self._alert_id(date),
+                    is_event=is_event,
                 )
                 logger.info(f"New alert: {self._alert_str(alert)}")
-                self._cities_queue.append((city, date))
                 return alert
 
     def _get_message(self) -> bytes:
         try:
-            return self.queue.get(timeout=1)
+            return self.queue.get(timeout=0.1)
         except queue.Empty:
             pass
 
     def _check_city(self, city: int) -> bool:
         """ Checks that the given city is not in the queue"""
-        for cty, date in self._cities_queue:
-            if city == cty:
-                return False
-        return True
+        return not any(alert.city == city for alert in self.updates)
 
-    def _flush_cities_queue(self) -> None:
-        remove = set()
-        for ii in range(len(self._cities_queue)):
-            if self._time_diff(datetime.now(), self._cities_queue[ii][1]) >= self.new_alert_time:
-                remove.add(ii)
-
-        self._cities_queue = [c for ii, c in enumerate(self._cities_queue) if ii not in remove]
+    def _flush_updates(self) -> None:
+        if self.updates:
+            diff = self._time_diff(datetime.now(), self.updates[0].time)
+            if diff > self.new_alert_time:
+                self.updates.clear()
 
     @staticmethod
     def _time_diff(date1: datetime, date2: datetime) -> float:
@@ -106,6 +104,19 @@ class AlertHandler:
         city, region = int(pieces[2]), int(pieces[3])
         date = datetime.strptime(pieces[4] + "," + pieces[5], "%Y/%m/%d,%H:%M:%S")
         return city, region, date
+
+    @staticmethod
+    def _alert_id(date: datetime) -> str:
+        month = f"{date.month:02d}"
+        day = f"{date.day:02d}"
+        hour = f"{date.hour:02d}"
+        minute = f"{date.minute:02d}"
+        second = f"{date.second:02d}"
+        date = str(date.year) + month + day + hour + minute + second
+        random_str = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=6))
+
+        return date + "-" + random_str
 
     @staticmethod
     def _alert_str(alert: Alert) -> str:

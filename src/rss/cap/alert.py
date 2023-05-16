@@ -10,4 +10,5 @@ class Alert:
     city: int
     region: int
     polygons: list[Polygon]
-    triggered: bool = True
+    id: str = ""
+    is_event: bool = False
