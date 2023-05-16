@@ -68,7 +68,7 @@ def test_info_tag(cap_xml):
     assert info.category.string == "Geo"
     assert info.event.string == "Alerta por sismo"
     assert info.responseType.string == "Prepare"
-    assert info.urgency.string == "Past"
+    assert info.urgency.string == "Immediate"
     assert info.severity.string == "Severe"
     assert info.effective.string == effective_date
     assert info.expires.string == expire_date

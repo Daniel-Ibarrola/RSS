@@ -12,6 +12,7 @@ class DevConfig(Config):
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
     ALERT_FILE_NAME = "test_alert"
+    UPDATE_FILE_NAME = "test_update"
     NON_ALERT_FILE_NAME = "test_event"
     IP = os.environ.get("IP", "localhost")
     PORT = int(os.environ.get("PORT", 12345))
@@ -27,6 +28,7 @@ class ProdConfig(Config):
     ALERT_TIME = 60
     MSG_TIME = 60
     ALERT_FILE_NAME = "sasmex"
+    UPDATE_FILE_NAME = "sasmex"
     NON_ALERT_FILE_NAME = "sasmex_evento"
     IP = "172.30.17.182"
     PORT = 13084

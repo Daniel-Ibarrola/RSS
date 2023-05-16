@@ -60,7 +60,7 @@ class TCPClient:
 
     def connect(self) -> None:
         """ Connect to the server. """
-        while True:
+        while not self._stop:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 self._socket.connect((self.ip, self.port))
@@ -127,13 +127,16 @@ class TCPClient:
             logger.info(f"Client disconnected at {error.time}")
             self._stop = True
             self.join(reconnect=False)
+
+            self._stop = False
             self.connect()
 
             self._send_thread, self._rcv_thread = self._get_threads()
             self.threads_dict["client_send"] = self._send_thread
             self.threads_dict["client_rcv"] = self._rcv_thread
 
-            self.run(reconnect=False)
+            if not self._stop:
+                self.run(reconnect=False)
 
     def run(self, reconnect: bool = True) -> None:
         """ Start the sending and receiving threads. """

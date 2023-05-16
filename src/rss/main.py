@@ -22,7 +22,7 @@ def get_threads_dict(client: TCPClient,
     }
 
 
-def main():
+def get_services() -> tuple[WatchDog, TCPClient, AlertHandler, FeedWriter]:
     ip, port = CONFIG.IP, CONFIG.PORT
 
     data_queue = queue.Queue()
@@ -37,6 +37,16 @@ def main():
     watch_dog = WatchDog(threads)
 
     client.threads_dict = threads
+
+    return watch_dog, client, alert_handler, feed_writer
+
+
+def main(
+    watch_dog: WatchDog,
+    client: TCPClient,
+    alert_handler: AlertHandler,
+    feed_writer: FeedWriter,
+) -> None:
 
     with client:
         client.connect()
@@ -60,4 +70,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(*get_services())

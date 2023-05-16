@@ -127,7 +127,7 @@ class FeedWriter:
 
     def __init__(self, alerts: queue.Queue):
         self.alerts = alerts
-        self.save_path = self._get_save_path()
+        self.save_path = CONFIG.SAVE_PATH
 
         self._process_thread = threading.Thread(target=self._process_alerts, daemon=True)
         self._stop = False
@@ -138,11 +138,6 @@ class FeedWriter:
     @property
     def process_thread(self) -> threading.Thread:
         return self._process_thread
-
-    @staticmethod
-    def _get_save_path() -> str:
-        base_path = os.path.dirname(__file__)
-        return os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
 
     def _process_alerts(self):
         base_path = os.path.dirname(__file__)

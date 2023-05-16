@@ -29,7 +29,7 @@
 					<category>Geo</category>
 					<event>Sismo</event>
 					<responseType>Prepare</responseType>
-					<urgency>Past</urgency>
+					<urgency>Immediate</urgency>
 					<severity>Minor</severity>
 					<certainty>Observed</certainty>
 					<effective>2023-04-12T09:04:26-06:00</effective>
@@ -45,7 +45,6 @@
 						<value>1</value>
 					</parameter>
 					<area>
-						<!-- TODO: Area description is too generic -->
 						<areaDesc>Zona de emisión de alerta</areaDesc>
 						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
 					</area>

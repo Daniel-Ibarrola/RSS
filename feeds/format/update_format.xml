@@ -29,19 +29,16 @@
 				<info>
 					<language>es-MX</language>
 					<category>Geo</category>
-					<!-- TODO: check event -->
-					<event>Alerta por sismo</event>
+					<event>Sismo</event>
 					<!--  <responseType> must be one of [Shelter, Evacuate, Prepare, Execute, Monitor, Assess, None]. -->
 					<responseType>Prepare</responseType>
 					<urgency>Past</urgency>
-					<!-- TODO: Severity may be "Extreme". For updates could be different-->
-					<severity>Minor</severity>
+					<severity>Severe</severity>
 					<certainty>Observed</certainty>
 					<effective>2023-04-12T09:04:26-06:00</effective>
 					<expires>2023-04-12T09:05:26-06:00</expires>
 					<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
 					<headline>Alerta Sísmica</headline>
-					<!-- TODO: description and instruction should be more descriptive-->
 					<description>SASMEX registró un sismo</description>
 					<instruction>Realice procedimiento en caso de sismo</instruction>
 					<web>http://sasmex.net</web>
@@ -55,7 +52,6 @@
 						<value>6.1</value>
 					</parameter>
 					<area>
-						<!-- TODO: Area description is too generic -->
 						<areaDesc>Zona de emisión de alerta</areaDesc>
 						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
 					</area>
