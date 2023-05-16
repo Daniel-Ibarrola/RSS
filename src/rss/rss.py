@@ -277,7 +277,7 @@ def create_feed(alert: Alert,
             If the feed is an event that didn't trigger an alert,
             a new alert, an update of a previous one, or a test.
     """
-    rss_feed = RSSFeed(alert)
+    rss_feed = RSSFeed(alert, type=type)
     rss_feed.build(indentation)
     return rss_feed
 
