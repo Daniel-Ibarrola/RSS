@@ -45,6 +45,11 @@ class DevConfig(Config):
     API_URL = get_api_url()
 
 
+class TestSQLiteConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+
+
 class ProdConfig(Config):
     ALERT_TIME = 60
     MSG_TIME = 60
@@ -64,5 +69,6 @@ class ProdConfig(Config):
 
 configurations = {
     "dev": DevConfig(),
+    "test-sqlite": TestSQLiteConfig(),
     "prod": ProdConfig(),
 }

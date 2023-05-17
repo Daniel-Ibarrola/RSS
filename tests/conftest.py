@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
 from rss import CONFIG
+from rss.config import configurations
 from rss.api import create_app, db
 
 
@@ -36,7 +37,7 @@ def wait_for_postgres():
 
 
 def create_app_and_db():
-    app = create_app(CONFIG)
+    app = create_app(configurations["test-sqlite"])
     app_context = app.app_context()
     app_context.push()
     db.create_all()
@@ -69,6 +70,6 @@ def postgres_session(postgres_db):
     yield session
 
     # Clear database after running tests
-    session.execute(text("DELETE FROM events"))
+    session.execute(text("DELETE FROM alerts"))
     session.commit()
     session.close()
