@@ -15,6 +15,7 @@ def shutdown_services(server_shutdown: threading.Event, services: list[Any]):
 
 
 def test_writes_cap_files_when_receiving_alerts():
+    # The client is started and will listen for alerts of the server
     server = get_server(log=False)
     services = get_services()
 
@@ -31,11 +32,14 @@ def test_writes_cap_files_when_receiving_alerts():
     shutdown_thread.join()
     services_thread.join()
 
+    # The client receives an alert with an update, and after a certain time an event
+    # Three files should have been written. One for the alert, one for the update and
+    # another for the event.
     files = []
-    for _, _, filenames in os.walk(CONFIG.SAVE_PATH):
+    for root, _, filenames in os.walk(CONFIG.SAVE_PATH):
         for file in filenames:
             if file.endswith(".cap"):
-                files.append(file)
+                files.append(os.path.join(root, file))
 
     assert len(files) == 3
 
@@ -46,6 +50,7 @@ def test_writes_cap_files_when_receiving_alerts():
     with open(alert) as fp:
         data = BeautifulSoup(fp.read(), "xml")
 
+    # We check the first alert
     alert = data.feed.entry.alert
     assert alert.info.event.string == "Alerta por sismo"
     assert alert.info.severity.string == "Severe"
@@ -56,18 +61,20 @@ def test_writes_cap_files_when_receiving_alerts():
     with open(update) as fp:
         data = BeautifulSoup(fp.read(), "xml")
 
+    # We check the update alert. It should reference the previous alert
     alert = data.feed.entry.alert
     references = alert.references.string
     assert alert.info.event.string == "Alerta por sismo"
     assert alert.info.severity.string == "Severe"
 
-    # The update should contain the previous polygon as well as the new onw
+    # The update should contain the previous polygon as well as the new one
     assert len(alert.find_all("polygon")) == 2
     assert identifier in references
 
     with open(event) as fp:
         data = BeautifulSoup(fp.read(), "xml")
 
+    # Finally, we check the event
     alert = data.feed.entry.alert
     assert alert.info.event.string == "Sismo"
     assert alert.info.severity.string == "Minor"

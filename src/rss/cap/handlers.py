@@ -30,7 +30,7 @@ class AlertHandler:
         self._updates = []  # type: list[Alert]
 
         self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
-        self.wait = 0.2
+        self.wait = 0.1
 
         if alerts is None:
             self.alerts = queue.Queue()  # type: queue.Queue[Alert]
@@ -71,7 +71,7 @@ class AlertHandler:
                     city=city,
                     region=region,
                     polygons=[POLYGONS[city]],
-                    id=self._alert_id(date),
+                    id=self.alert_id(date),
                     is_event=is_event,
                 )
                 logger.info(f"New alert: {self._alert_str(alert)}")
@@ -105,7 +105,7 @@ class AlertHandler:
         return city, region, date
 
     @staticmethod
-    def _alert_id(date: datetime) -> str:
+    def alert_id(date: datetime) -> str:
         month = f"{date.month:02d}"
         day = f"{date.day:02d}"
         hour = f"{date.hour:02d}"
@@ -143,37 +143,42 @@ class FeedWriter:
         self._stop = False
         self.wait = 1
         self.alert_filename = CONFIG.ALERT_FILE_NAME
-        self.non_alert_filename = CONFIG.NON_ALERT_FILE_NAME
+        self.update_filename = CONFIG.UPDATE_FILE_NAME
+        self.event_filename = CONFIG.EVENT_FILE_NAME
+        self.event_update_filename = CONFIG.EVENT_UPDATE_FILE_NAME
 
     @property
     def process_thread(self) -> threading.Thread:
         return self._process_thread
 
     def _process_alerts(self):
-        base_path = os.path.dirname(__file__)
         while not self._stop:
             try:
-                alert, references = self.alerts.get(timeout=1)
+                alert, references = self.alerts.get(timeout=0.1)
             except queue.Empty:
                 time.sleep(self.wait)
                 continue
 
-            write_feed = True
-            if CONFIG.CHECK_LAST_ALERT:
-                write_feed = self._check_last_alert(alert, self._load_last_alert(base_path))
+            if alert.is_event and len(references) > 0:
+                filename = self.event_update_filename
+                is_update = True
+            elif alert.is_event and len(references) == 0:
+                filename = self.event_filename
+                is_update = False
+                references = None
+            elif not alert.is_event and len(references) > 0:
+                filename = self.update_filename
+                is_update = True
             else:
-                self._save_alert(alert)
+                filename = self.alert_filename
+                is_update = False
+                references = None
 
-            if write_feed:
-                feed = create_feed(alert)
-                if not alert.is_event:
-                    filename = self.alert_filename
-                else:
-                    filename = self.non_alert_filename
+            feed = create_feed(alert, is_update=is_update, refs=references)
 
-                feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
-                write_feed_to_file(feed_path, feed)
-                logger.info(f"Cap file written to {feed_path}")
+            feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
+            write_feed_to_file(feed_path, feed)
+            logger.info(f"Cap file written to {feed_path}")
 
     @staticmethod
     def _check_last_alert(alert1: Alert, alert2: Union[Alert, None]):

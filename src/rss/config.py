@@ -13,7 +13,8 @@ class DevConfig(Config):
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
     ALERT_FILE_NAME = "test_alert"
     UPDATE_FILE_NAME = "test_update"
-    NON_ALERT_FILE_NAME = "test_event"
+    EVENT_FILE_NAME = "test_event"
+    EVENT_UPDATE_FILE_NAME = "test_event_update"
     IP = os.environ.get("IP", "localhost")
     PORT = int(os.environ.get("PORT", 12345))
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
@@ -29,7 +30,8 @@ class ProdConfig(Config):
     MSG_TIME = 60
     ALERT_FILE_NAME = "sasmex"
     UPDATE_FILE_NAME = "sasmex"
-    NON_ALERT_FILE_NAME = "sasmex_evento"
+    EVENT_FILE_NAME = "sasmex_evento"
+    EVENT_UPDATE_FILE_NAME = "sasmex_evento"
     IP = "172.30.17.182"
     PORT = 13084
     SAVE_PATH = "/var/www/rss/"

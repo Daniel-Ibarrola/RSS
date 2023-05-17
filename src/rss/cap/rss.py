@@ -19,7 +19,7 @@ class RSSFeed:
             is_test: bool = False,
             refs: list[Alert] = None
     ):
-        if is_update and len(refs) == 0:
+        if is_update and refs is None:
             raise UpdateWithNoReferencesError(
                 "Cannot create and update feed without references"
             )
