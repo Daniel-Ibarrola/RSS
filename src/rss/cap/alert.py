@@ -9,6 +9,7 @@ class Alert:
     time: datetime.datetime
     city: int
     region: int
+    # TODO: store polygon ids instead of whole polygons
     polygons: list[Polygon]
     id: str = ""
     is_event: bool = False
