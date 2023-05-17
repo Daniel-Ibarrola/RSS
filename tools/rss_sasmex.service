@@ -12,7 +12,7 @@ WorkingDirectory=/home/daniel/PycharmProjects/RSS/src
 
 # Update paths accordingly as well as args
 ExecStart=/home/daniel/PycharmProjects/RSS/venv/bin/python \
-    /home/daniel/PycharmProjects/RSS/src/main.py
+    /home/daniel/PycharmProjects/RSS/src/rss/main.py
 
 [Install]
 WantedBy=multi-user.target

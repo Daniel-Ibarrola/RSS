@@ -14,7 +14,7 @@ if __name__ == "__main__":
     is_test = True
     is_update = False
     is_event = False
-    save_path = os.path.abspath(os.path.join(base_path, "..", "feeds/"))
+    save_path = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
     if len(sys.argv) > 1:
         feed_type = sys.argv[1]
         if feed_type == "update":
