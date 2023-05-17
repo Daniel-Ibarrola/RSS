@@ -70,7 +70,7 @@ class AlertHandler:
                     time=date,
                     city=city,
                     region=region,
-                    polygons=[POLYGONS[city]],
+                    polygons=[city],
                     id=self.alert_id(date),
                     is_event=is_event,
                 )

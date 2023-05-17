@@ -58,7 +58,7 @@ class TestAlertHandler:
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert_handler.updates.append(alert)
         assert alert_handler._check_city(42)
@@ -69,7 +69,7 @@ class TestAlertHandler:
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert_handler.updates.append(alert)
         assert not alert_handler._check_city(40)
@@ -83,13 +83,13 @@ class TestAlertHandler:
             time=date1,
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert2 = Alert(
             time=date1,
             city=44,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert_handler.updates.append(alert1)
         alert_handler.updates.append(alert2)
@@ -119,7 +119,7 @@ class TestAlertHandler:
             time=date1,
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         ))
         assert alert2 is None
 
@@ -155,14 +155,14 @@ class TestAlertHandler:
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
         assert first_alert.city == 40
         assert first_alert.region == 41203
-        assert first_alert.polygons == [handlers.POLYGONS[40]]
+        assert first_alert.polygons == [40]
 
         second_alert = alerts[1][0]
         assert len(alerts[1][1]) == 0  # Means is not an update
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.city == 41
         assert second_alert.region == 41203
-        assert second_alert.polygons == [handlers.POLYGONS[41]]
+        assert second_alert.polygons == [41]
 
     def test_updates_alerts_if_new_arrives_before_alert_time(self):
         date1 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
@@ -191,7 +191,7 @@ class TestAlertHandler:
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
         assert first_alert.city == 40
         assert first_alert.region == 41203
-        assert first_alert.polygons == [handlers.POLYGONS[40]]
+        assert first_alert.polygons == [40]
 
         second_alert = alerts[1][0]
         references = alerts[1][1]
@@ -201,7 +201,7 @@ class TestAlertHandler:
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.city == 41
         assert second_alert.region == 41203
-        assert second_alert.polygons == [handlers.POLYGONS[41]]
+        assert second_alert.polygons == [41]
 
 
 def clear_file():
@@ -231,7 +231,7 @@ class TestFeedWriter:
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
 
         base_path = os.path.dirname(__file__)
@@ -247,13 +247,13 @@ class TestFeedWriter:
             time=datetime.datetime(2023, 3, 24, 1, 0, 0),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 2),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
 
         assert not handlers.FeedWriter._check_last_alert(alert1, alert2)
@@ -263,13 +263,13 @@ class TestFeedWriter:
             time=datetime.datetime(2023, 3, 24, 1, 0, 0),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 2),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[41]],
+            polygons=[41],
         )
 
         assert handlers.FeedWriter._check_last_alert(alert1, alert2)
@@ -279,13 +279,13 @@ class TestFeedWriter:
             time=datetime.datetime(2023, 3, 24, 1, 0, 0),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
         alert2 = Alert(
             time=datetime.datetime(2023, 3, 24, 1, 0, 15),
             city=40,
             region=41203,
-            polygons=[handlers.POLYGONS[40]],
+            polygons=[40],
         )
 
         assert handlers.FeedWriter._check_last_alert(alert1, alert2)

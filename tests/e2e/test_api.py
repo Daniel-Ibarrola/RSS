@@ -30,6 +30,6 @@ def test_post_and_get_alerts():
         "city": 40,
         "region": 42201,
         "polygons": [40],
-        "event": False,
+        "is_event": False,
         "id": "TESTALERT",
     }

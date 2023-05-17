@@ -2,7 +2,7 @@ import datetime
 from xml.dom import minidom
 
 from rss.cap.alert import Alert
-from rss.cap.data import CITIES, get_region
+from rss.cap.data import CITIES, get_region, POLYGONS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -219,8 +219,8 @@ class RSSFeed:
         # First the references polygons if any
         if self._refs is not None:
             for ref in self._refs:
-                polygons.extend(ref.polygons)
-        polygons.extend(self._alert.polygons)
+                polygons.extend([POLYGONS[p] for p in ref.polygons])
+        polygons.extend([POLYGONS[p] for p in self._alert.polygons])
 
         for poly in polygons:
             text = ""

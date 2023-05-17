@@ -4,23 +4,15 @@ import pytest
 
 from rss.cap import rss
 from rss.cap.alert import Alert
-from rss.cap.data import GeoPoint, Polygon, POLYGONS
 
 
 @pytest.fixture
 def cap_xml():
-    polygon = Polygon([
-        GeoPoint(lat=16.12, lon=-94.36),
-        GeoPoint(lat=18.30, lon=-94.06),
-        GeoPoint(lat=16.97, lon=-91.50),
-        GeoPoint(lat=15.45, lon=-93.27),
-        GeoPoint(lat=16.12, lon=-94.36),
-    ])
     alert = Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
-        polygons=[polygon],
+        polygons=[40],
         is_event=False,
         id="TESTEVENT"
     )
@@ -80,7 +72,7 @@ def test_info_tag(cap_xml):
 
     area = info.area
     assert area.areaDesc.string == "Zona de emisión de alerta"
-    assert area.polygon.string == "16.12,-94.36 18.30,-94.06 16.97,-91.50 15.45,-93.27 16.12,-94.36"
+    assert area.polygon.string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
 
 
 def test_multiple_polygons():
@@ -88,7 +80,7 @@ def test_multiple_polygons():
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
-        polygons=[POLYGONS[40], POLYGONS[41], POLYGONS[42]],
+        polygons=[40, 41, 42],
         is_event=False,
         id="TEST_ALERT"
     )
@@ -119,7 +111,7 @@ def sample_alert():
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
-        polygons=[POLYGONS[42]],
+        polygons=[42],
         is_event=False,
         id="TEST_ALERT"
     )
@@ -133,7 +125,7 @@ def test_update_feed(sample_alert):
             region=42201,
             id="REF_ID_1",
             is_event=False,
-            polygons=[POLYGONS[40]]
+            polygons=[40]
         ),
         Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10),
@@ -141,7 +133,7 @@ def test_update_feed(sample_alert):
             region=42201,
             id="REF_ID_2",
             is_event=False,
-            polygons=[POLYGONS[41]]
+            polygons=[41]
         ),
     ]
 
@@ -169,7 +161,7 @@ def test_event_feed():
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
         region=42201,
-        polygons=[POLYGONS[40], POLYGONS[41], POLYGONS[42]],
+        polygons=[40, 41, 42],
         is_event=True,
         id="TEST_ALERT"
     )
