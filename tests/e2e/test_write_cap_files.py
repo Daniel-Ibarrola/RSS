@@ -60,7 +60,8 @@ def test_writes_cap_files_when_receiving_alerts():
     references = alert.references.string
     assert alert.info.event.string == "Alerta por sismo"
     assert alert.info.severity.string == "Severe"
-    # TODO: verify if multiple polygons should be in the update
+
+    # The update should contain the previous polygon as well as the new onw
     assert len(alert.find_all("polygon")) == 2
     assert identifier in references
 

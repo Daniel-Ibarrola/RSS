@@ -132,11 +132,11 @@ class TestAlertHandler:
             f"15,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
         alert_handler = handlers.AlertHandler(data)
-        alert_handler.new_alert_time = 0.5
+        alert_handler.new_alert_time = 0.75
         alert_handler.wait = 0
         alert_handler.run()
 
-        time.sleep(1)
+        time.sleep(1.5)
 
         date2 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
         data.put(f"84,3,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))

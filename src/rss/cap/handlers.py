@@ -30,7 +30,7 @@ class AlertHandler:
         self._updates = []  # type: list[Alert]
 
         self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
-        self.wait = 1
+        self.wait = 0.2
 
         if alerts is None:
             self.alerts = queue.Queue()  # type: queue.Queue[Alert]
@@ -55,7 +55,6 @@ class AlertHandler:
                 if alert is not None:
                     self.alerts.put((alert, copy.deepcopy(self.updates)))
                     self.updates.append(alert)
-            time.sleep(self.wait)
 
     def _get_alert(self, msg: bytes) -> Union[Alert, None]:
         """ Get an alert from a message."""
@@ -80,7 +79,7 @@ class AlertHandler:
 
     def _get_message(self) -> bytes:
         try:
-            return self.queue.get(timeout=0.1)
+            return self.queue.get(timeout=self.wait)
         except queue.Empty:
             pass
 
@@ -154,7 +153,7 @@ class FeedWriter:
         base_path = os.path.dirname(__file__)
         while not self._stop:
             try:
-                alert = self.alerts.get(timeout=1)
+                alert, references = self.alerts.get(timeout=1)
             except queue.Empty:
                 time.sleep(self.wait)
                 continue
@@ -167,7 +166,7 @@ class FeedWriter:
 
             if write_feed:
                 feed = create_feed(alert)
-                if alert.triggered:
+                if not alert.is_event:
                     filename = self.alert_filename
                 else:
                     filename = self.non_alert_filename

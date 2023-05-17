@@ -5,20 +5,29 @@ from rss.cap.alert import Alert
 from rss.cap.data import CITIES, get_region
 
 
+class UpdateWithNoReferencesError(ValueError):
+    pass
+
+
 class RSSFeed:
     """ Class to write rss files."""
 
     def __init__(
             self,
             alert: Alert,
-            alert_id: str,
-            type: str = "alert",
-            refs: list[tuple[str, datetime.datetime]] = None
+            is_update: bool = False,
+            is_test: bool = False,
+            refs: list[Alert] = None
     ):
+        if is_update and len(refs) == 0:
+            raise UpdateWithNoReferencesError(
+                "Cannot create and update feed without references"
+            )
+
         self._alert = alert
-        self._event_id = alert_id
+        self._is_update = is_update
+        self._is_test = is_test
         self._updated_date = datetime.datetime.now().isoformat()
-        self._type = type
         self._refs = refs
 
         self._root = minidom.Document()
@@ -35,14 +44,6 @@ class RSSFeed:
     @updated_date.setter
     def updated_date(self, date: str) -> None:
         self._updated_date = date
-
-    @property
-    def event_id(self) -> str:
-        return self._event_id
-
-    @event_id.setter
-    def event_id(self, event: str) -> None:
-        self._event_id = event
 
     def _add_text_tag(self, parent, tag_name, text):
         """ Add a tag that contains text"""
@@ -97,7 +98,7 @@ class RSSFeed:
     def _create_entry_tag(self, entry):
         """ Creates the 'entry' tag that stores the main body.
         """
-        self._add_text_tag(entry, "id", self._event_id)
+        self._add_text_tag(entry, "id", self._alert.id)
         self._add_text_tag(entry, "updated", self._updated_date)
 
         title = self._get_title()
@@ -122,17 +123,16 @@ class RSSFeed:
         alert.setAttribute("xmlns", "urn:oasis:names:tc:emergency:cap:1.1")
         content.appendChild(alert)
 
-        if self._type == "test":
+        status = "Actual"
+        if self._is_test:
             status = "Test"
-        else:
-            status = "Actual"
 
         sender = "sasmex.net"
         msg_type = "Alert"
-        if self._type == "update":
+        if self._is_update:
             msg_type = "Update"
         text_tags = [
-            ("identifier", self._event_id),
+            ("identifier", self._alert.id),
             ("sender", sender),
             ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("status", status),
@@ -142,7 +142,7 @@ class RSSFeed:
         for tag in text_tags:
             self._add_text_tag(alert, tag[0], tag[1])
 
-        if self._type == "update" and self._refs is not None:
+        if self._is_update:
             references = self._get_references(sender)
             self._add_text_tag(alert, "references", references)
 
@@ -151,12 +151,12 @@ class RSSFeed:
     def _get_references(self, sender: str) -> str:
         references = ""
         for ii in range(len(self._refs) - 1):
-            ref_id = self._refs[ii][0]
-            date = self._refs[ii][1].isoformat(timespec="seconds") + "-06:00"
+            ref_id = self._refs[ii].id
+            date = self._refs[ii].time.isoformat(timespec="seconds") + "-06:00"
             references += sender + "," + ref_id + "," + date + " "
 
-        ref_id = self._refs[-1][0]
-        date = self._refs[-1][1].isoformat(timespec="seconds") + "-06:00"
+        ref_id = self._refs[-1].id
+        date = self._refs[-1].time.isoformat(timespec="seconds") + "-06:00"
         references += sender + "," + ref_id + "," + date
 
         return references
@@ -168,7 +168,7 @@ class RSSFeed:
         event = "Alerta por sismo"
         severity = "Severe"
         headline = "Alerta Sísmica"
-        if self._type == "event":
+        if self._alert.is_event:
             event = "Sismo"
             severity = "Minor"
             headline = "Sismo"
@@ -215,14 +215,21 @@ class RSSFeed:
         return title
 
     def _polygon_tags(self, parent):
-        for polygon in self._alert.polygons:
+        polygons = []
+        # First the references polygons if any
+        if self._refs is not None:
+            for ref in self._refs:
+                polygons.extend(ref.polygons)
+        polygons.extend(self._alert.polygons)
+
+        for poly in polygons:
             text = ""
-            for ii in range(len(polygon.points) - 1):
-                point = polygon.points[ii]
+            for ii in range(len(poly.points) - 1):
+                point = poly.points[ii]
                 text += f"{point.lat:0.2f},{point.lon:0.2f} "
 
             # Last point should not have space at the end
-            point = polygon.points[-1]
+            point = poly.points[-1]
             text += f"{point.lat:0.2f},{point.lon:0.2f}"
             self._add_text_tag(parent, "polygon", text)
 
@@ -247,8 +254,10 @@ class RSSFeed:
 
 
 def create_feed(alert: Alert,
+                is_update: bool = False,
+                is_test: bool = False,
+                refs: list[tuple[str, datetime.datetime]] = None,
                 indentation: str = '\t',
-                type: str = "alert"
                 ) -> RSSFeed:
     """ Create and rss feed string.
 
@@ -257,14 +266,21 @@ def create_feed(alert: Alert,
         alert : Alert
             The information of the alert.
 
+        is_update : bool
+            Whether the alert is an update of a previous one. If so a list
+            of references is required.
+
+        is_test : bool
+            Whether the created feed is a test.
+
+        refs : list
+            A list of references of previous alerts.
+
         indentation : str, default='\t'
             The indentation to use in the feed file
 
-        type : {"event", "alert", "update", "test"}
-            If the feed is an event that didn't trigger an alert,
-            a new alert, an update of a previous one, or a test.
     """
-    rss_feed = RSSFeed(alert, type=type)
+    rss_feed = RSSFeed(alert, is_update, is_test, refs)
     rss_feed.build(indentation)
     return rss_feed
 
