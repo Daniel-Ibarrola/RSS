@@ -7,7 +7,7 @@ from rss.cap.alert import Alert
 
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
-def post_and_get_alerts():
+def test_post_and_get_alerts():
     date = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5)
     alert = Alert(
         time=date,
@@ -18,6 +18,7 @@ def post_and_get_alerts():
         id="TESTALERT"
     )
 
+    client = APIClient()
     res = client.post_alert(alert)
     assert res.status_code == 201
 

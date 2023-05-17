@@ -24,7 +24,7 @@ def wait_for_api():
 
 
 def wait_for_postgres():
-    engine = create_engine(CONFIG.POSTGRES_URI)
+    engine = create_engine(CONFIG.SQLALCHEMY_DATABASE_URI)
     deadline = time.time() + 10
     while time.time() < deadline:
         try:
