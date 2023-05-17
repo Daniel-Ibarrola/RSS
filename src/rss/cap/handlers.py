@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime
 import os
-import pickle
 import queue
 import random
 import string
@@ -11,7 +10,6 @@ from typing import Optional, Union
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.data import POLYGONS
 from rss.cap.rss import create_feed, write_feed_to_file
 from rss.utils.logger import get_module_logger
 
@@ -53,7 +51,7 @@ class AlertHandler:
             if msg is not None:
                 alert = self._get_alert(msg)
                 if alert is not None:
-                    self.alerts.put((alert, copy.deepcopy(self.updates)))
+                    self.alerts.put(alert)
                     self.updates.append(alert)
 
     def _get_alert(self, msg: bytes) -> Union[Alert, None]:
@@ -66,13 +64,17 @@ class AlertHandler:
 
             self._flush_updates()
             if self._check_city(city):
+                if len(self.updates) == 0:
+                    refs = None
+                else:
+                    refs = copy.deepcopy(self.updates)
                 alert = Alert(
                     time=date,
                     city=city,
                     region=region,
-                    polygons=[city],
                     id=self.alert_id(date),
                     is_event=is_event,
+                    refs=refs
                 )
                 logger.info(f"New alert: {self._alert_str(alert)}")
                 return alert
@@ -154,60 +156,25 @@ class FeedWriter:
     def _process_alerts(self):
         while not self._stop:
             try:
-                alert, references = self.alerts.get(timeout=0.1)
+                alert = self.alerts.get(timeout=0.1)
             except queue.Empty:
                 time.sleep(self.wait)
                 continue
 
-            if alert.is_event and len(references) > 0:
+            if alert.is_event and alert.refs is not None:
                 filename = self.event_update_filename
-                is_update = True
-            elif alert.is_event and len(references) == 0:
+            elif alert.is_event and alert.refs is None:
                 filename = self.event_filename
-                is_update = False
-                references = None
-            elif not alert.is_event and len(references) > 0:
+            elif not alert.is_event and alert.refs is not None:
                 filename = self.update_filename
-                is_update = True
             else:
                 filename = self.alert_filename
-                is_update = False
-                references = None
 
-            feed = create_feed(alert, is_update=is_update, refs=references)
+            feed = create_feed(alert, is_test=False)
 
             feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
             write_feed_to_file(feed_path, feed)
             logger.info(f"Cap file written to {feed_path}")
-
-    @staticmethod
-    def _check_last_alert(alert1: Alert, alert2: Union[Alert, None]):
-        # Check if the last alert written by the other program is the same
-        # to avoid writing two repeated files.
-        if alert2 is None:
-            return True
-
-        if abs((alert1.time - alert2.time).total_seconds()) > 5 \
-                or alert1.polygons != alert2.polygons:
-            return True
-
-        return False
-
-    @staticmethod
-    def _load_last_alert(base_path) -> Union[Alert, None]:
-        alert_file = os.path.join(base_path, "alert.pickle")
-        if not os.path.exists(alert_file):
-            return None
-
-        with open(alert_file, "rb") as fp:
-            alert = pickle.load(fp)
-        return alert
-
-    @staticmethod
-    def _save_alert(alert: Alert) -> None:
-        base_path = os.path.dirname(__file__)
-        with open(os.path.join(base_path, "alert.pickle"), "wb") as fp:
-            pickle.dump(alert, fp)
 
     def run(self) -> None:
         self._process_thread.start()

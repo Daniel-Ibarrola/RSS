@@ -9,6 +9,6 @@ class Alert:
     time: datetime.datetime
     city: int
     region: int
-    polygons: list[int]
     id: str = ""
     is_event: bool = False
+    refs: list["Alert"] = None

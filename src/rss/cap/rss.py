@@ -15,20 +15,17 @@ class RSSFeed:
     def __init__(
             self,
             alert: Alert,
-            is_update: bool = False,
             is_test: bool = False,
-            refs: list[Alert] = None
     ):
-        if is_update and refs is None:
-            raise UpdateWithNoReferencesError(
-                "Cannot create and update feed without references"
-            )
-
         self._alert = alert
-        self._is_update = is_update
+
+        self._is_update = False
+        if self._alert.refs is not None:
+            self._is_update = True
+
         self._is_test = is_test
         self._updated_date = datetime.datetime.now().isoformat()
-        self._refs = refs
+        self._refs = self._alert.refs
 
         self._root = minidom.Document()
         self._content = ""
@@ -218,9 +215,8 @@ class RSSFeed:
         polygons = []
         # First the references polygons if any
         if self._refs is not None:
-            for ref in self._refs:
-                polygons.extend([POLYGONS[p] for p in ref.polygons])
-        polygons.extend([POLYGONS[p] for p in self._alert.polygons])
+            polygons.extend([POLYGONS[ref.city] for ref in self._refs])
+        polygons.append(POLYGONS[self._alert.city])
 
         for poly in polygons:
             text = ""
@@ -254,9 +250,7 @@ class RSSFeed:
 
 
 def create_feed(alert: Alert,
-                is_update: bool = False,
                 is_test: bool = False,
-                refs: list[tuple[str, datetime.datetime]] = None,
                 indentation: str = '\t',
                 ) -> RSSFeed:
     """ Create and rss feed string.
@@ -266,21 +260,14 @@ def create_feed(alert: Alert,
         alert : Alert
             The information of the alert.
 
-        is_update : bool
-            Whether the alert is an update of a previous one. If so a list
-            of references is required.
-
         is_test : bool
             Whether the created feed is a test.
-
-        refs : list
-            A list of references of previous alerts.
 
         indentation : str, default='\t'
             The indentation to use in the feed file
 
     """
-    rss_feed = RSSFeed(alert, is_update, is_test, refs)
+    rss_feed = RSSFeed(alert, is_test)
     rss_feed.build(indentation)
     return rss_feed
 

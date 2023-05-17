@@ -1,10 +1,6 @@
 import datetime
-import os
-import pickle
 import queue
 import time
-
-import pytest
 
 from rss.cap import handlers
 from rss.cap.alert import Alert
@@ -25,7 +21,7 @@ class TestAlertHandler:
         time_diff = (alert1.time - alert2.time).total_seconds()
 
         return (time_diff < 1
-                and alert1.polygons == alert2.polygons
+                and alert1.refs == alert2.refs
                 and alert1.city == alert2.city
                 and alert1.region == alert2.region
                 and alert1.is_event == alert2.is_event
@@ -58,7 +54,6 @@ class TestAlertHandler:
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
-            polygons=[40],
         )
         alert_handler.updates.append(alert)
         assert alert_handler._check_city(42)
@@ -69,7 +64,6 @@ class TestAlertHandler:
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
-            polygons=[40],
         )
         alert_handler.updates.append(alert)
         assert not alert_handler._check_city(40)
@@ -83,13 +77,11 @@ class TestAlertHandler:
             time=date1,
             city=40,
             region=41203,
-            polygons=[40],
         )
         alert2 = Alert(
             time=date1,
             city=44,
             region=41203,
-            polygons=[40],
         )
         alert_handler.updates.append(alert1)
         alert_handler.updates.append(alert2)
@@ -119,7 +111,6 @@ class TestAlertHandler:
             time=date1,
             city=40,
             region=41203,
-            polygons=[40],
         ))
         assert alert2 is None
 
@@ -150,19 +141,17 @@ class TestAlertHandler:
         assert alert_handler.updates[0].city == 41
         assert len(alerts) == 2
 
-        first_alert = alerts[0][0]
-        assert len(alerts[0][1]) == 0  # Means is not an update
+        first_alert = alerts[0]
+        assert first_alert.refs is None  # Means is not an update
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
         assert first_alert.city == 40
         assert first_alert.region == 41203
-        assert first_alert.polygons == [40]
 
-        second_alert = alerts[1][0]
-        assert len(alerts[1][1]) == 0  # Means is not an update
+        second_alert = alerts[1]
+        assert second_alert.refs is None  # Means is not an update
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.city == 41
         assert second_alert.region == 41203
-        assert second_alert.polygons == [41]
 
     def test_updates_alerts_if_new_arrives_before_alert_time(self):
         date1 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
@@ -185,107 +174,18 @@ class TestAlertHandler:
         alerts = self.queue_to_list(alert_handler.alerts)
         assert len(alerts) == 2
 
-        first_alert = alerts[0][0]
+        first_alert = alerts[0]
         alert_id = first_alert.id
-        assert len(alerts[0][1]) == 0  # Means is not an update
+        assert first_alert.refs is None  # Means is not an update
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
         assert first_alert.city == 40
         assert first_alert.region == 41203
-        assert first_alert.polygons == [40]
 
-        second_alert = alerts[1][0]
-        references = alerts[1][1]
+        second_alert = alerts[1]
+        references = alerts[1].refs
         assert len(references) == 1  # Means is an update
         assert references[0].id == alert_id
 
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.city == 41
         assert second_alert.region == 41203
-        assert second_alert.polygons == [41]
-
-
-def clear_file():
-    base_path = os.path.dirname(__file__)
-    alert_path = os.path.join(base_path, "alert.pickle")
-    if os.path.exists(alert_path):
-        os.remove(alert_path)
-
-
-@pytest.fixture
-def clear_alert_file():
-    clear_file()
-    yield
-    clear_file()
-
-
-class TestFeedWriter:
-
-    @pytest.mark.usefixtures("clear_alert_file")
-    def test_load_last_alert_file_does_not_exist(self):
-        base_path = os.path.dirname(__file__)
-        assert handlers.FeedWriter._load_last_alert(base_path) is None
-
-    @pytest.mark.usefixtures("clear_alert_file")
-    def test_load_last_alert(self):
-        alert = Alert(
-            time=datetime.datetime(2023, 3, 24),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-
-        base_path = os.path.dirname(__file__)
-        alert_path = os.path.join(base_path, "alert.pickle")
-        with open(alert_path, "wb") as fp:
-            pickle.dump(alert, fp)
-
-        alert_loaded = handlers.FeedWriter._load_last_alert(base_path)
-        assert alert == alert_loaded
-
-    def test_check_last_alert_alerts_within_time_range(self):
-        alert1 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-        alert2 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 2),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-
-        assert not handlers.FeedWriter._check_last_alert(alert1, alert2)
-
-    def test_check_last_alert_different_polygons(self):
-        alert1 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-        alert2 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 2),
-            city=40,
-            region=41203,
-            polygons=[41],
-        )
-
-        assert handlers.FeedWriter._check_last_alert(alert1, alert2)
-
-    def test_check_last_alert_alerts_out_of_time_range(self):
-        alert1 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 0),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-        alert2 = Alert(
-            time=datetime.datetime(2023, 3, 24, 1, 0, 15),
-            city=40,
-            region=41203,
-            polygons=[40],
-        )
-
-        assert handlers.FeedWriter._check_last_alert(alert1, alert2)
