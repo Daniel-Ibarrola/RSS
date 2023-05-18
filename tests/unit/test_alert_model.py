@@ -14,6 +14,9 @@ def test_get_alert_references():
         is_event=False,
         identifier=id_1
     )
+    db.session.add(alert_1)
+    db.session.commit()
+
     id_2 = "ALERT_2"
     alert_2 = Alert(
         time=datetime(2023, 5, 18),
@@ -22,22 +25,23 @@ def test_get_alert_references():
         is_event=False,
         identifier=id_2
     )
-    db.session.add(alert_1)
+    alert_2.references.append(alert_1)
     db.session.add(alert_2)
     db.session.commit()
 
+    references = Alert.get_references([id_1, id_2])
     alert_3 = Alert(
         time=datetime(2023, 5, 18),
         city=42,
         region=12211,
         is_event=False,
-        identifier="ALERT_3"
+        identifier="ALERT_3",
+        references=references
     )
-    alert_3.add_references([id_1, id_2])
     db.session.add(alert_3)
     db.session.commit()
 
-    refs = alert_3.references.all()
+    refs = alert_3.references
     assert len(refs) == 2
     assert refs[0].identifier == id_1
     assert refs[1].identifier == id_2

@@ -1,12 +1,6 @@
 from rss.api import db
 
 
-class Reference(db.Model):
-    __tablename__ = "references"
-    alert_id = db.Column(db.Integer, db.ForeignKey("alerts.id"), primary_key=True)
-    reference_id = db.Column(db.Integer, db.ForeignKey("alerts.id"), primary_key=True)
-
-
 class Alert(db.Model):
     __tablename__ = "alerts"
     id = db.Column(db.Integer, primary_key=True)
@@ -16,28 +10,18 @@ class Alert(db.Model):
     is_event = db.Column(db.Boolean, nullable=False)
     identifier = db.Column(db.String(50), nullable=False)
 
-    # Alerts this alert references
-    referencing = db.relationship(
-        "Reference",
-        foreign_keys=[Reference.alert_id],
-        backref=db.backref("referenced_by", lazy="joined"),
-        lazy="dynamic",
-        cascade="all, delete-orphan"
-    )
-    # Alerts referencing this alert
-    referenced_by = db.relationship(
-        "Reference",
-        foreign_keys=[Reference.reference_id],
-        backref=db.backref("referencing", lazy="joined"),
-        lazy="dynamic",
-        cascade="all, delete-orphan"
-    )
+    parent_id = db.Column(db.Integer, db.ForeignKey("alerts.id"))
+    references = db.relationship("Alert")
 
-    def add_references(self, references: list[str]) -> None:
-        for identifier in references:
+    @staticmethod
+    def get_references(identifiers: list[str]) -> list["Alert"]:
+        alert_refs = []
+        for id_ in identifiers:
             alert = db.session.execute(
-                db.select(Alert).filter_by(identifier=identifier)).first()
-            if alert is None:
-                continue
-            ref = Reference(referencing=alert, referenced_by=self)
-            db.session.add(ref)
+                db.select(Alert).filter_by(identifier=id_)).scalar_one()
+            alert_refs.append(alert)
+        return alert_refs
+
+    def __repr__(self) -> str:
+        return f"Alert(id={self.id}, time={self.time}, " \
+               f"city={self.city}, identifier={self.identifier})"
