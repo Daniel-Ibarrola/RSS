@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 from rss import CONFIG
 from rss.cap.alert import Alert
@@ -24,6 +26,22 @@ class APIClient:
         })
         return res
 
+    def post_alerts(self, alerts: list[Alert]) -> None:
+        for al in alerts:
+            res = self.post_alert(al)
+            assert res.ok
+
     def get_alert_by_id(self, identifier: str) -> requests.Response:
         res = requests.get(f"{self.base_url}/alerts/{identifier}")
+        return res
+
+    def get_alerts_by_date(self, date: datetime.date):
+        res = requests.get(f"{self.base_url}/alerts/dates/{date.isoformat()}")
+        return res
+
+    def get_alerts(self, page: int = None):
+        url = f"{self.base_url}/alerts/"
+        if page is not None:
+            url += f"?page={page}"
+        res = requests.get(f"{self.base_url}/alerts/")
         return res

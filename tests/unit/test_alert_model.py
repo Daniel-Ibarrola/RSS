@@ -91,3 +91,63 @@ def test_to_json():
         ],
     }
 
+
+def add_alerts_to_db():
+    alert1 = Alert(
+        time=datetime(2023, 5, 17, 13, 20, 5),
+        city=40,
+        region=12202,
+        identifier="ALERT1",
+        is_event=False,
+    )
+    alert2 = Alert(
+        time=datetime(2023, 5, 17, 13, 20, 15),
+        city=41,
+        region=12202,
+        identifier="ALERT2",
+        is_event=False,
+    )
+    alert3 = Alert(
+        time=datetime(2023, 5, 18, 10, 15, 0),
+        city=42,
+        region=12202,
+        identifier="ALERT3",
+        is_event=True,
+    )
+    alert4 = Alert(
+        time=datetime(2023, 5, 19, 10, 15, 0),
+        city=43,
+        region=12202,
+        identifier="ALERT4",
+        is_event=False,
+    )
+    alerts = [alert1, alert2, alert3, alert4]
+    for alert in alerts:
+        db.session.add(alert)
+    db.session.commit()
+    return alerts
+
+
+@pytest.mark.usefixtures("sqlite_session")
+def test_get_by_date():
+    alert1, alert2, _, _ = add_alerts_to_db()
+    alerts = Alert.get_by_date("2023-05-17")
+    assert alerts == [alert1, alert2]
+
+
+@pytest.mark.usefixtures("sqlite_session")
+def test_get_pagination():
+    Alert.PER_PAGE = 2
+    alert1, alert2, alert3, alert4 = add_alerts_to_db()
+
+    alerts, prev, next_page, total = Alert.get_pagination(1)
+    assert alerts == [alert1, alert2]
+    assert prev is None
+    assert next_page == 2
+    assert total == 2
+
+    alerts, prev, next_page, total = Alert.get_pagination(next_page)
+    assert alerts == [alert3, alert4]
+    assert prev == 1
+    assert next_page is None
+    assert total == 2

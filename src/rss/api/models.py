@@ -1,4 +1,6 @@
+import datetime
 from typing import Any
+from sqlalchemy import func
 from rss.api import db
 
 
@@ -22,6 +24,19 @@ class Alert(db.Model):
                 db.select(Alert).filter_by(identifier=id_)).scalar_one()
             alert_refs.append(alert)
         return alert_refs
+
+    @staticmethod
+    def get_by_date(date: str):
+        """ Get all alerts that match a specific date.
+            Time is not considered.
+        """
+        date = datetime.date.fromisoformat(date)
+        alerts = db.session.execute(
+            db.select(Alert).filter(
+                func.date(Alert.time) == date
+            )
+        ).scalars().all()
+        return alerts
 
     def to_json(self) -> dict[str, Any]:
         return {

@@ -66,3 +66,27 @@ def get_alert(identifier):
     if alert is None:
         abort(404)
     return jsonify(alert.to_json())
+
+
+@app.route(f"{api_route}/alerts/dates/<date>")
+def get_alerts_by_date(date):
+    alerts = Alert.get_by_date(date)
+    if len(alerts) == 0:
+        abort(404)
+    return jsonify({
+        "alerts": [al.to_json() for al in alerts]
+    })
+
+
+@app.route(f"{api_route}/alerts/")
+def get_alerts():
+    page = request.args.get("page", 1, type=int)
+    alerts, prev, next_page, total = Alert.get_pagination(page)
+    if len(alerts) == 0:
+        abort(404)
+    return jsonify({
+        "alerts": [al.to_json() for al in alerts],
+        "prev": prev,
+        "next": next_page,
+        "count": total,
+    })
