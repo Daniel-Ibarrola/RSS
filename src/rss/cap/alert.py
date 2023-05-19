@@ -1,8 +1,6 @@
 import dataclasses
 import datetime
 
-from rss.cap.data import Polygon
-
 
 @dataclasses.dataclass(frozen=True)
 class Alert:

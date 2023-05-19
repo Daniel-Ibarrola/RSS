@@ -16,6 +16,8 @@ class Alert(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey("alerts.id"))
     references = db.relationship("Alert")
 
+    PER_PAGE = 20
+
     @staticmethod
     def get_references(identifiers: list[str]) -> list["Alert"]:
         alert_refs = []
@@ -37,6 +39,17 @@ class Alert(db.Model):
             )
         ).scalars().all()
         return alerts
+
+    @staticmethod
+    def get_pagination(page: int = 1):
+        select = db.select(Alert).order_by(Alert.time)
+        pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
+        return (
+            pagination.items,
+            pagination.prev_num,
+            pagination.next_num,
+            pagination.total
+        )
 
     def to_json(self) -> dict[str, Any]:
         return {

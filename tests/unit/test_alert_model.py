@@ -144,10 +144,10 @@ def test_get_pagination():
     assert alerts == [alert1, alert2]
     assert prev is None
     assert next_page == 2
-    assert total == 2
+    assert total == 4
 
     alerts, prev, next_page, total = Alert.get_pagination(next_page)
     assert alerts == [alert3, alert4]
     assert prev == 1
     assert next_page is None
-    assert total == 2
+    assert total == 4

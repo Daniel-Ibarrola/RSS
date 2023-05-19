@@ -82,7 +82,7 @@ def test_get_alerts_by_date():
     search_date = datetime.date(year=2023, month=3, day=13)
     res = client.get_alerts_by_date(search_date)
     assert res.ok
-    assert res.json == {
+    assert res.json() == {
         "alerts": [
             {
                 "time": date1.isoformat(timespec="seconds"),
@@ -110,7 +110,7 @@ def test_get_multiple_alerts():
     date1, date2, date3 = post_alerts(client)
     res = client.get_alerts()
     assert res.ok
-    assert res.json == {
+    assert res.json() == {
         "alerts": [
             {
                 "time": date1.isoformat(timespec="seconds"),
