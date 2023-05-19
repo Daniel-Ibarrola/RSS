@@ -15,7 +15,7 @@ def test_post_and_get_alerts():
         city=40,
         region=42201,
         is_event=False,
-        id="TESTALERT"
+        id="TESTALERT",
     )
     update = Alert(
         time=date2,
@@ -37,13 +37,15 @@ def test_post_and_get_alerts():
     res = client.get_alert_by_id("TESTALERT")
     assert res.ok
 
-    assert res.json() == {
+    alert_json = {
         "time": date1.isoformat(timespec="seconds"),
         "city": 40,
         "region": 42201,
         "is_event": False,
         "id": "TESTALERT",
+        "references": [],
     }
+    assert res.json() == alert_json
 
     res = client.get_alert_by_id("TESTUPDATE")
     assert res.ok
@@ -53,7 +55,7 @@ def test_post_and_get_alerts():
         "city": 41,
         "region": 42201,
         "is_event": False,
-        "id": "TESTEVENT",
-        "refs": ["TESTALERT"],
+        "id": "TESTUPDATE",
+        "references": [alert_json],
     }
 

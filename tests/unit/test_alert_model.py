@@ -47,3 +47,47 @@ def test_get_alert_references():
     assert refs[1].identifier == id_2
 
 
+@pytest.mark.usefixtures("sqlite_session")
+def test_to_json():
+    date1 = datetime(2023, 5, 17)
+    alert1 = Alert(
+        time=date1,
+        city=40,
+        region=12205,
+        is_event=False,
+        identifier="ALERT1"
+    )
+    db.session.add(alert1)
+    db.session.commit()
+
+    date2 = datetime(2023, 5, 18)
+    alert2 = Alert(
+        time=date2,
+        city=41,
+        region=12203,
+        is_event=False,
+        identifier="ALERT2",
+        references=[alert1]
+    )
+    db.session.add(alert2)
+    db.session.commit()
+
+    json = alert2.to_json()
+    assert json == {
+        "time": date2.isoformat(timespec="seconds"),
+        "city": 41,
+        "region": 12203,
+        "is_event": False,
+        "id": "ALERT2",
+        "references": [
+            {
+                "time": date1.isoformat(timespec="seconds"),
+                "city": 40,
+                "region": 12205,
+                "is_event": False,
+                "id": "ALERT1",
+                "references": []
+            },
+        ],
+    }
+

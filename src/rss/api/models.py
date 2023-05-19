@@ -1,3 +1,4 @@
+from typing import Any
 from rss.api import db
 
 
@@ -21,6 +22,16 @@ class Alert(db.Model):
                 db.select(Alert).filter_by(identifier=id_)).scalar_one()
             alert_refs.append(alert)
         return alert_refs
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "time": self.time.isoformat(timespec="seconds"),
+            "city": self.city,
+            "region": self.region,
+            "is_event": self.is_event,
+            "id": self.identifier,
+            "references": [ref.to_json() for ref in self.references],
+        }
 
     def __repr__(self) -> str:
         return f"Alert(id={self.id}, time={self.time}, " \

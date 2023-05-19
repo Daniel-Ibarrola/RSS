@@ -24,3 +24,6 @@ class APIClient:
         })
         return res
 
+    def get_alert_by_id(self, identifier: str) -> requests.Response:
+        res = requests.get(f"{self.base_url}/alerts/{identifier}")
+        return res
