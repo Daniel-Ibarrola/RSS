@@ -1,7 +1,10 @@
 import datetime
 from typing import Any
 from sqlalchemy import func
+
 from rss.api import db
+from rss.cap.alert import Alert as CapAlert
+from rss.cap.rss import create_feed
 
 
 class Alert(db.Model):
@@ -49,6 +52,24 @@ class Alert(db.Model):
             pagination.prev_num,
             pagination.next_num,
             pagination.total
+        )
+
+    def to_cap_file(self) -> str:
+        cap_alert = self.to_cap_alert()
+        feed = create_feed(cap_alert)
+        return feed.content
+
+    def to_cap_alert(self) -> CapAlert:
+        refs = [ref.to_cap_alert() for ref in self.references]
+        if len(refs) == 0:
+            refs = None
+        return CapAlert(
+            time=self.time,
+            city=self.city,
+            region=self.region,
+            id=self.identifier,
+            is_event=self.is_event,
+            refs=refs
         )
 
     def to_json(self) -> dict[str, Any]:

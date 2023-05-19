@@ -3,6 +3,7 @@ import pytest
 
 from rss.api.client import APIClient
 from rss.cap.alert import Alert
+from bs4 import BeautifulSoup
 
 
 @pytest.mark.usefixtures("postgres_session")
@@ -60,7 +61,7 @@ def test_post_and_get_alerts():
     }
 
 
-def post_alerts(client: APIClient):
+def post_alerts(client: APIClient) -> list[datetime.datetime]:
     date1 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5)
     date2 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10)
     date3 = datetime.datetime(year=2023, month=3, day=14, hour=16, minute=7, second=10)
@@ -70,7 +71,7 @@ def post_alerts(client: APIClient):
 
     client.post_alerts([alert1, alert2, alert3])
 
-    return date1, date2, date3
+    return [date1, date2, date3]
 
 
 @pytest.mark.usefixtures("postgres_session")
@@ -141,3 +142,20 @@ def test_get_multiple_alerts():
         "next": None,
         "count": 3
     }
+
+
+@pytest.mark.usefixtures("postgres_session")
+@pytest.mark.usefixtures("wait_for_api")
+def test_get_cap_file():
+    client = APIClient()
+    dates = post_alerts(client)
+
+    res = client.get_cap_file(identifier="ALERT2")
+    assert res.ok
+
+    contents = BeautifulSoup(res.json()["contents"], "xml")
+    assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
+
+    alert = contents.feed.entry.content.alert
+    assert alert.identifier.string == "ALERT2"
+    assert alert.sent.string == dates[1].isoformat(timespec="seconds") + "-06:00"

@@ -35,13 +35,17 @@ class APIClient:
         res = requests.get(f"{self.base_url}/alerts/{identifier}")
         return res
 
-    def get_alerts_by_date(self, date: datetime.date):
+    def get_alerts_by_date(self, date: datetime.date) -> requests.Response:
         res = requests.get(f"{self.base_url}/alerts/dates/{date.isoformat()}")
         return res
 
-    def get_alerts(self, page: int = None):
+    def get_alerts(self, page: int = None) -> requests.Response:
         url = f"{self.base_url}/alerts/"
         if page is not None:
             url += f"?page={page}"
         res = requests.get(f"{self.base_url}/alerts/")
+        return res
+
+    def get_cap_file(self, identifier: str) -> requests.Response:
+        res = requests.get(f"{self.base_url}/cap/{identifier}")
         return res

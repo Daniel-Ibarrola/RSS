@@ -1,7 +1,9 @@
 from datetime import datetime
 import pytest
+
 from rss.api import db
 from rss.api.models import Alert
+from rss.cap.alert import Alert as CapAlert
 
 
 @pytest.mark.usefixtures("sqlite_session")
@@ -47,8 +49,7 @@ def test_get_alert_references():
     assert refs[1].identifier == id_2
 
 
-@pytest.mark.usefixtures("sqlite_session")
-def test_to_json():
+def add_alert_with_references() -> tuple[Alert, Alert]:
     date1 = datetime(2023, 5, 17)
     alert1 = Alert(
         time=date1,
@@ -72,16 +73,22 @@ def test_to_json():
     db.session.add(alert2)
     db.session.commit()
 
+    return alert1, alert2
+
+
+@pytest.mark.usefixtures("sqlite_session")
+def test_to_json():
+    alert1, alert2 = add_alert_with_references()
     json = alert2.to_json()
     assert json == {
-        "time": date2.isoformat(timespec="seconds"),
+        "time": alert2.time.isoformat(timespec="seconds"),
         "city": 41,
         "region": 12203,
         "is_event": False,
         "id": "ALERT2",
         "references": [
             {
-                "time": date1.isoformat(timespec="seconds"),
+                "time": alert1.time.isoformat(timespec="seconds"),
                 "city": 40,
                 "region": 12205,
                 "is_event": False,
@@ -90,6 +97,31 @@ def test_to_json():
             },
         ],
     }
+
+
+@pytest.mark.usefixtures("sqlite_session")
+def test_to_cap_alert():
+    alert1, alert2 = add_alert_with_references()
+    cap_alert = alert2.to_cap_alert()
+
+    expected = CapAlert(
+        time=alert2.time,
+        city=41,
+        region=12203,
+        id="ALERT2",
+        is_event=False,
+        refs=[
+            CapAlert(
+                time=alert1.time,
+                city=40,
+                region=12205,
+                id="ALERT1",
+                is_event=False,
+            )
+        ],
+    )
+
+    assert cap_alert == expected
 
 
 def add_alerts_to_db():
