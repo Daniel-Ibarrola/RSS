@@ -2,15 +2,15 @@ import datetime
 import queue
 import time
 
-from rss.cap import handlers
+from rss.cap import services
 from rss.cap.alert import Alert
 
 
-class TestAlertHandler:
+class TestMessageProcessor:
 
     def test_parse_message(self):
         msg = "84,3,40,41203,2023/03/22,14:04:33,46237.1234567890"
-        city, region, date = handlers.AlertHandler._parse_message(msg)
+        city, region, date = services.MessageProcessor._parse_message(msg)
         assert city == 40
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
@@ -43,34 +43,34 @@ class TestAlertHandler:
 
     def test_only_process_messages_with_correct_code(self):
         msg = b"15,3,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        alert_handler = handlers.AlertHandler(queue.Queue())
-        alert = alert_handler._get_alert(msg)
+        message_processor = services.MessageProcessor(queue.Queue())
+        alert = message_processor._get_alert(msg)
 
         assert alert is None
 
     def test_check_city_not_in_queue(self):
-        alert_handler = handlers.AlertHandler(queue.Queue())
+        message_processor = services.MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
         )
-        alert_handler.updates.append(alert)
-        assert alert_handler._check_city(42)
+        message_processor.updates.append(alert)
+        assert message_processor._check_city(42)
 
     def test_check_city_in_queue(self):
-        alert_handler = handlers.AlertHandler(queue.Queue())
+        message_processor = services.MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
             city=40,
             region=41203,
         )
-        alert_handler.updates.append(alert)
-        assert not alert_handler._check_city(40)
+        message_processor.updates.append(alert)
+        assert not message_processor._check_city(40)
 
     def test_flush_updates_queue(self):
-        alert_handler = handlers.AlertHandler(queue.Queue())
-        alert_handler.new_alert_time = 60
+        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor.new_alert_time = 60
 
         date1 = datetime.datetime.now() - datetime.timedelta(seconds=70)
         alert1 = Alert(
@@ -83,10 +83,10 @@ class TestAlertHandler:
             city=44,
             region=41203,
         )
-        alert_handler.updates.append(alert1)
-        alert_handler.updates.append(alert2)
-        alert_handler._flush_updates()
-        assert len(alert_handler.updates) == 0
+        message_processor.updates.append(alert1)
+        message_processor.updates.append(alert2)
+        message_processor._flush_updates()
+        assert len(message_processor.updates) == 0
 
     def test_msgs_of_same_city_are_ignored_if_arrive_before_time(self):
         date1 = datetime.datetime.now() - datetime.timedelta(seconds=30)
@@ -98,13 +98,13 @@ class TestAlertHandler:
         msg1 = f"84,3,40,41203,{date1_str},46237.1234567890\r\n"
         msg2 = f"84,3,40,41203,{date2_str},46237.1234567890\r\n"
 
-        alert_handler = handlers.AlertHandler(queue.Queue())
-        alert_handler.new_alert_time = 60
+        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor.new_alert_time = 60
 
-        alert1 = alert_handler._get_alert(msg1.encode("utf-8"))
-        alert_handler.updates.append(alert1)
+        alert1 = message_processor._get_alert(msg1.encode("utf-8"))
+        message_processor.updates.append(alert1)
 
-        alert2 = alert_handler._get_alert(msg2.encode("utf-8"))
+        alert2 = message_processor._get_alert(msg2.encode("utf-8"))
         # Alerts of the same city arriving before new alert time are
         # considered equal
         assert self.compare_alerts(alert1, Alert(
@@ -122,10 +122,10 @@ class TestAlertHandler:
             # Garbage data should be ignored
             f"15,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
-        alert_handler = handlers.AlertHandler(data)
-        alert_handler.new_alert_time = 0.75
-        alert_handler.wait = 0
-        alert_handler.run()
+        message_processor = services.MessageProcessor(data)
+        message_processor.new_alert_time = 0.75
+        message_processor.wait = 0
+        message_processor.run()
 
         time.sleep(1.5)
 
@@ -133,12 +133,12 @@ class TestAlertHandler:
         data.put(f"84,3,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
         time.sleep(1)
 
-        alert_handler.shutdown()
+        message_processor.shutdown()
 
-        alerts = self.queue_to_list(alert_handler.alerts)
+        alerts = self.queue_to_list(message_processor.alerts)
         # The last alert should be stored as an update
-        assert len(alert_handler.updates) == 1
-        assert alert_handler.updates[0].city == 41
+        assert len(message_processor.updates) == 1
+        assert message_processor.updates[0].city == 41
         assert len(alerts) == 2
 
         first_alert = alerts[0]
@@ -158,10 +158,10 @@ class TestAlertHandler:
         data = self.put_in_queue([
             f"84,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
-        alert_handler = handlers.AlertHandler(data)
-        alert_handler.new_alert_time = 5
-        alert_handler._wait = 0
-        alert_handler.run()
+        message_processor = services.MessageProcessor(data)
+        message_processor.new_alert_time = 5
+        message_processor._wait = 0
+        message_processor.run()
 
         time.sleep(1)
 
@@ -169,9 +169,9 @@ class TestAlertHandler:
         data.put(f"84,3,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
         time.sleep(2)
 
-        alert_handler.shutdown()
+        message_processor.shutdown()
 
-        alerts = self.queue_to_list(alert_handler.alerts)
+        alerts = self.queue_to_list(message_processor.alerts)
         assert len(alerts) == 2
 
         first_alert = alerts[0]

@@ -4,7 +4,7 @@ import sys
 
 from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file
-from rss.cap.handlers import AlertHandler
+from rss.cap.services import MessageProcessor
 
 
 if __name__ == "__main__":
@@ -24,7 +24,7 @@ if __name__ == "__main__":
                         city=42,
                         region=41208,
                         is_event=is_event,
-                        id=AlertHandler.alert_id(date)
+                        id=MessageProcessor.alert_id(date)
                     )]
         elif feed_type == "alert":
             is_test = False
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         city=40,
         region=41208,
         is_event=is_event,
-        id=AlertHandler.alert_id(date)
+        id=MessageProcessor.alert_id(date)
     )
     feed = create_feed(alert, is_test=is_test)
 

@@ -3,7 +3,7 @@ import threading
 
 from rss import CONFIG
 from rss.cap.client import TCPClient
-from rss.cap.handlers import AlertHandler, FeedWriter
+from rss.cap.services import MessageProcessor, FeedWriter
 from rss.utils.logger import get_module_logger
 from rss.utils.watch_dog import WatchDog
 
@@ -11,7 +11,7 @@ logger = get_module_logger(__name__)
 
 
 def get_threads_dict(client: TCPClient,
-                     alert_handler: AlertHandler,
+                     alert_handler: MessageProcessor,
                      writer: FeedWriter) -> dict[str, threading.Thread]:
     return {
         "client_send": client.send_thread,
@@ -22,7 +22,7 @@ def get_threads_dict(client: TCPClient,
     }
 
 
-def get_services() -> tuple[WatchDog, TCPClient, AlertHandler, FeedWriter]:
+def get_services() -> tuple[WatchDog, TCPClient, MessageProcessor, FeedWriter]:
     ip, port = CONFIG.IP, CONFIG.PORT
 
     data_queue = queue.Queue()
@@ -30,7 +30,7 @@ def get_services() -> tuple[WatchDog, TCPClient, AlertHandler, FeedWriter]:
     client = TCPClient(ip, port, data_queue)
     logger.info("Starting client")
 
-    alert_handler = AlertHandler(data_queue)
+    alert_handler = MessageProcessor(data_queue)
     feed_writer = FeedWriter(alert_handler.alerts)
 
     threads = get_threads_dict(client, alert_handler, feed_writer)
@@ -44,7 +44,7 @@ def get_services() -> tuple[WatchDog, TCPClient, AlertHandler, FeedWriter]:
 def main(
     watch_dog: WatchDog,
     client: TCPClient,
-    alert_handler: AlertHandler,
+    alert_handler: MessageProcessor,
     feed_writer: FeedWriter,
 ) -> None:
 

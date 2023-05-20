@@ -1,3 +1,4 @@
+import abc
 import copy
 from datetime import datetime
 import os
@@ -16,35 +17,61 @@ from rss.utils.logger import get_module_logger
 logger = get_module_logger(__name__)
 
 
-class AlertHandler:
+class AbstractService(abc.ABC):
+    """ Abstract base class for all services.
 
-    def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
-        self.queue = data_queue  # type: queue.Queue[bytes]
-
+        To add a new service implement the _handle_event method
+    """
+    def __init__(self):
+        # Main thread of this service
         self._process_thread = threading.Thread(
-            target=self._process_messages, daemon=True
+            target=self._handle_event,
+            daemon=True
         )
         self._stop = False
-        self._updates = []  # type: list[Alert]
-
-        self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
-        self.wait = 0.1
-
-        if alerts is None:
-            self.alerts = queue.Queue()  # type: queue.Queue[Alert]
-        else:
-            self.alerts = alerts
 
     @property
     def process_thread(self) -> threading.Thread:
         return self._process_thread
 
+    @abc.abstractmethod
+    def _handle_event(self):
+        raise NotImplementedError
+
+    def run(self) -> None:
+        self._process_thread.start()
+
+    def join(self) -> None:
+        self._process_thread.join()
+
+    def shutdown(self) -> None:
+        self._stop = True
+        self.join()
+
+
+class MessageProcessor(AbstractService):
+    """ Receives alert messages and if they are valid, converts them to an
+        Alert object that can be used to create cap feeds.
+    """
+
+    def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
+        super().__init__()
+        self.queue = data_queue  # type: queue.Queue[bytes]
+        self._updates = []  # type: list[Alert]
+
+        self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
+        self.wait = 0.1
+
+        self.alerts = alerts
+        if alerts is None:
+            self.alerts = queue.Queue()  # type: queue.Queue[Alert]
+
     @property
     def updates(self) -> list[Alert]:
         return self._updates
 
-    def _process_messages(self) -> None:
-        """ Process messages and create or update alerts.
+    def _handle_event(self) -> None:
+        """ Get new messages and create or update alerts.
         """
         while not self._stop:
             msg = self._get_message()
@@ -124,25 +151,15 @@ class AlertHandler:
         return f"Alert(time={alert.time.isoformat()}, city={alert.city}," \
                f" region={alert.region})"
 
-    def run(self) -> None:
-        self._process_thread.start()
 
-    def join(self) -> None:
-        self._process_thread.join()
-
-    def shutdown(self) -> None:
-        self._stop = True
-        self.join()
-
-
-class FeedWriter:
+class FeedWriter(AbstractService):
+    """ Receives Alert objects and writes a cap file. """
 
     def __init__(self, alerts: queue.Queue):
+        super().__init__()
         self.alerts = alerts
         self.save_path = CONFIG.SAVE_PATH
 
-        self._process_thread = threading.Thread(target=self._process_alerts, daemon=True)
-        self._stop = False
         self.wait = 1
         self.alert_filename = CONFIG.ALERT_FILE_NAME
         self.update_filename = CONFIG.UPDATE_FILE_NAME
@@ -153,7 +170,9 @@ class FeedWriter:
     def process_thread(self) -> threading.Thread:
         return self._process_thread
 
-    def _process_alerts(self):
+    def _handle_event(self):
+        """ Get new Alerts and write a cap file.
+        """
         while not self._stop:
             try:
                 alert = self.alerts.get(timeout=0.1)
@@ -175,13 +194,3 @@ class FeedWriter:
             feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
             write_feed_to_file(feed_path, feed)
             logger.info(f"Cap file written to {feed_path}")
-
-    def run(self) -> None:
-        self._process_thread.start()
-
-    def join(self) -> None:
-        self._process_thread.join()
-
-    def shutdown(self) -> None:
-        self._stop = True
-        self.join()

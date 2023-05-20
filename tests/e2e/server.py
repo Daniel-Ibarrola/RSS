@@ -152,8 +152,10 @@ def start_server(server: Server,
         print("Server received the following messages:")
         print(server.queue)
 
-    # TODO: automate google cap validator test
-
 
 if __name__ == "__main__":
-    start_server(get_server())
+    start_server(
+        get_server(),
+        threading.Event(),
+        log=True
+    )

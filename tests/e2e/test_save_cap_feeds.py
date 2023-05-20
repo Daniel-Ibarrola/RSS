@@ -1,10 +1,12 @@
 from bs4 import BeautifulSoup
 import os
+import pytest
 import threading
 from typing import Any
 
 from rss import CONFIG
 from rss.main import get_services, main
+from rss.api.client import APIClient
 from server import get_server, start_server
 
 
@@ -14,7 +16,9 @@ def shutdown_services(server_shutdown: threading.Event, services: list[Any]):
         serv.shutdown()
 
 
-def test_writes_cap_files_when_receiving_alerts():
+@pytest.mark.usefixtures("postgres_session")
+@pytest.mark.usefixtures("wait_for_api")
+def test_saves_cap_feeds_when_receiving_alerts():
     # The client is started and will listen for alerts of the server
     server = get_server(log=False)
     services = get_services()
@@ -83,6 +87,29 @@ def test_writes_cap_files_when_receiving_alerts():
     for file in files:
         os.remove(file)
 
+    # Now we check that the feeds have been stored in the database
+    client = APIClient()
+    res = client.get_alerts()
+    assert res.ok
+
+    json = res.json()
+    assert len(json["alerts"]) == 3
+
+    alert = json["alerts"][0]
+    assert alert["city"] == 41
+    assert len(alert["references"]) == 0
+    assert not alert["is_event"]
+
+    update = json["alerts"][1]
+    assert update["city"] == 43
+    assert len(update["references"]) == 1
+    assert not update["is_event"]
+
+    event = json["alerts"][2]
+    assert event["city"] == 44
+    assert len(event["references"]) == 0
+    assert event["is_event"]
+
 
 if __name__ == "__main__":
-    test_writes_cap_files_when_receiving_alerts()
+    test_saves_cap_feeds_when_receiving_alerts()
