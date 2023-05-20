@@ -11,7 +11,9 @@ from server import get_server, start_server
 
 
 def shutdown_services(server_shutdown: threading.Event, services: list[Any]):
+    watch_dog = services.pop()
     server_shutdown.wait()
+    watch_dog.shutdown()
     for serv in services:
         serv.shutdown()
 
@@ -25,8 +27,8 @@ def test_saves_cap_feeds_when_receiving_alerts():
 
     server_shutdown = threading.Event()
     server_thread = threading.Thread(target=start_server, args=(server, server_shutdown, False))
-    services_thread = threading.Thread(target=main, args=services)
-    shutdown_thread = threading.Thread(target=shutdown_services, args=(server_shutdown, services))
+    services_thread = threading.Thread(target=main, args=(services, ))
+    shutdown_thread = threading.Thread(target=shutdown_services, args=(server_shutdown, list(services)))
 
     shutdown_thread.start()
     server_thread.start()

@@ -189,3 +189,62 @@ class TestMessageProcessor:
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.city == 41
         assert second_alert.region == 41203
+
+
+class TestAlertDispatcher:
+
+    def test_dispatch_alerts(self):
+        initial_alert = Alert(
+            time=datetime.datetime.now(),
+            city=40,
+            region=41203,
+            id="TESTALERT"
+        )
+        alerts = queue.Queue()
+        alerts.put(initial_alert)
+        dispatcher = services.AlertDispatcher(alerts)
+        dispatcher._dispatch_alerts()
+
+        assert alerts.empty()
+
+        alert_write = dispatcher.to_write.get()
+        assert dispatcher.to_write.empty()
+        assert alert_write == initial_alert
+
+        alert_post = dispatcher.to_post.get()
+        assert dispatcher.to_post.empty()
+        assert alert_post == initial_alert
+        assert alert_post is not alert_write
+
+
+class TestFeedPoster:
+
+    def test_post_alerts(self, mocker):
+        mock_post = mocker.patch("rss.api.client.requests.post")
+
+        date = datetime.datetime.now()
+        alert = Alert(
+            time=date,
+            city=40,
+            region=41203,
+            id="TESTALERT",
+            is_event=False
+        )
+        alerts = queue.Queue()
+        alerts.put(alert)
+        poster = services.FeedPoster(alerts)
+        poster._post_alerts()
+
+        assert alerts.empty()
+
+        url = poster.client.base_url
+        url += "/new_alert"
+
+        mock_post.assert_called_once_with(url, json={
+            "time": date.isoformat(timespec="seconds"),
+            "city": 40,
+            "region": 41203,
+            "is_event": False,
+            "id": "TESTALERT",
+            "references": []
+        })

@@ -110,7 +110,7 @@ class TCPClient:
                 data = self._socket.recv(2048)
                 if data:
                     self.queue.put(data)
-            except ConnectionError:
+            except (OSError, ConnectionError):
                 break
 
         logger.debug("Receive thread stopped")
