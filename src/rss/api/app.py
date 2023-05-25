@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import abort, request, jsonify
+from flask import abort, request, jsonify, Response
 from flask_migrate import Migrate
 
 from rss import CONFIG
@@ -92,8 +92,8 @@ def get_alerts():
     })
 
 
-@app.route(f"{api_route}/cap/<identifier>")
-def get_cap_file(identifier):
+@app.route(f"{api_route}/cap_contents/<identifier>")
+def get_cap_file_contents(identifier):
     alert = db.session.execute(
         db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
     if alert is None:
@@ -102,6 +102,20 @@ def get_cap_file(identifier):
     return jsonify({
         "contents": file_contents
     })
+
+
+@app.route(f"{api_route}/cap/<identifier>")
+def get_cap_file(identifier):
+    alert = db.session.execute(
+        db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
+    if alert is None:
+        abort(404)
+    file_contents = alert.to_cap_file()
+    response = Response(file_contents, mimetype="text/xml")
+    response.headers.set(
+        "Content-Disposition", "attachment", filename=f"{identifier}.cap"
+    )
+    return response
 
 
 @app.route(f"{api_route}/last_alert/")

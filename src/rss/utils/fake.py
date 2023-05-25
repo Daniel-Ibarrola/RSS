@@ -88,12 +88,14 @@ def generate_fake_alerts():
                     )
 
                 db.session.add(alert)
+                db.session.commit()
                 print(f"Added new alert {alert}")
                 id_list.append(identifier)
 
-        db.session.commit()
         n_alerts = len(db.session.execute(db.select(Alert)).all())
         print(f"Total number of alerts {n_alerts}")
+
+    print(id_list)
 
 
 if __name__ == "__main__":
