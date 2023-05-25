@@ -31,11 +31,13 @@ def generate_fake_alerts():
 
     end_date = datetime.date.today()
     end_date = datetime.datetime(year=end_date.year, month=end_date.month, day=end_date.day)
-    time_delta = datetime.timedelta(days=365)
-    start_date = end_date - time_delta
+    start_date = end_date - datetime.timedelta(days=365)
+    print(f"Start date: {start_date}")
+    print(f"End date: {end_date}")
 
     dates = []
     current_date = start_date
+    time_delta = datetime.timedelta(days=1)
     while current_date <= end_date:
         dates.append(current_date)
         current_date += time_delta
@@ -43,7 +45,7 @@ def generate_fake_alerts():
     options = (True, False)
     day_choices = random.choices(
         options,
-        weights=[0.3, 0.7],
+        weights=[0.5, 0.5],
         k=len(dates))
     event_choices = random.choices(
         options,
@@ -55,6 +57,7 @@ def generate_fake_alerts():
         k=len(dates))
 
     cities = list(CITIES.keys())
+    regions = list(REGIONS)
 
     id_list = []
     with app.app_context():
@@ -62,11 +65,11 @@ def generate_fake_alerts():
             if day_choices[ii]:
                 identifier = MessageProcessor.alert_id(dates[ii])
                 city = random.choice(cities)
-                region = random.choice(REGIONS)
+                region = random.choice(regions)
 
                 if references_choices[ii] and ii > 1:
                     # Reference the previous alert
-                    references = Alert.get_references([identifier])
+                    references = Alert.get_references([id_list[-1]])
                     alert = Alert(
                         time=dates[ii],
                         city=city,
@@ -85,11 +88,15 @@ def generate_fake_alerts():
                     )
 
                 db.session.add(alert)
+                print(f"Added new alert {alert}")
                 id_list.append(identifier)
 
         db.session.commit()
+        n_alerts = len(db.session.execute(db.select(Alert)).all())
+        print(f"Total number of alerts {n_alerts}")
 
 
 if __name__ == "__main__":
+    print("Adding new alerts to DB")
     generate_fake_alerts()
     print("DONE")

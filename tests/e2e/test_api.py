@@ -159,3 +159,22 @@ def test_get_cap_file():
     alert = contents.feed.entry.content.alert
     assert alert.identifier.string == "ALERT2"
     assert alert.sent.string == dates[1].isoformat(timespec="seconds") + "-06:00"
+
+
+@pytest.mark.usefixtures("postgres_session")
+@pytest.mark.usefixtures("wait_for_api")
+def test_get_last_alerts():
+    client = APIClient()
+    _, _, last_alert_date = post_alerts(client)
+
+    res = client.get_last_alert()
+    assert res.ok
+    assert res.json() == {
+        "time": last_alert_date.isoformat(timespec="seconds"),
+        "city": 42,
+        "region": 12204,
+        "is_event": False,
+        "id": "ALERT3",
+        "references": [],
+    }
+

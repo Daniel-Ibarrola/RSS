@@ -102,3 +102,13 @@ def get_cap_file(identifier):
     return jsonify({
         "contents": file_contents
     })
+
+
+@app.route(f"{api_route}/last_alert/")
+def get_last_alert():
+    alert = db.session.execute(
+        db.select(Alert).order_by(Alert.time.desc())
+    ).scalars().first()
+    if alert is None:
+        abort(404)
+    return jsonify(alert.to_json())

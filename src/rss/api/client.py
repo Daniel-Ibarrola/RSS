@@ -49,3 +49,7 @@ class APIClient:
     def get_cap_file(self, identifier: str) -> requests.Response:
         res = requests.get(f"{self.base_url}/cap/{identifier}")
         return res
+
+    def get_last_alert(self) -> requests.Response:
+        res = requests.get(f"{self.base_url}/last_alert/")
+        return res
