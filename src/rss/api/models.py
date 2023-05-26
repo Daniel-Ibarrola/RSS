@@ -45,7 +45,7 @@ class Alert(db.Model):
 
     @staticmethod
     def get_pagination(page: int = 1):
-        select = db.select(Alert).order_by(Alert.time)
+        select = db.select(Alert).order_by(Alert.time.desc())
         pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
         return (
             pagination.items,

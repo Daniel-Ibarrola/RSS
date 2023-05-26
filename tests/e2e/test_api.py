@@ -114,11 +114,11 @@ def test_get_multiple_alerts():
     assert res.json() == {
         "alerts": [
             {
-                "time": date1.isoformat(timespec="seconds"),
-                "city": 40,
-                "region": 41201,
+                "time": date3.isoformat(timespec="seconds"),
+                "city": 42,
+                "region": 41215,
                 "is_event": False,
-                "id": "ALERT1",
+                "id": "ALERT3",
                 "references": [],
             },
             {
@@ -130,11 +130,11 @@ def test_get_multiple_alerts():
                 "references": [],
             },
             {
-                "time": date3.isoformat(timespec="seconds"),
-                "city": 42,
-                "region": 41215,
+                "time": date1.isoformat(timespec="seconds"),
+                "city": 40,
+                "region": 41201,
                 "is_event": False,
-                "id": "ALERT3",
+                "id": "ALERT1",
                 "references": [],
             },
         ],

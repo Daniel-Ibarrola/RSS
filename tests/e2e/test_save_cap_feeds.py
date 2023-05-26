@@ -97,7 +97,7 @@ def test_saves_cap_feeds_when_receiving_alerts():
     json = res.json()
     assert len(json["alerts"]) == 3
 
-    alert = json["alerts"][0]
+    alert = json["alerts"][2]
     assert alert["city"] == 41
     assert len(alert["references"]) == 0
     assert not alert["is_event"]
@@ -107,7 +107,7 @@ def test_saves_cap_feeds_when_receiving_alerts():
     assert len(update["references"]) == 1
     assert not update["is_event"]
 
-    event = json["alerts"][2]
+    event = json["alerts"][0]
     assert event["city"] == 44
     assert len(event["references"]) == 0
     assert event["is_event"]
