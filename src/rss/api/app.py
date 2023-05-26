@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import abort, request, jsonify, Response
+from flask_cors import CORS
 from flask_migrate import Migrate
 
 from rss import CONFIG
@@ -8,6 +9,7 @@ from rss.api.models import Alert
 
 
 app = create_app(CONFIG)
+cors = CORS(app)
 migrate = Migrate(app, db)
 api_route = "/api/v1"
 
