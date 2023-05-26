@@ -57,7 +57,7 @@ def generate_fake_alerts():
         k=len(dates))
 
     cities = list(CITIES.keys())
-    regions = list(REGIONS)
+    regions = list(REGIONS.keys())
 
     id_list = []
     with app.app_context():

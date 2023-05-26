@@ -2,7 +2,7 @@ import datetime
 from xml.dom import minidom
 
 from rss.cap.alert import Alert
-from rss.cap.data import CITIES, get_region, POLYGONS
+from rss.cap.data import CITIES, REGIONS, POLYGONS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -205,9 +205,11 @@ class RSSFeed:
         return info
 
     def _get_title(self) -> str:
+        # TODO: change date to spanish
         title = self._alert.time.strftime("%d %b %Y %H:%M:%S")
         city = CITIES[self._alert.city]
-        region = get_region(self._alert.region)
+        region = REGIONS[self._alert.region]
+        # TODO: modify title for events
         title += f" Alerta en {city} por sismo en {region}"
         return title
 

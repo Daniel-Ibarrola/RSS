@@ -100,93 +100,7 @@ POLYGONS = {
 }
 
 
-def get_region(region_code: int) -> str:
-    # TODO: convert this code into a hash table
-    if region_code > 49200:
-        return "Chiapas"
-    elif region_code > 48200:
-        return "Veracruz"
-    elif region_code > 47200:
-        return 'Morelos'
-    elif region_code > 46200:
-        return 'Puebla'
-    elif region_code > 45200:
-        return 'Costa Jal'
-    elif region_code > 44200:
-        return 'Costa Col'
-    elif region_code > 43200:
-        n1 = region_code - 43200
-        if n1 == 1:
-            return "Costa Mich-Gro"
-        elif n1 in [2, 3]:
-            return "Playa Azul Mich"
-        elif n1 == 7:
-            return "Costa Mich-Col"
-        else:
-            return "Costa Mich"
-    elif region_code > 42200:
-        n1 = region_code - 42200
-        if n1 in [1, 3]:
-            return 'Costa Oax-Gro'
-        if n1 in [4, 5]:
-            return 'Pinotepa Oax'
-        if n1 in [6, 8]:
-            return 'PtoEscondido Oax'
-        if n1 in [9, 11]:
-            return 'Huatulco Oax'
-        if n1 in [12, 14]:
-            return 'SalinaCruz Oax'
-        if n1 in [15, 18]:
-            return 'Oax Centro'
-        if n1 in [19]:
-            return 'Huatulco Oax'
-        if n1 in [20, 21]:
-            return 'Huajuapan Oax'
-        if n1 in [22]:
-            return 'Lim Oax-Pue'
-        if n1 in [23, 24]:
-            return 'Oax Centro'
-        if n1 in [25, 26]:
-            return 'Tuxtepec Oax'
-        if n1 in [27]:
-            return 'Lim Oax-Pue'
-        if n1 in [28, 29]:
-            return 'Oax Centro'
-        if n1 in [30]:
-            return 'Lim Oax-Pue'
-        if n1 in [31, 32]:
-            return 'Oax Centro'
-        if n1 in [33]:
-            return 'Lim Ver-Oax'
-        if n1 in [34, 36]:
-            return 'Istmo Oax-Chis'
-        if n1 in [37]:
-            return 'Oax Centro'
-        else:
-            return 'Oaxaca'
-    elif region_code > 41200:
-        n1 = region_code - 41200
-        if n1 in [1, 2]:
-            return 'Petatlan Gro'
-        if n1 in [3, 5]:
-            return 'Atoyac Gro'
-        if n1 in [6, 7]:
-            return 'Acapulco Gro'
-        if n1 in [8, 11]:
-            return 'SanMarcos Gro'
-        if n1 in [12]:
-            return 'Costa Gro-Oax'
-        if n1 in [13, 14]:
-            return 'Petatlan Gro'
-        if n1 in [15, 17]:
-            return 'Zihuatanejo Gro'
-        if n1 in [18]:
-            return 'Costa Gro-Mich'
-        else:
-            return 'Guerrero'
-    return ""
-
-
+# Lat and long of each region
 COORDS = {
     40101: GeoPoint(lat=19.38714, lon=-99.15771),
     40102: GeoPoint(lat=19.314858, lon=-99.174865),
@@ -370,186 +284,177 @@ COORDS = {
     47401: GeoPoint(lat=18.959409, lon=-99.23214),
 }
 
-
 REGIONS = {
- 40101,
- 40102,
- 40103,
- 41101,
- 41102,
- 42101,
- 43101,
- 44101,
- 45101,
- 46101,
- 47101,
- 41201,
- 41202,
- 41203,
- 41204,
- 41205,
- 41206,
- 41207,
- 41208,
- 41209,
- 41210,
- 41211,
- 41212,
- 41213,
- 41214,
- 41215,
- 41216,
- 41217,
- 41218,
- 41219,
- 41220,
- 41221,
- 41222,
- 41223,
- 41224,
- 41225,
- 41226,
- 41227,
- 41228,
- 41229,
- 41230,
- 41231,
- 41232,
- 41233,
- 42201,
- 42202,
- 42203,
- 42204,
- 42205,
- 42206,
- 42207,
- 42208,
- 42209,
- 42210,
- 42211,
- 42212,
- 42213,
- 42214,
- 42215,
- 42216,
- 42217,
- 42218,
- 42219,
- 42220,
- 42221,
- 42222,
- 42223,
- 42224,
- 42225,
- 42226,
- 42227,
- 42228,
- 42229,
- 42230,
- 42231,
- 42232,
- 42233,
- 42234,
- 42235,
- 42236,
- 42237,
- 42238,
- 42239,
- 43201,
- 43202,
- 43203,
- 43204,
- 43205,
- 43206,
- 43207,
- 43208,
- 43209,
- 44201,
- 44202,
- 44203,
- 44204,
- 44205,
- 45201,
- 45202,
- 45203,
- 45204,
- 45205,
- 45206,
- 46201,
- 46202,
- 46203,
- 46204,
- 46205,
- 48201,
- 48202,
- 48203,
- 48204,
- 48205,
- 48206,
- 48207,
- 48208,
- 48209,
- 49201,
- 49202,
- 49203,
- 49204,
- 49205,
- 49206,
- 49207,
- 49208,
- 49209,
- 49210,
- 49211,
- 49212,
- 49213,
- 49214,
- 49215,
- 49216,
- 41301,
- 41302,
- 41303,
- 41304,
- 41305,
- 41306,
- 41307,
- 41308,
- 41309,
- 41310,
- 41311,
- 41312,
- 41313,
- 42301,
- 42302,
- 42303,
- 42304,
- 42305,
- 42306,
- 42307,
- 42308,
- 42309,
- 42310,
- 42311,
- 42312,
- 43301,
- 43302,
- 43303,
- 43304,
- 44301,
- 44302,
- 45301,
- 45302,
- 45303,
- 45304,
- 47301,
- 40401,
- 40402,
- 40403,
- 41401,
- 41402,
- 42401,
- 43401,
- 44401,
- 45401,
- 46401,
- 47401,
+    41201: 'Petatlan Gro',
+    41202: 'Petatlan Gro',
+    41203: 'Atoyac Gro',
+    41204: 'Guerrero',
+    41205: 'Atoyac Gro',
+    41206: 'Acapulco Gro',
+    41207: 'Acapulco Gro',
+    41208: 'SanMarcos Gro',
+    41209: 'Guerrero',
+    41210: 'Guerrero',
+    41211: 'SanMarcos Gro',
+    41212: 'Costa Gro-Oax',
+    41213: 'Petatlan Gro',
+    41214: 'Petatlan Gro',
+    41215: 'Zihuatanejo Gro',
+    41216: 'Guerrero',
+    41217: 'Zihuatanejo Gro',
+    41218: 'Costa Gro-Mich',
+    41219: 'Guerrero',
+    41220: 'Guerrero',
+    41221: 'Guerrero',
+    41222: 'Guerrero',
+    41223: 'Guerrero',
+    41224: 'Guerrero',
+    41225: 'Guerrero',
+    41226: 'Guerrero',
+    41227: 'Guerrero',
+    41228: 'Guerrero',
+    41229: 'Guerrero',
+    41230: 'Guerrero',
+    41231: 'Guerrero',
+    41232: 'Guerrero',
+    41233: 'Guerrero',
+    41301: 'Guerrero',
+    41302: 'Guerrero',
+    41303: 'Guerrero',
+    41304: 'Guerrero',
+    41305: 'Guerrero',
+    41306: 'Guerrero',
+    41307: 'Guerrero',
+    41308: 'Guerrero',
+    41309: 'Guerrero',
+    41310: 'Guerrero',
+    41311: 'Guerrero',
+    41312: 'Guerrero',
+    41313: 'Guerrero',
+    41401: 'Guerrero',
+    41402: 'Guerrero',
+    42101: 'Guerrero',
+    42201: 'Costa Oax-Gro',
+    42202: 'Oaxaca',
+    42203: 'Costa Oax-Gro',
+    42204: 'Pinotepa Oax',
+    42205: 'Pinotepa Oax',
+    42206: 'PtoEscondido Oax',
+    42207: 'Oaxaca',
+    42208: 'PtoEscondido Oax',
+    42209: 'Huatulco Oax',
+    42210: 'Oaxaca',
+    42211: 'Huatulco Oax',
+    42212: 'SalinaCruz Oax',
+    42213: 'Oaxaca',
+    42214: 'SalinaCruz Oax',
+    42215: 'Oax Centro',
+    42216: 'Oaxaca',
+    42217: 'Oaxaca',
+    42218: 'Oax Centro',
+    42219: 'Huatulco Oax',
+    42220: 'Huajuapan Oax',
+    42221: 'Huajuapan Oax',
+    42222: 'Lim Oax-Pue',
+    42223: 'Oax Centro',
+    42224: 'Oax Centro',
+    42225: 'Tuxtepec Oax',
+    42226: 'Tuxtepec Oax',
+    42227: 'Lim Oax-Pue',
+    42228: 'Oax Centro',
+    42229: 'Oax Centro',
+    42230: 'Lim Oax-Pue',
+    42231: 'Oax Centro',
+    42232: 'Oax Centro',
+    42233: 'Lim Ver-Oax',
+    42234: 'Istmo Oax-Chis',
+    42235: 'Oaxaca',
+    42236: 'Istmo Oax-Chis',
+    42237: 'Oax Centro',
+    42238: 'Oaxaca',
+    42239: 'Oaxaca',
+    42301: 'Oaxaca',
+    42302: 'Oaxaca',
+    42303: 'Oaxaca',
+    42304: 'Oaxaca',
+    42305: 'Oaxaca',
+    42306: 'Oaxaca',
+    42307: 'Oaxaca',
+    42308: 'Oaxaca',
+    42309: 'Oaxaca',
+    42310: 'Oaxaca',
+    42311: 'Oaxaca',
+    42312: 'Oaxaca',
+    42401: 'Oaxaca',
+    43101: 'Oaxaca',
+    43201: 'Costa Mich-Gro',
+    43202: 'Playa Azul Mich',
+    43203: 'Playa Azul Mich',
+    43204: 'Costa Mich',
+    43205: 'Costa Mich',
+    43206: 'Costa Mich',
+    43207: 'Costa Mich-Col',
+    43208: 'Costa Mich',
+    43209: 'Costa Mich',
+    43301: 'Costa Mich',
+    43302: 'Costa Mich',
+    43303: 'Costa Mich',
+    43304: 'Costa Mich',
+    43401: 'Costa Mich',
+    44101: 'Costa Mich',
+    44201: 'Costa Col',
+    44202: 'Costa Col',
+    44203: 'Costa Col',
+    44204: 'Costa Col',
+    44205: 'Costa Col',
+    44301: 'Costa Col',
+    44302: 'Costa Col',
+    44401: 'Costa Col',
+    45101: 'Costa Col',
+    45201: 'Costa Jal',
+    45202: 'Costa Jal',
+    45203: 'Costa Jal',
+    45204: 'Costa Jal',
+    45205: 'Costa Jal',
+    45206: 'Costa Jal',
+    45301: 'Costa Jal',
+    45302: 'Costa Jal',
+    45303: 'Costa Jal',
+    45304: 'Costa Jal',
+    45401: 'Costa Jal',
+    46101: 'Costa Jal',
+    46201: 'Puebla',
+    46202: 'Puebla',
+    46203: 'Puebla',
+    46204: 'Puebla',
+    46205: 'Puebla',
+    46401: 'Puebla',
+    47101: 'Puebla',
+    47301: 'Morelos',
+    47401: 'Morelos',
+    48201: 'Veracruz',
+    48202: 'Veracruz',
+    48203: 'Veracruz',
+    48204: 'Veracruz',
+    48205: 'Veracruz',
+    48206: 'Veracruz',
+    48207: 'Veracruz',
+    48208: 'Veracruz',
+    48209: 'Veracruz',
+    49201: 'Chiapas',
+    49202: 'Chiapas',
+    49203: 'Chiapas',
+    49204: 'Chiapas',
+    49205: 'Chiapas',
+    49206: 'Chiapas',
+    49207: 'Chiapas',
+    49208: 'Chiapas',
+    49209: 'Chiapas',
+    49210: 'Chiapas',
+    49211: 'Chiapas',
+    49212: 'Chiapas',
+    49213: 'Chiapas',
+    49214: 'Chiapas',
+    49215: 'Chiapas',
+    49216: 'Chiapas',
 }

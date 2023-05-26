@@ -65,9 +65,9 @@ def post_alerts(client: APIClient) -> list[datetime.datetime]:
     date1 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5)
     date2 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10)
     date3 = datetime.datetime(year=2023, month=3, day=14, hour=16, minute=7, second=10)
-    alert1 = Alert(date1, 40, 12202, "ALERT1", False)
-    alert2 = Alert(date2, 41, 12203, "ALERT2", False)
-    alert3 = Alert(date3, 42, 12204, "ALERT3", False)
+    alert1 = Alert(date1, 40, 41201, "ALERT1", False)
+    alert2 = Alert(date2, 41, 41204, "ALERT2", False)
+    alert3 = Alert(date3, 42, 41215, "ALERT3", False)
 
     client.post_alerts([alert1, alert2, alert3])
 
@@ -88,7 +88,7 @@ def test_get_alerts_by_date():
             {
                 "time": date1.isoformat(timespec="seconds"),
                 "city": 40,
-                "region": 12202,
+                "region": 41201,
                 "is_event": False,
                 "id": "ALERT1",
                 "references": [],
@@ -96,7 +96,7 @@ def test_get_alerts_by_date():
             {
                 "time": date2.isoformat(timespec="seconds"),
                 "city": 41,
-                "region": 12203,
+                "region": 41204,
                 "is_event": False,
                 "id": "ALERT2",
                 "references": [],
@@ -116,7 +116,7 @@ def test_get_multiple_alerts():
             {
                 "time": date1.isoformat(timespec="seconds"),
                 "city": 40,
-                "region": 12202,
+                "region": 41201,
                 "is_event": False,
                 "id": "ALERT1",
                 "references": [],
@@ -124,7 +124,7 @@ def test_get_multiple_alerts():
             {
                 "time": date2.isoformat(timespec="seconds"),
                 "city": 41,
-                "region": 12203,
+                "region": 41204,
                 "is_event": False,
                 "id": "ALERT2",
                 "references": [],
@@ -132,7 +132,7 @@ def test_get_multiple_alerts():
             {
                 "time": date3.isoformat(timespec="seconds"),
                 "city": 42,
-                "region": 12204,
+                "region": 41215,
                 "is_event": False,
                 "id": "ALERT3",
                 "references": [],
@@ -172,7 +172,7 @@ def test_get_last_alerts():
     assert res.json() == {
         "time": last_alert_date.isoformat(timespec="seconds"),
         "city": 42,
-        "region": 12204,
+        "region": 41215,
         "is_event": False,
         "id": "ALERT3",
         "references": [],
