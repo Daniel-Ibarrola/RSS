@@ -221,8 +221,6 @@ class RSSFeed:
             polygons.extend([POLYGONS[ref.city] for ref in self._refs])
         polygons.append(POLYGONS[self._alert.city])
 
-        print("Refs", self._refs)
-        print(polygons)
         for poly in polygons:
             text = ""
             for ii in range(len(poly.points) - 1):
