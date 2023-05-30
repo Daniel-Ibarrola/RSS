@@ -7,3 +7,5 @@ sasmex/
 *.log
 *.cap
 *.rss
+build/
+src/build/
