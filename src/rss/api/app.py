@@ -1,4 +1,3 @@
-from datetime import datetime
 from flask import abort, request, jsonify, Response
 
 from rss import CONFIG
@@ -43,7 +42,10 @@ def index():
 
 @app.route(f"{api_route}/new_alert", methods=["POST"])
 def add_new_alert():
-    Alert.from_json(request.json)
+    alert = Alert.from_json(request.json)
+    save = request.args.get("save", False, type=bool)
+    if save:
+        alert.save_to_file(CONFIG.SAVE_PATH, app.logger)
     return "Ok", 201
 
 

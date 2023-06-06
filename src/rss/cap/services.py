@@ -11,7 +11,7 @@ from typing import Optional, Union
 from rss import CONFIG
 from rss.api.client import APIClient
 from rss.cap.alert import Alert
-from rss.cap.rss import create_feed, write_feed_to_file
+from rss.cap.rss import create_feed, write_feed_to_file, get_cap_file_name
 from rss.utils.logger import get_module_logger
 
 logger = get_module_logger(__name__)
@@ -229,15 +229,7 @@ class FeedWriter(AbstractService):
 
     def _write_alert(self, alert: Alert) -> None:
         if alert is not None:
-            if alert.is_event and alert.refs is not None:
-                filename = self.event_update_filename
-            elif alert.is_event and alert.refs is None:
-                filename = self.event_filename
-            elif not alert.is_event and alert.refs is not None:
-                filename = self.update_filename
-            else:
-                filename = self.alert_filename
-
+            filename = get_cap_file_name(alert)
             feed = create_feed(alert, is_test=False)
 
             feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
@@ -267,7 +259,7 @@ class FeedPoster(AbstractService):
     def _post_alerts(self):
         alert = self._get_from_queue(self._alerts, self.wait)
         if alert is not None:
-            res = self._client.post_alert(alert)
+            res = self._client.post_alert(alert, save_file=CONFIG.API_SAVE_ALERTS)
             if res.ok:
                 logger.info("Posted new alert to API")
             else:

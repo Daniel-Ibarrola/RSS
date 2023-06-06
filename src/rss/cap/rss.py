@@ -1,6 +1,7 @@
 import datetime
 from xml.dom import minidom
 
+from rss import CONFIG
 from rss.cap.alert import Alert
 from rss.cap.data import CITIES, REGIONS, POLYGONS, COORDS
 
@@ -293,3 +294,14 @@ def create_feed(alert: Alert,
 
 def write_feed_to_file(filename: str, feed: RSSFeed):
     feed.write(filename)
+
+
+def get_cap_file_name(alert: Alert) -> str:
+    if alert.is_event and alert.refs is not None:
+        return CONFIG.EVENT_UPDATE_FILE_NAME
+    elif alert.is_event and alert.refs is None:
+        return CONFIG.EVENT_FILE_NAME
+    elif not alert.is_event and alert.refs is not None:
+        return CONFIG.UPDATE_FILE_NAME
+    else:
+        return CONFIG.ALERT_FILE_NAME

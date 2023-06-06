@@ -1,10 +1,12 @@
 import datetime
+import logging
+import os
 from typing import Any
 from sqlalchemy import func
 
 from rss.api import db
 from rss.cap.alert import Alert as CapAlert
-from rss.cap.rss import create_feed
+from rss.cap.rss import create_feed, get_cap_file_name
 
 
 class Alert(db.Model):
@@ -55,7 +57,7 @@ class Alert(db.Model):
         )
 
     @staticmethod
-    def from_json(json: dict[str, Any]) -> None:
+    def from_json(json: dict[str, Any]) -> "Alert":
         references = Alert.get_references(json["references"])
         alert = Alert(
             time=datetime.datetime.fromisoformat(json["time"]),
@@ -67,8 +69,10 @@ class Alert(db.Model):
         )
         db.session.add(alert)
         db.session.commit()
+        return alert
 
     def to_cap_file(self) -> str:
+        """ Returns the contents of a cap file representing this alert."""
         cap_alert = self.to_cap_alert()
         feed = create_feed(cap_alert)
         return feed.content
@@ -95,6 +99,19 @@ class Alert(db.Model):
             "id": self.identifier,
             "references": [ref.to_json() for ref in self.references],
         }
+
+    def save_to_file(self, path: str, logger: logging.Logger) -> None:
+        cap_alert = self.to_cap_alert()
+        feed = create_feed(cap_alert)
+        filename = get_cap_file_name(cap_alert)
+        save_path = os.path.join(path, f"{filename}_{feed.updated_date}.cap")
+        try:
+            with open(save_path, "w") as fp:
+                fp.write(feed.content)
+            logger.info(f"Saved cap file to {path}")
+        except IOError as e:
+            logger.debug(f"Failed to save cap file {path}")
+            logger.debug(e)
 
     def __repr__(self) -> str:
         return f"Alert(id={self.id}, time={self.time}, " \
