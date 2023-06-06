@@ -64,6 +64,15 @@ class AbstractService(abc.ABC):
 class MessageProcessor(AbstractService):
     """ Receives alert messages and if they are valid, converts them to an
         Alert object that can be used to create cap feeds.
+
+        Alert msg format:
+
+        84,3,Event/Alert,City,Station,yyyy/mm/dd,hh:mm:ss,hourMsg\r\n
+
+        Where
+
+        Event/Alert = 0 for events. 1 for alerts
+        hourMsg = unix time the message was sent
     """
 
     def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
@@ -96,10 +105,8 @@ class MessageProcessor(AbstractService):
     def _get_alert(self, msg: bytes) -> Union[Alert, None]:
         """ Get an alert from a message."""
         msg = msg.decode().strip()
-        # TODO: update codes for events
-        if msg.startswith("84,3") or msg.startswith("84,2"):
-            city, region, date = self._parse_message(msg)
-            is_event = True if msg.startswith("84,2") else False
+        if msg.startswith("84,3"):
+            city, region, date, is_event = self._parse_message(msg)
 
             self._flush_updates()
             if self._check_city(city):
@@ -139,11 +146,12 @@ class MessageProcessor(AbstractService):
         return abs((date1 - date2).total_seconds())
 
     @staticmethod
-    def _parse_message(msg: str) -> tuple[int, int, datetime]:
+    def _parse_message(msg: str) -> tuple[int, int, datetime, bool]:
         pieces = msg.split(",")
-        city, region = int(pieces[2]), int(pieces[3])
-        date = datetime.strptime(pieces[4] + "," + pieces[5], "%Y/%m/%d,%H:%M:%S")
-        return city, region, date
+        is_event = not bool(int(pieces[2]))
+        city, region = int(pieces[3]), int(pieces[4])
+        date = datetime.strptime(pieces[5] + "," + pieces[6], "%Y/%m/%d,%H:%M:%S")
+        return city, region, date, is_event
 
     @staticmethod
     def alert_id(date: datetime) -> str:

@@ -82,7 +82,7 @@ class Server:
     @staticmethod
     def _add_time_to_msg(msg: str) -> str:
         pieces = msg.split(",")
-        new_msg = ",".join(pieces[:4]) + "," + get_time() + "," + ",".join(pieces[5:])
+        new_msg = ",".join(pieces[:5]) + "," + get_time() + "," + ",".join(pieces[6:])
         return new_msg
 
     def run(self) -> None:
@@ -127,11 +127,11 @@ def get_server(log: bool = True) -> Server:
         ("15,3,3242,41203, ,46237.1234567890\r\n", 0.2),
 
         # Test 2: Alert with update
-        ("84,3,41,41203, ,46237.1234567890\r\n", 1),
-        ("84,3,43,41203, ,46237.1234567890\r\n", 5),
+        ("84,3,1,41,41203, ,46237.1234567890\r\n", 1),
+        ("84,3,1,43,41203, ,46237.1234567890\r\n", 5),
 
         # Test 4: Non-alert event
-        ("84,2,44,41203, ,46237.1234567890\r\n", 0),
+        ("84,3,0,44,41203, ,46237.1234567890\r\n", 0),
     ]
 
     return server

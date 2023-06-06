@@ -18,9 +18,32 @@ def shutdown_services(server_shutdown: threading.Event, services: list[Any]):
         serv.shutdown()
 
 
+def get_cap_files() -> list[str]:
+    files = []
+    for root, _, filenames in os.walk(CONFIG.SAVE_PATH):
+        for file in filenames:
+            if file.endswith(".cap") and "test" in file:
+                files.append(os.path.join(root, file))
+    return files
+
+
+def remove_files(files: list[str]) -> None:
+    for file in files:
+        os.remove(file)
+
+
+@pytest.fixture
+def cleanup_files():
+    files = get_cap_files()
+    remove_files(files)
+    yield
+    files = get_cap_files()
+    remove_files(files)
+
+
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
-def test_saves_cap_feeds_when_receiving_alerts():
+def test_saves_cap_feeds_when_receiving_alerts(cleanup_files):
     # The client is started and will listen for alerts of the server
     server = get_server(log=False)
     services = get_services()
@@ -41,12 +64,7 @@ def test_saves_cap_feeds_when_receiving_alerts():
     # The client receives an alert with an update, and after a certain time an event
     # Three files should have been written. One for the alert, one for the update and
     # another for the event.
-    files = []
-    for root, _, filenames in os.walk(CONFIG.SAVE_PATH):
-        for file in filenames:
-            if file.endswith(".cap"):
-                files.append(os.path.join(root, file))
-
+    files = get_cap_files()
     assert len(files) == 3
 
     [alert] = [f for f in files if "alert" in f]
@@ -81,13 +99,12 @@ def test_saves_cap_feeds_when_receiving_alerts():
         data = BeautifulSoup(fp.read(), "xml")
 
     # Finally, we check the event
-    alert = data.feed.entry.alert
-    assert alert.info.event.string == "Sismo"
-    assert alert.info.severity.string == "Minor"
-    assert len(alert.find_all("polygon")) == 1
+    event = data.feed.entry.alert
+    assert event.info.event.string == "Sismo"
+    assert event.info.severity.string == "Minor"
+    assert len(event.find_all("circle")) == 1
 
-    for file in files:
-        os.remove(file)
+    remove_files(files)
 
     # Now we check that the feeds have been stored in the database
     client = APIClient()
@@ -114,4 +131,4 @@ def test_saves_cap_feeds_when_receiving_alerts():
 
 
 if __name__ == "__main__":
-    test_saves_cap_feeds_when_receiving_alerts()
+    test_saves_cap_feeds_when_receiving_alerts(None)

@@ -9,11 +9,20 @@ from rss.cap.alert import Alert
 class TestMessageProcessor:
 
     def test_parse_message(self):
-        msg = "84,3,40,41203,2023/03/22,14:04:33,46237.1234567890"
-        city, region, date = services.MessageProcessor._parse_message(msg)
+        msg = "84,3,1,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
+        city, region, date, is_event = services.MessageProcessor._parse_message(msg)
         assert city == 40
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
+        assert not is_event
+
+    def test_parse_event_message(self):
+        msg = "84,3,0,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
+        city, region, date, is_event = services.MessageProcessor._parse_message(msg)
+        assert city == 40
+        assert region == 41203
+        assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
+        assert is_event
 
     @staticmethod
     def compare_alerts(alert1: Alert, alert2: Alert) -> bool:
@@ -95,8 +104,8 @@ class TestMessageProcessor:
         date1_str = date1.strftime("%Y/%m/%d,%H:%M:%S")
         date2_str = date2.strftime("%Y/%m/%d,%H:%M:%S")
 
-        msg1 = f"84,3,40,41203,{date1_str},46237.1234567890\r\n"
-        msg2 = f"84,3,40,41203,{date2_str},46237.1234567890\r\n"
+        msg1 = f"84,3,1,40,41203,{date1_str},46237.1234567890\r\n"
+        msg2 = f"84,3,1,40,41203,{date2_str},46237.1234567890\r\n"
 
         message_processor = services.MessageProcessor(queue.Queue())
         message_processor.new_alert_time = 60
@@ -117,8 +126,8 @@ class TestMessageProcessor:
     def test_creates_new_alerts_after_alert_time(self):
         date1 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
         data = self.put_in_queue([
-            f"84,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
-            f"84,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
+            f"84,3,1,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
+            f"84,3,1,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
             # Garbage data should be ignored
             f"15,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
@@ -130,7 +139,7 @@ class TestMessageProcessor:
         time.sleep(1.5)
 
         date2 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
-        data.put(f"84,3,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
+        data.put(f"84,3,1,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
         time.sleep(1)
 
         message_processor.shutdown()
@@ -156,7 +165,7 @@ class TestMessageProcessor:
     def test_updates_alerts_if_new_arrives_before_alert_time(self):
         date1 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
         data = self.put_in_queue([
-            f"84,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
+            f"84,3,1,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
         message_processor = services.MessageProcessor(data)
         message_processor.new_alert_time = 5
@@ -166,7 +175,7 @@ class TestMessageProcessor:
         time.sleep(1)
 
         date2 = datetime.datetime.now().strftime("%Y/%m/%d,%H:%M:%S")
-        data.put(f"84,3,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
+        data.put(f"84,3,1,41,41203,{date2},46237.1234567890\r\n".encode("utf-8"))
         time.sleep(2)
 
         message_processor.shutdown()
