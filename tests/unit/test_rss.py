@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pytest
 
 from rss.cap import rss
+from rss.cap.data import COORDS
 from rss.cap.alert import Alert
 
 
@@ -134,10 +135,11 @@ def test_update_feed():
 
 
 def test_event_feed():
+    region = 42201
     event_alert = Alert(
         time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
         city=40,
-        region=42201,
+        region=region,
         is_event=True,
         id="TEST_ALERT"
     )
@@ -145,8 +147,24 @@ def test_event_feed():
     feed.build()
 
     data = BeautifulSoup(feed.content, "xml")
+    assert "Sismo en" in data.feed.entry.title.string
+
     info = data.feed.entry.alert.info
 
     assert info.event.string == "Sismo"
     assert info.severity.string == "Minor"
     assert info.headline.string == "Sismo"
+    assert info.area.areaDesc.string == "Zona de sismo"
+
+    coords = COORDS[region]
+    expected_lat = f"{coords.lat:0.2f}"
+    expected_lon = f"{coords.lon:0.2f}"
+
+    circle = info.area.circle.string
+    coords, radius = circle.split()
+
+    assert radius == "50.0"
+    lat, lon = coords.split(",")
+    assert lat == expected_lat
+    assert lon == expected_lon
+

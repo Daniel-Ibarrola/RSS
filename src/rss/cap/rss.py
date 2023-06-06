@@ -2,7 +2,7 @@ import datetime
 from xml.dom import minidom
 
 from rss.cap.alert import Alert
-from rss.cap.data import CITIES, REGIONS, POLYGONS
+from rss.cap.data import CITIES, REGIONS, POLYGONS, COORDS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -198,10 +198,19 @@ class RSSFeed:
 
         # Area tag
         area = self._root.createElement("area")
-        self._add_text_tag(area, "areaDesc", "Zona de emisión de alerta")
-        self._polygon_tags(area)
-        info.appendChild(area)
+        if self._alert.is_event:
+            area_desc = "Zona de sismo"
+        else:
+            area_desc = "Zona de emisión de alerta"
 
+        self._add_text_tag(area, "areaDesc", area_desc)
+
+        if self._alert.is_event:
+            self._circle_tag(area)
+        else:
+            self._polygon_tags(area)
+
+        info.appendChild(area)
         return info
 
     def _get_title(self) -> str:
@@ -209,8 +218,10 @@ class RSSFeed:
         title = self._alert.time.strftime("%d %b %Y %H:%M:%S")
         city = CITIES[self._alert.city]
         region = REGIONS[self._alert.region]
-        # TODO: modify title for events
-        title += f" Alerta en {city} por sismo en {region}"
+        if self._alert.is_event:
+            title += f" Sismo en {region}"
+        else:
+            title += f" Alerta en {city} por sismo en {region}"
         return title
 
     def _polygon_tags(self, parent):
@@ -231,6 +242,11 @@ class RSSFeed:
             point = poly.points[-1]
             text += f"{point.lat:0.2f},{point.lon:0.2f}"
             self._add_text_tag(parent, "polygon", text)
+
+    def _circle_tag(self, parent):
+        coords = COORDS[self._alert.region]
+        text = f"{coords.lat:0.2f},{coords.lon:0.2f} 50.0"
+        self._add_text_tag(parent, "circle", text)
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
