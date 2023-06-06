@@ -1,7 +1,5 @@
 from datetime import datetime
 from flask import abort, request, jsonify, Response
-from flask_cors import CORS
-from flask_migrate import Migrate
 
 from rss import CONFIG
 from rss.api import create_app, db
@@ -9,8 +7,6 @@ from rss.api.models import Alert
 
 
 app = create_app(CONFIG)
-cors = CORS(app)
-migrate = Migrate(app, db)
 api_route = "/api/v1"
 
 
@@ -47,17 +43,7 @@ def index():
 
 @app.route(f"{api_route}/new_alert", methods=["POST"])
 def add_new_alert():
-    references = Alert.get_references(request.json["references"])
-    alert = Alert(
-        time=datetime.fromisoformat(request.json["time"]),
-        city=request.json["city"],
-        region=request.json["region"],
-        is_event=request.json["is_event"],
-        identifier=request.json["id"],
-        references=references
-    )
-    db.session.add(alert)
-    db.session.commit()
+    Alert.from_json(request.json)
     return "Ok", 201
 
 

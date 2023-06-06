@@ -54,6 +54,20 @@ class Alert(db.Model):
             pagination.total
         )
 
+    @staticmethod
+    def from_json(json: dict[str, Any]) -> None:
+        references = Alert.get_references(json["references"])
+        alert = Alert(
+            time=datetime.datetime.fromisoformat(json["time"]),
+            city=json["city"],
+            region=json["region"],
+            is_event=json["is_event"],
+            identifier=json["id"],
+            references=references
+        )
+        db.session.add(alert)
+        db.session.commit()
+
     def to_cap_file(self) -> str:
         cap_alert = self.to_cap_alert()
         feed = create_feed(cap_alert)
