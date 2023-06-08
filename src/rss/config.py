@@ -10,7 +10,7 @@ def get_api_url():
     return f"http://{host}:{port}"
 
 
-def get_postgres_uri(host: str = "localhost"):
+def get_dev_postgres_uri(host: str = "localhost") -> str:
     password = os.environ.get("DB_PASSWORD", "abc123")
     if host == "localhost":
         port = 54321
@@ -20,7 +20,17 @@ def get_postgres_uri(host: str = "localhost"):
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
+def get_postgres_uri() -> str:
+    host = os.environ.get("DB_HOST", "localhost")
+    user = os.environ.get("DB_USER", "rss")
+    password = os.environ.get("DB_PASSWORD", "abc123")
+    port = os.environ.get("PORT", 54321)
+    db_name = os.environ.get("DB_NAME", "rss")
+    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
+
+
 class Config:
+    # rss.main.py config
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
     ALERT_FILE_NAME = "test_alert"
@@ -30,15 +40,16 @@ class Config:
 
     IP = os.environ.get("IP", "localhost")
     PORT = int(os.environ.get("PORT", 12345))
+    API_URL = get_api_url()
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
-    CHECK_LAST_ALERT = False
-    # Flask and sql stuff
     API_SAVE_ALERTS = False
+
+    # API config
+    # Flask and sql stuff
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = get_postgres_uri(host=os.environ.get("DB_HOST", "localhost"))
-    API_URL = get_api_url()
+    SQLALCHEMY_DATABASE_URI = get_dev_postgres_uri(host=os.environ.get("DB_HOST", "localhost"))
 
     @staticmethod
     def init_app(app):
@@ -55,21 +66,25 @@ class TestSQLiteConfig(Config):
 
 
 class ProdConfig(Config):
+    # rss.main.py config
     ALERT_TIME = 60
     MSG_TIME = 60
     ALERT_FILE_NAME = "sasmex"
     UPDATE_FILE_NAME = "sasmex"
     EVENT_FILE_NAME = "sasmex_evento"
     EVENT_UPDATE_FILE_NAME = "sasmex_evento"
+
     IP = "172.30.17.182"
     PORT = 13084
-    SAVE_PATH = os.environ.get("SAVE_PATH", "/var/www/rss/")
-    CHECK_LAST_ALERT = False
+    API_URL = get_api_url()
+
+    SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
+
+    # Api config
     # Flask and sql stuff
     API_SAVE_ALERTS = True
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = get_postgres_uri(host=os.environ.get("DB_HOST", "localhost"))
-    API_URL = get_api_url()
+    SQLALCHEMY_DATABASE_URI = get_postgres_uri()
 
 
 configurations = {

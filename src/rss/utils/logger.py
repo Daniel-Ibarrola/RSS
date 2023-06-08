@@ -49,5 +49,9 @@ def get_module_logger(mod_name) -> logging.Logger:
 
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
-    logger.setLevel(logging.DEBUG)
+    if isinstance(CONFIG, DevConfig):
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
     return logger

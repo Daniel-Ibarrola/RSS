@@ -84,7 +84,7 @@ the app make sure PostgreSQL is installed.
  need to be modified.
 
 ```bash
-cp tools/rss_sasmex.service /etc/systemd/system/rss_sasmex.service
+cp deploy_tools/rss_sasmex.service /etc/systemd/system/rss_sasmex.service
 sudo systemctl daemon-reload
 sudo systemctl start rss_sasmex.service
 ```
@@ -95,4 +95,6 @@ sudo systemctl start rss_sasmex.service
 sudo systemctl status rss_sasmex.service
 ```
 
-### Installing the flask app
+### Installing the API
+
+

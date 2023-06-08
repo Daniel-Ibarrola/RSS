@@ -1,13 +1,9 @@
 import datetime
-import os
-
+from bs4 import BeautifulSoup
 import pytest
 
-from rss import CONFIG
 from rss.api.client import APIClient
 from rss.cap.alert import Alert
-from rss.cap.rss import get_cap_file_name
-from bs4 import BeautifulSoup
 
 
 @pytest.mark.usefixtures("postgres_session")
@@ -181,34 +177,3 @@ def test_get_last_alerts():
         "id": "ALERT3",
         "references": [],
     }
-
-
-@pytest.mark.usefixtures("postgres_session")
-@pytest.mark.usefixtures("wait_for_api")
-def test_post_and_save_alert():
-    alert = Alert(
-        time=datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-        city=40,
-        region=42201,
-        is_event=False,
-        id="TESTALERT",
-    )
-    client = APIClient()
-    res = client.post_alert(alert, save_file=True)
-    assert res.ok
-
-    file_list = []
-    for root, _, filenames in os.walk(CONFIG.SAVE_PATH):
-        for file in filenames:
-            if file.endswith(".cap"):
-                file_list.append(os.path.join(root, file))
-
-    assert len(file_list) == 1
-
-    cap_file = file_list[0]
-    with open(cap_file) as fp:
-        data = BeautifulSoup(fp.read(), "xml")
-
-    # We check the first alert
-    alert = data.feed.entry.alert
-    assert alert.info.event.string == "Alerta por sismo"

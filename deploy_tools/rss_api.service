@@ -1,0 +1,15 @@
+[Unit]
+Description=Gunicorn instance to serve CAP RSS API
+After=network.target
+
+[Service]
+User=daniel
+Group=www-data
+WorkingDirectory=/home/daniel/RSS/src/rss/app
+Environment="PATH=/home/daniel/RSS/venv/bin"
+EnvironmentFile=/home/daniel/RSS/tools/.env
+
+ExecStart=/home/daniel/RSS/venv/bin/gunicorn --workers 3 --bind unix:app.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
