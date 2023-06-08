@@ -129,13 +129,36 @@ Create a file called .env and save it in the root directory. In this
 file declare all the environment variables necessary for the app to run.
 Use the file in `deploy_tools/api.template.env` as a guide.
 
+
+#### Upgrade database
+
+Apply migrations to the database. 
+
+Copy the .env file and create a new file called env.sh. Add an export statement
+to each variable, also add the FLASK_APP variable. Example
+
+```shell
+export CONFIG=prod 
+export FLASK_APP=rss/api/app.py
+```
+
+Source the new scripts
+```shell
+source env.sh
+```
+
+Run the database migrations
+```shell
+flask db upgrade
+```
+
 #### Configure gunicorn
 
 Check that the app can start with no issues.
 
 ```shell
 source venv/bin/activate
-cd src/rss/api/app
+cd src/rss/api/
 gunicorn --bind 0.0.0.0:5000 wsgi:app
 ```
 
