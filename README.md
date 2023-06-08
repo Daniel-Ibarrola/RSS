@@ -155,7 +155,7 @@ Check that it is working correctly.
 sudo systemctl status rss_api.service
 ```
 
-### Configuring nginx
+#### Configuring nginx
 
 Modify the template nginx configuration file in `deploy_tools/nginx.template.conf`,
 create a new server block and copy the config file there.
