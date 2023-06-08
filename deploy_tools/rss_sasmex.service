@@ -7,7 +7,7 @@ Restart=on-failure
 # Update user accordingly
 User=daniel
 # Update following paths
-Environment="CONFIG=prod"
+EnvironmentFile=/home/daniel/RSS/tools/.env
 WorkingDirectory=/home/daniel/PycharmProjects/RSS/src
 
 # Update paths accordingly as well as args
