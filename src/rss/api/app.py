@@ -111,6 +111,9 @@ def get_cap_file(identifier):
     if alert is None:
         abort(404)
     file_contents = alert.to_cap_file()
+    if identifier == "latest":
+        identifier = "sasmex"
+
     response = Response(file_contents, mimetype="text/xml")
     response.headers.set(
         "Content-Disposition", "attachment", filename=f"{identifier}.cap"
