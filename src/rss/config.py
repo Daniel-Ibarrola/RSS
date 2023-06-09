@@ -81,8 +81,8 @@ class ProdConfig(Config):
     PORT = 13084
 
     API_URL = get_api_url()
-    API_USER = "triton"
-    API_PASSWORD = "abc123"
+    API_USER = os.environ.get("API_USER")
+    API_PASSWORD = os.environ.get("API_PASSWORD")
 
     SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
 
