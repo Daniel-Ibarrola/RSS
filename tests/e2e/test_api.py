@@ -163,6 +163,22 @@ def test_get_cap_file():
 
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
+def test_get_last_cap_file():
+    client = APIClient()
+    post_alerts(client)
+
+    res = client.get_cap_file(identifier="latest")
+    assert res.ok
+
+    contents = BeautifulSoup(res.json()["contents"], "xml")
+    assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
+
+    alert = contents.feed.entry.content.alert
+    assert alert.identifier.string == "ALERT3"
+
+
+@pytest.mark.usefixtures("postgres_session")
+@pytest.mark.usefixtures("wait_for_api")
 def test_get_last_alerts():
     client = APIClient()
     _, _, last_alert_date = post_alerts(client)

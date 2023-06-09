@@ -84,8 +84,13 @@ def get_alerts():
 
 @app.route(f"{api_route}/cap_contents/<identifier>")
 def get_cap_file_contents(identifier):
-    alert = db.session.execute(
-        db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
+    if identifier == "latest":
+        alert = db.session.execute(
+            db.select(Alert).order_by(Alert.time.desc())
+        ).scalars().first()
+    else:
+        alert = db.session.execute(
+            db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
     if alert is None:
         abort(404)
     file_contents = alert.to_cap_file()
@@ -96,8 +101,13 @@ def get_cap_file_contents(identifier):
 
 @app.route(f"{api_route}/cap/<identifier>")
 def get_cap_file(identifier):
-    alert = db.session.execute(
-        db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
+    if identifier == "latest":
+        alert = db.session.execute(
+            db.select(Alert).order_by(Alert.time.desc())
+        ).scalars().first()
+    else:
+        alert = db.session.execute(
+            db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
     if alert is None:
         abort(404)
     file_contents = alert.to_cap_file()
