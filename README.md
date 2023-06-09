@@ -169,7 +169,7 @@ any parameters necessary and then copy it to `/etc/systemd/system/` and then ena
 ```shell
 cp deploy_tools/rss_api.service /etc/systemd/system/rss_api.service
 sudo systemctl daemon-reload
-sudo systemctl start rss_sasmex.service
+sudo systemctl start rss_api.service
 ```
 
 Check that it is working correctly.
@@ -177,6 +177,18 @@ Check that it is working correctly.
 ```shell
 sudo systemctl status rss_api.service
 ```
+
+#### Building the front end 
+
+Build the front end app. 
+
+```shell
+npm run build
+npm run preview
+```
+
+Copy the dist folder to `/var/www/<site-name>`
+
 
 #### Configuring nginx
 
