@@ -10,6 +10,7 @@ class APIClient:
 
     def __init__(self):
         self.base_url = CONFIG.API_URL + "/api/v1"
+        self.credentials = (CONFIG.API_USER, CONFIG.API_PASSWORD)
 
     def post_alert(self, alert: Alert, save_file: bool = False) -> requests.Response:
         references = []
@@ -19,14 +20,18 @@ class APIClient:
         url = f"{self.base_url}/new_alert"
         if save_file:
             url += "?save=True"
-        res = requests.post(url, json={
-            "time": alert.time.isoformat(timespec="seconds"),
-            "city": alert.city,
-            "region": alert.region,
-            "is_event": alert.is_event,
-            "id": alert.id,
-            "references": references,
-        })
+        res = requests.post(
+            url,
+            json={
+                "time": alert.time.isoformat(timespec="seconds"),
+                "city": alert.city,
+                "region": alert.region,
+                "is_event": alert.is_event,
+                "id": alert.id,
+                "references": references,
+            },
+            auth=self.credentials
+        )
         return res
 
     def post_alerts(self, alerts: list[Alert]) -> None:

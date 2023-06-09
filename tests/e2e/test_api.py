@@ -193,3 +193,19 @@ def test_get_last_alerts():
         "id": "ALERT3",
         "references": [],
     }
+
+
+@pytest.mark.usefixtures("postgres_session")
+@pytest.mark.usefixtures("wait_for_api")
+def test_not_logged_user_cannot_post():
+    alert = Alert(
+        time=datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
+        city=40,
+        region=42201,
+        is_event=False,
+        id="TESTALERT",
+    )
+    client = APIClient()
+    client.credentials = ("unknown_user", "dog")
+    res = client.post_alert(alert)
+    assert res.status_code == 401

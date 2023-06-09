@@ -40,7 +40,10 @@ class Config:
 
     IP = os.environ.get("IP", "localhost")
     PORT = int(os.environ.get("PORT", 12345))
+
     API_URL = get_api_url()
+    API_USER = "triton"
+    API_PASSWORD = "abc123"
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
     API_SAVE_ALERTS = False
@@ -76,7 +79,10 @@ class ProdConfig(Config):
 
     IP = "172.30.17.182"
     PORT = 13084
+
     API_URL = get_api_url()
+    API_USER = "triton"
+    API_PASSWORD = "abc123"
 
     SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
 

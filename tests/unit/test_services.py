@@ -2,6 +2,7 @@ import datetime
 import queue
 import time
 
+from rss import CONFIG
 from rss.cap import services
 from rss.cap.alert import Alert
 
@@ -249,11 +250,15 @@ class TestFeedPoster:
         url = poster.client.base_url
         url += "/new_alert"
 
-        mock_post.assert_called_once_with(url, json={
-            "time": date.isoformat(timespec="seconds"),
-            "city": 40,
-            "region": 41203,
-            "is_event": False,
-            "id": "TESTALERT",
-            "references": []
-        })
+        mock_post.assert_called_once_with(
+            url,
+            json={
+                "time": date.isoformat(timespec="seconds"),
+                "city": 40,
+                "region": 41203,
+                "is_event": False,
+                "id": "TESTALERT",
+                "references": []
+            },
+            auth=(CONFIG.API_USER, CONFIG.API_PASSWORD)
+        )

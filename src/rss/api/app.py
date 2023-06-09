@@ -1,4 +1,5 @@
 from flask import abort, request, jsonify, Response
+from flask_httpauth import HTTPBasicAuth
 
 from rss import CONFIG
 from rss.api import create_app, db
@@ -6,13 +7,24 @@ from rss.api.models import Alert
 
 
 app = create_app(CONFIG)
+auth = HTTPBasicAuth()
 api_route = "/api/v1"
+
+
+@auth.verify_password
+def verify_password(user: str, password: str) -> bool:
+    return user == CONFIG.API_USER and password == CONFIG.API_PASSWORD
 
 
 def handle_error(error_type: str, status_code: int):
     response = jsonify({"error": error_type})
     response.status_code = status_code
     return response
+
+
+@app.errorhandler(401)
+def unauthorized(message: str) -> Response:
+    return handle_error("unauthorized", 401)
 
 
 @app.errorhandler(403)
@@ -41,11 +53,9 @@ def index():
 
 
 @app.route(f"{api_route}/new_alert", methods=["POST"])
+@auth.login_required
 def add_new_alert():
-    alert = Alert.from_json(request.json)
-    save = request.args.get("save", False, type=bool)
-    if save:
-        alert.save_to_file(CONFIG.SAVE_PATH, app.logger)
+    Alert.from_json(request.json)
     return "Ok", 201
 
 
