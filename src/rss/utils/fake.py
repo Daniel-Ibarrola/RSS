@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker
 
 from rss.config import configurations
 from rss.api import create_app, db
-from rss.api.models import Alert
+from rss.api.models import Alert, State
 from rss.cap.services import MessageProcessor
-from rss.cap.data import CITIES, REGIONS
+from rss.cap.data import STATES, REGIONS
 
 
 def clear_database() -> None:
@@ -16,7 +16,7 @@ def clear_database() -> None:
     engine.connect()
     session = sessionmaker(bind=engine)()
 
-    # Clear database after running tests
+    session.execute(text("DELETE FROM states"))
     session.execute(text("DELETE FROM alerts"))
     session.commit()
     session.close()
@@ -55,24 +55,30 @@ def generate_fake_alerts():
         options,
         weights=[0.4, 0.6],
         k=len(dates))
+    extra_state = random.choices(
+        options,
+        weights=[0.5, 0.5],
+        k=len(dates))
 
-    cities = list(CITIES.keys())
-    regions = list(REGIONS.keys())
+    state_list = list(STATES.keys())
+    region_list = list(REGIONS.keys())
 
     id_list = []
     with app.app_context():
         for ii in range(len(dates)):
             if day_choices[ii]:
                 identifier = MessageProcessor.alert_id(dates[ii])
-                city = random.choice(cities)
-                region = random.choice(regions)
+                states = [State(state_id=random.choice(state_list))]
+                region = random.choice(region_list)
+                if extra_state[ii]:
+                    states.append(State(state_id=random.choice(state_list)))
 
                 if references_choices[ii] and ii > 1:
                     # Reference the previous alert
                     references = Alert.get_references([id_list[-1]])
                     alert = Alert(
                         time=dates[ii],
-                        city=city,
+                        states=states,
                         region=region,
                         is_event=event_choices[ii],
                         identifier=identifier,
@@ -81,7 +87,7 @@ def generate_fake_alerts():
                 else:
                     alert = Alert(
                         time=dates[ii],
-                        city=city,
+                        states=states,
                         region=region,
                         is_event=event_choices[ii],
                         identifier=identifier,

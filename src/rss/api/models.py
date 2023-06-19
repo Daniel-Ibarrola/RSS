@@ -117,7 +117,7 @@ class Alert(db.Model):
 
     def __repr__(self) -> str:
         return f"Alert(id={self.id}, time={self.time}, " \
-               f"city={self.city}, identifier={self.identifier})"
+               f"region={self.region}, identifier={self.identifier})"
 
 
 class State(db.Model):
