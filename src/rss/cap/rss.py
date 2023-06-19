@@ -1,9 +1,10 @@
+from babel.dates import format_datetime
 import datetime
 from xml.dom import minidom
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.data import CITIES, REGIONS, POLYGONS, COORDS
+from rss.cap.data import STATES, REGIONS, POLYGONS, COORDS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -72,7 +73,7 @@ class RSSFeed:
 
         self._add_text_tag(feed, "id", "https://rss.sasmex.net")
         self._add_link_tag(feed, "text/html", "alternate", "https://rss.sasmex.net")
-        self._add_link_tag(feed, "application/atom+xml", "self", "https://rss.sasmex.net/sasmex2.xml")
+        self._add_link_tag(feed, "application/atom+xml", "self", "https://rss.sasmex.net/sasmex.xml")
 
         text_tags = [
             ("title", "SASMEX-CIRES RSS Feed"),
@@ -185,7 +186,7 @@ class RSSFeed:
             ("headline", headline),
             ("description", "SASMEX registró un sismo"),
             ("instruction", "Realice procedimiento en caso de sismo"),
-            ("web", "http://sasmex.net"),
+            ("web", "https://rss.sasmex.net"),
             ("contact", "CIRES"),
         ]
         for tag in text_tags:
@@ -215,23 +216,24 @@ class RSSFeed:
         return info
 
     def _get_title(self) -> str:
-        # TODO: change date to spanish
-        title = self._alert.time.strftime("%d %b %Y %H:%M:%S")
-        city = CITIES[self._alert.city]
+        title = format_datetime(self._alert.time, locale="es_MX")
+        state_list = [STATES[s] for s in self._alert.states]
+        states = "/".join(state_list)
         region = REGIONS[self._alert.region]
         if self._alert.is_event:
             title += f" Sismo en {region}"
         else:
-            title += f" Alerta en {city} por sismo en {region}"
+            title += f" Alerta en {states} por sismo en {region}"
         return title
 
     def _polygon_tags(self, parent):
-        # TODO: multiple cities
         polygons = []
         # First the references of polygons if any
         if self._refs is not None:
-            polygons.extend([POLYGONS[ref.city] for ref in self._refs])
-        polygons.append(POLYGONS[self._alert.city])
+            for ref in self._refs:
+                for state in ref.states:
+                    polygons.append(POLYGONS[state])
+        polygons.extend(POLYGONS[p] for p in self._alert.states)
 
         for poly in polygons:
             text = ""

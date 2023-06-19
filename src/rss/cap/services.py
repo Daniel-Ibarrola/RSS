@@ -67,14 +67,13 @@ class MessageProcessor(AbstractService):
 
         Alert msg format:
 
-        84,3,Event/Alert,City,Station,yyyy/mm/dd,hh:mm:ss,hourMsg\r\n
+        84,3,Event/Alert,City1/City2/.../CityN,Station,yyyy/mm/dd,hh:mm:ss,hourMsg\r\n
 
         Where
 
         Event/Alert = 0 for events. 1 for alerts
         hourMsg = unix time the message was sent
     """
-    # TODO: new msg format: 84,3,Event/Alert,City1/City2/.../CityN,Station,yyyy/mm/dd,hh:mm:ss,hourMsg\r\n
 
     def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
         super().__init__()
@@ -107,17 +106,17 @@ class MessageProcessor(AbstractService):
         """ Get an alert from a message."""
         msg = msg.decode().strip()
         if msg.startswith("84,3"):
-            city, region, date, is_event = self._parse_message(msg)
+            states, region, date, is_event = self._parse_message(msg)
 
             self._flush_updates()
-            if self._check_city(city):
+            if all(self._check_state(s) for s in states):
                 if len(self.updates) == 0:
                     refs = None
                 else:
                     refs = copy.deepcopy(self.updates)
                 alert = Alert(
                     time=date,
-                    city=city,
+                    states=states,
                     region=region,
                     id=self.alert_id(date),
                     is_event=is_event,
@@ -132,9 +131,9 @@ class MessageProcessor(AbstractService):
         except queue.Empty:
             pass
 
-    def _check_city(self, city: int) -> bool:
-        """ Checks that the given city is not in the queue"""
-        return not any(alert.city == city for alert in self.updates)
+    def _check_state(self, state: int) -> bool:
+        """ Checks that the given state is not in the queue"""
+        return not any(s == state for alert in self.updates for s in alert.states)
 
     def _flush_updates(self) -> None:
         if self.updates:
@@ -147,12 +146,13 @@ class MessageProcessor(AbstractService):
         return abs((date1 - date2).total_seconds())
 
     @staticmethod
-    def _parse_message(msg: str) -> tuple[int, int, datetime, bool]:
+    def _parse_message(msg: str) -> tuple[list[int], int, datetime, bool]:
         pieces = msg.split(",")
         is_event = not bool(int(pieces[2]))
-        city, region = int(pieces[3]), int(pieces[4])
+        cities = [int(c) for c in pieces[3].split("/")]
+        region = int(pieces[4])
         date = datetime.strptime(pieces[5] + "," + pieces[6], "%Y/%m/%d,%H:%M:%S")
-        return city, region, date, is_event
+        return cities, region, date, is_event
 
     @staticmethod
     def alert_id(date: datetime) -> str:
@@ -169,7 +169,8 @@ class MessageProcessor(AbstractService):
 
     @staticmethod
     def _alert_str(alert: Alert) -> str:
-        return f"Alert(time={alert.time.isoformat()}, city={alert.city}," \
+        return f"Alert(time={alert.time.isoformat()}, " \
+               f"states={alert.states}," \
                f" region={alert.region})"
 
 

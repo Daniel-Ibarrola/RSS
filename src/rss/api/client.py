@@ -24,7 +24,7 @@ class APIClient:
             url,
             json={
                 "time": alert.time.isoformat(timespec="seconds"),
-                "city": alert.city,
+                "states": alert.states,
                 "region": alert.region,
                 "is_event": alert.is_event,
                 "id": alert.id,

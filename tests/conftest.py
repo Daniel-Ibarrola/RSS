@@ -70,6 +70,7 @@ def postgres_session(postgres_db):
     yield session
 
     # Clear database after running tests
+    session.execute(text("DELETE FROM states"))
     session.execute(text("DELETE FROM alerts"))
     session.commit()
     session.close()

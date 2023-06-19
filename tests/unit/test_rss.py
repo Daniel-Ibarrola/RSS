@@ -34,7 +34,7 @@ class TestRSSFeed:
 
     def test_entry_title(self, cap_xml):
         title = cap_xml.feed.entry.title
-        assert title.string == "13 Mar 2023 16:07:05 Alerta en CDMX por sismo en Costa Oax-Gro"
+        assert title.string == "13 mar 2023 16:07:05 Alerta en CDMX/Guerrero por sismo en Costa Oax-Gro"
 
     def test_alert_tag(self, cap_xml):
         alert = cap_xml.feed.entry.content.alert

@@ -22,33 +22,39 @@ def check_log_file(logs_path: str, file_name: str, size: int) -> None:
         open(log_file, "w").close()
 
 
-def get_module_logger(mod_name) -> logging.Logger:
+def get_module_logger(
+        mod_name: str,
+        use_file_handler: bool = True,
+        use_stream_handler: bool = True,
+) -> logging.Logger:
     """
     To use this, do logger = get_module_logger(__name__)
     """
     logger = logging.getLogger(mod_name)
-    stream_handler = logging.StreamHandler()
-
-    if isinstance(CONFIG, ProdConfig):
-        log_file_name = "logs/sasmex_rss.log"
-    elif isinstance(CONFIG, DevConfig):
-        log_file_name = "logs/test.log"
-    else:
-        raise ValueError(f"Unexpected config")
-
-    base_path = os.path.dirname(__file__)
-    log_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", log_file_name))
-    check_log_file(log_path, log_file_name, size=1000000)  # Size in mb
-
-    file_handler = logging.FileHandler(log_path)
-
     formatter = logging.Formatter(
         '%(asctime)s [%(name)-12s] %(levelname)-5s %(message)s')
-    stream_handler.setFormatter(formatter)
-    file_handler.setFormatter(formatter)
 
-    logger.addHandler(stream_handler)
-    logger.addHandler(file_handler)
+    if use_file_handler:
+        if isinstance(CONFIG, ProdConfig):
+            log_file_name = "logs/sasmex_rss.log"
+        elif isinstance(CONFIG, DevConfig):
+            log_file_name = "logs/test.log"
+        else:
+            raise ValueError(f"Unexpected config")
+
+        base_path = os.path.dirname(__file__)
+        log_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", log_file_name))
+        check_log_file(log_path, log_file_name, size=1000000)  # Size in mb
+
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    if use_stream_handler:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
     if isinstance(CONFIG, DevConfig):
         logger.setLevel(logging.DEBUG)
     else:

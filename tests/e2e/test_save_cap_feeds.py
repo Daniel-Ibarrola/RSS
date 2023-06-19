@@ -116,17 +116,17 @@ def test_saves_cap_feeds_when_receiving_alerts(cleanup_files):
     assert len(json["alerts"]) == 3
 
     alert = json["alerts"][2]
-    assert alert["city"] == 41
+    assert alert["states"] == [41, 42]
     assert len(alert["references"]) == 0
     assert not alert["is_event"]
 
     update = json["alerts"][1]
-    assert update["city"] == 43
+    assert update["states"] == [43]
     assert len(update["references"]) == 1
     assert not update["is_event"]
 
     event = json["alerts"][0]
-    assert event["city"] == 44
+    assert event["states"] == [44]
     assert len(event["references"]) == 0
     assert event["is_event"]
 

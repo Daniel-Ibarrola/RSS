@@ -12,7 +12,7 @@ class Polygon:
     points: list[GeoPoint]
 
 
-CITIES = {
+STATES = {
     40: 'CDMX',
     41: 'Guerrero',
     42: 'Oaxaca',

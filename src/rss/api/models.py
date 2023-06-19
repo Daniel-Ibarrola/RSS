@@ -60,9 +60,10 @@ class Alert(db.Model):
     @staticmethod
     def from_json(json: dict[str, Any]) -> "Alert":
         references = Alert.get_references(json["references"])
+        states = [State(state_id=s) for s in json["states"]]
         alert = Alert(
             time=datetime.datetime.fromisoformat(json["time"]),
-            city=json["city"],
+            states=states,
             region=json["region"],
             is_event=json["is_event"],
             identifier=json["id"],
