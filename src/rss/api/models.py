@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from typing import Any
+from typing import Any, List
 from sqlalchemy import func
 
 from rss.api import db
@@ -11,15 +11,16 @@ from rss.cap.rss import create_feed, get_cap_file_name
 
 class Alert(db.Model):
     __tablename__ = "alerts"
-    id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.TIMESTAMP, nullable=False)
-    city = db.Column(db.Integer, nullable=False)
-    region = db.Column(db.Integer, nullable=False)
-    is_event = db.Column(db.Boolean, nullable=False)
-    identifier = db.Column(db.String(50), nullable=False)
+    id: db.Mapped[int] = db.mapped_column(primary_key=True)
+    time: db.Mapped[datetime.datetime] = db.mapped_column(db.TIMESTAMP, nullable=False)
+    region: db.Mapped[int] = db.mapped_column(nullable=False)
+    is_event: db.Mapped[bool] = db.mapped_column(nullable=False)
+    identifier: db.Mapped[str] = db.mapped_column(db.String(50), nullable=False)
 
-    parent_id = db.Column(db.Integer, db.ForeignKey("alerts.id"))
-    references = db.relationship("Alert")
+    parent_id = db.mapped_column(db.ForeignKey("alerts.id"))
+    references: db.Mapped[List["Alert"]] = db.relationship("Alert")
+
+    states: db.Mapped[List["State"]] = db.relationship(back_populates="alert")
 
     PER_PAGE = 20
 
@@ -83,7 +84,7 @@ class Alert(db.Model):
             refs = None
         return CapAlert(
             time=self.time,
-            city=self.city,
+            states=[s.state_id for s in self.states],
             region=self.region,
             id=self.identifier,
             is_event=self.is_event,
@@ -93,7 +94,7 @@ class Alert(db.Model):
     def to_json(self) -> dict[str, Any]:
         return {
             "time": self.time.isoformat(timespec="seconds"),
-            "city": self.city,
+            "states": [s.state_id for s in self.states],
             "region": self.region,
             "is_event": self.is_event,
             "id": self.identifier,
@@ -116,3 +117,15 @@ class Alert(db.Model):
     def __repr__(self) -> str:
         return f"Alert(id={self.id}, time={self.time}, " \
                f"city={self.city}, identifier={self.identifier})"
+
+
+class State(db.Model):
+    __tablename__ = "states"
+    id: db.Mapped[int] = db.mapped_column(primary_key=True)
+    state_id: db.Mapped[int] = db.mapped_column(nullable=False)
+    alert_id: db.Mapped[int] = db.mapped_column(db.ForeignKey("alerts.id"))
+
+    alert: db.Mapped[Alert] = db.relationship(back_populates="states")
+
+    def __repr__(self) -> str:
+        return f"State(id={self.id}, state_id={self.state_id})"

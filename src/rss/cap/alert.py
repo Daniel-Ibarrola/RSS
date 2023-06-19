@@ -5,7 +5,7 @@ import datetime
 @dataclasses.dataclass(frozen=True)
 class Alert:
     time: datetime.datetime
-    city: int
+    states: list[int]
     region: int
     id: str = ""
     is_event: bool = False

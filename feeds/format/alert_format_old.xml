@@ -74,7 +74,7 @@
 						<!-- Event Id parameter is redundant -->
 						<value>S42212T1678745171458</value>
 					</parameter>
-					<!-- TODO : May include additional parameters such as Magnitude-->
+					<!-- May include additional parameters such as Magnitude-->
 					<resource>
 						<resourceDesc>Image file (GIF)</resourceDesc>
 						<mimeType>image/gif</mimeType>

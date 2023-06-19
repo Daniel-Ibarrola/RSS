@@ -6,7 +6,7 @@ from rss.cap.alert import Alert
 
 def main():
     client = APIClient()
-    client.base_url = "http://mapa.sasmex.net/api/v1"
+    client.base_url = "https://mapa.sasmex.net/api/v1"
     alert = Alert(
         time=datetime.datetime(2023, 4, 3, 20, 12, 18),
         city=40,

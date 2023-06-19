@@ -13,7 +13,7 @@ class TestRSSFeed:
     def cap_xml(self):
         alert = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40, 41],
             region=42201,
             is_event=False,
             id="TESTEVENT",
@@ -66,18 +66,22 @@ class TestRSSFeed:
         assert info.headline.string == "Alerta Sísmica"
         assert info.description.string == "SASMEX registró un sismo"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
-        assert info.web.string == "http://sasmex.net"
+        assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "CIRES"
 
         area = info.area
         assert area.areaDesc.string == "Zona de emisión de alerta"
-        assert area.polygon.string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
+
+        polygons = area.find_all("polygon")
+        assert len(polygons) == 2
+        assert polygons[0].string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
+        assert polygons[1].string == "16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08"
 
     @staticmethod
     def sample_alert(refs=None):
         return Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=42,
+            states=[42],
             region=42201,
             is_event=False,
             id="TEST_ALERT",
@@ -96,14 +100,14 @@ class TestRSSFeed:
         refs = [
             Alert(
                 time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-                city=40,
+                states=[40],
                 region=42201,
                 id="REF_ID_1",
                 is_event=False,
             ),
             Alert(
                 time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10),
-                city=41,
+                states=[41],
                 region=42201,
                 id="REF_ID_2",
                 is_event=False,
@@ -133,7 +137,7 @@ class TestRSSFeed:
         region = 42201
         event_alert = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40],
             region=region,
             is_event=True,
             id="TEST_ALERT"
@@ -169,7 +173,7 @@ class TestCapFileName:
     def test_event(self):
         event_alert = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40],
             region=41203,
             is_event=True,
             id="TEST_ALERT"
@@ -180,7 +184,7 @@ class TestCapFileName:
         references = [
             Alert(
                 time=datetime(year=2023, month=3, day=13, hour=16, minute=6, second=5),
-                city=40,
+                states=[40],
                 region=41205,
                 is_event=True,
                 id="TEST_ALERT"
@@ -188,7 +192,7 @@ class TestCapFileName:
         ]
         event = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40],
             region=41203,
             is_event=True,
             id="TEST_ALERT",
@@ -199,7 +203,7 @@ class TestCapFileName:
     def test_alert(self):
         alert = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40],
             region=41203,
             is_event=False,
             id="TEST_ALERT"
@@ -210,7 +214,7 @@ class TestCapFileName:
         references = [
             Alert(
                 time=datetime(year=2023, month=3, day=13, hour=16, minute=6, second=5),
-                city=40,
+                states=[40],
                 region=41205,
                 is_event=False,
                 id="TEST_ALERT"
@@ -218,7 +222,7 @@ class TestCapFileName:
         ]
         event = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-            city=40,
+            states=[40],
             region=41203,
             is_event=False,
             id="TEST_ALERT",

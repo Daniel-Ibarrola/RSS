@@ -11,16 +11,24 @@ class TestMessageProcessor:
 
     def test_parse_message(self):
         msg = "84,3,1,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        city, region, date, is_event = services.MessageProcessor._parse_message(msg)
-        assert city == 40
+        [state], region, date, is_event = services.MessageProcessor._parse_message(msg)
+        assert state == 40
+        assert region == 41203
+        assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
+        assert not is_event
+
+    def test_parse_message_multiple_states(self):
+        msg = "84,3,1,40/41/42,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
+        states, region, date, is_event = services.MessageProcessor._parse_message(msg)
+        assert states == [40, 41, 42]
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
         assert not is_event
 
     def test_parse_event_message(self):
         msg = "84,3,0,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        city, region, date, is_event = services.MessageProcessor._parse_message(msg)
-        assert city == 40
+        [state], region, date, is_event = services.MessageProcessor._parse_message(msg)
+        assert state == 40
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
         assert is_event
@@ -32,7 +40,7 @@ class TestMessageProcessor:
 
         return (time_diff < 1
                 and alert1.refs == alert2.refs
-                and alert1.city == alert2.city
+                and alert1.states == alert2.states
                 and alert1.region == alert2.region
                 and alert1.is_event == alert2.is_event
                 )
@@ -58,25 +66,25 @@ class TestMessageProcessor:
 
         assert alert is None
 
-    def test_check_city_not_in_queue(self):
+    def test_check_state_not_in_queue(self):
         message_processor = services.MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
-            city=40,
+            states=[40],
             region=41203,
         )
         message_processor.updates.append(alert)
-        assert message_processor._check_city(42)
+        assert message_processor._check_state(42)
 
-    def test_check_city_in_queue(self):
+    def test_check_state_in_queue(self):
         message_processor = services.MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
-            city=40,
+            states=[40],
             region=41203,
         )
         message_processor.updates.append(alert)
-        assert not message_processor._check_city(40)
+        assert not message_processor._check_state(40)
 
     def test_flush_updates_queue(self):
         message_processor = services.MessageProcessor(queue.Queue())
@@ -85,12 +93,12 @@ class TestMessageProcessor:
         date1 = datetime.datetime.now() - datetime.timedelta(seconds=70)
         alert1 = Alert(
             time=date1,
-            city=40,
+            states=[40],
             region=41203,
         )
         alert2 = Alert(
             time=date1,
-            city=44,
+            states=[44],
             region=41203,
         )
         message_processor.updates.append(alert1)
@@ -98,7 +106,7 @@ class TestMessageProcessor:
         message_processor._flush_updates()
         assert len(message_processor.updates) == 0
 
-    def test_msgs_of_same_city_are_ignored_if_arrive_before_time(self):
+    def test_msgs_of_same_state_are_ignored_if_arrive_before_time(self):
         date1 = datetime.datetime.now() - datetime.timedelta(seconds=30)
         date2 = datetime.datetime.now() - datetime.timedelta(seconds=25)
 
@@ -115,11 +123,11 @@ class TestMessageProcessor:
         message_processor.updates.append(alert1)
 
         alert2 = message_processor._get_alert(msg2.encode("utf-8"))
-        # Alerts of the same city arriving before new alert time are
+        # Alerts of the same state arriving before new alert time are
         # considered equal
         assert self.compare_alerts(alert1, Alert(
             time=date1,
-            city=40,
+            states=[40],
             region=41203,
         ))
         assert alert2 is None
@@ -148,19 +156,19 @@ class TestMessageProcessor:
         alerts = self.queue_to_list(message_processor.alerts)
         # The last alert should be stored as an update
         assert len(message_processor.updates) == 1
-        assert message_processor.updates[0].city == 41
+        assert message_processor.updates[0].states == [41]
         assert len(alerts) == 2
 
         first_alert = alerts[0]
         assert first_alert.refs is None  # Means is not an update
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
-        assert first_alert.city == 40
+        assert first_alert.states == [40]
         assert first_alert.region == 41203
 
         second_alert = alerts[1]
         assert second_alert.refs is None  # Means is not an update
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
-        assert second_alert.city == 41
+        assert second_alert.states == [41]
         assert second_alert.region == 41203
 
     def test_updates_alerts_if_new_arrives_before_alert_time(self):
@@ -188,7 +196,7 @@ class TestMessageProcessor:
         alert_id = first_alert.id
         assert first_alert.refs is None  # Means is not an update
         assert first_alert.time == datetime.datetime.strptime(date1, "%Y/%m/%d,%H:%M:%S")
-        assert first_alert.city == 40
+        assert first_alert.states == [40]
         assert first_alert.region == 41203
 
         second_alert = alerts[1]
@@ -197,7 +205,7 @@ class TestMessageProcessor:
         assert references[0].id == alert_id
 
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
-        assert second_alert.city == 41
+        assert second_alert.states == [41]
         assert second_alert.region == 41203
 
 
@@ -206,7 +214,7 @@ class TestAlertDispatcher:
     def test_dispatch_alerts(self):
         initial_alert = Alert(
             time=datetime.datetime.now(),
-            city=40,
+            states=[40],
             region=41203,
             id="TESTALERT"
         )
@@ -235,7 +243,7 @@ class TestFeedPoster:
         date = datetime.datetime.now()
         alert = Alert(
             time=date,
-            city=40,
+            states=[40],
             region=41203,
             id="TESTALERT",
             is_event=False
@@ -254,7 +262,7 @@ class TestFeedPoster:
             url,
             json={
                 "time": date.isoformat(timespec="seconds"),
-                "city": 40,
+                "states": [40],
                 "region": 41203,
                 "is_event": False,
                 "id": "TESTALERT",

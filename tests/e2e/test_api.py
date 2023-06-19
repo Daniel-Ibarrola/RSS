@@ -13,14 +13,14 @@ def test_post_and_get_alerts():
     date2 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10)
     alert = Alert(
         time=date1,
-        city=40,
+        states=[40],
         region=42201,
         is_event=False,
         id="TESTALERT",
     )
     update = Alert(
         time=date2,
-        city=41,
+        states=[41],
         region=42201,
         is_event=False,
         id="TESTUPDATE",
@@ -40,7 +40,7 @@ def test_post_and_get_alerts():
 
     alert_json = {
         "time": date1.isoformat(timespec="seconds"),
-        "city": 40,
+        "states": [40],
         "region": 42201,
         "is_event": False,
         "id": "TESTALERT",
@@ -53,7 +53,7 @@ def test_post_and_get_alerts():
 
     assert res.json() == {
         "time": date2.isoformat(timespec="seconds"),
-        "city": 41,
+        "states": [41],
         "region": 42201,
         "is_event": False,
         "id": "TESTUPDATE",
@@ -65,9 +65,9 @@ def post_alerts(client: APIClient) -> list[datetime.datetime]:
     date1 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5)
     date2 = datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=10)
     date3 = datetime.datetime(year=2023, month=3, day=14, hour=16, minute=7, second=10)
-    alert1 = Alert(date1, 40, 41201, "ALERT1", False)
-    alert2 = Alert(date2, 41, 41204, "ALERT2", False)
-    alert3 = Alert(date3, 42, 41215, "ALERT3", False)
+    alert1 = Alert(date1, [40], 41201, "ALERT1", False)
+    alert2 = Alert(date2, [41], 41204, "ALERT2", False)
+    alert3 = Alert(date3, [42], 41215, "ALERT3", False)
 
     client.post_alerts([alert1, alert2, alert3])
 
@@ -87,7 +87,7 @@ def test_get_alerts_by_date():
         "alerts": [
             {
                 "time": date1.isoformat(timespec="seconds"),
-                "city": 40,
+                "states": [40],
                 "region": 41201,
                 "is_event": False,
                 "id": "ALERT1",
@@ -95,7 +95,7 @@ def test_get_alerts_by_date():
             },
             {
                 "time": date2.isoformat(timespec="seconds"),
-                "city": 41,
+                "states": [41],
                 "region": 41204,
                 "is_event": False,
                 "id": "ALERT2",
@@ -115,7 +115,7 @@ def test_get_multiple_alerts():
         "alerts": [
             {
                 "time": date3.isoformat(timespec="seconds"),
-                "city": 42,
+                "states": [42],
                 "region": 41215,
                 "is_event": False,
                 "id": "ALERT3",
@@ -123,7 +123,7 @@ def test_get_multiple_alerts():
             },
             {
                 "time": date2.isoformat(timespec="seconds"),
-                "city": 41,
+                "states": [41],
                 "region": 41204,
                 "is_event": False,
                 "id": "ALERT2",
@@ -131,7 +131,7 @@ def test_get_multiple_alerts():
             },
             {
                 "time": date1.isoformat(timespec="seconds"),
-                "city": 40,
+                "states": [40],
                 "region": 41201,
                 "is_event": False,
                 "id": "ALERT1",
@@ -187,7 +187,7 @@ def test_get_last_alerts():
     assert res.ok
     assert res.json() == {
         "time": last_alert_date.isoformat(timespec="seconds"),
-        "city": 42,
+        "states": [42],
         "region": 41215,
         "is_event": False,
         "id": "ALERT3",
@@ -200,7 +200,7 @@ def test_get_last_alerts():
 def test_not_logged_user_cannot_post():
     alert = Alert(
         time=datetime.datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
-        city=40,
+        states=[40],
         region=42201,
         is_event=False,
         id="TESTALERT",

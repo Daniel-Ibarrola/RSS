@@ -52,7 +52,7 @@ class AbstractService(abc.ABC):
 
     @staticmethod
     def _get_from_queue(data_queue: queue, timeout: float) -> Union[Alert, None]:
-        """ Get an alert from the queue. If timeout expires and there is
+        """ Get an item from the queue. If timeout expires and there is
             nothing in the queue returns None.
         """
         try:
@@ -74,6 +74,7 @@ class MessageProcessor(AbstractService):
         Event/Alert = 0 for events. 1 for alerts
         hourMsg = unix time the message was sent
     """
+    # TODO: new msg format: 84,3,Event/Alert,City1/City2/.../CityN,Station,yyyy/mm/dd,hh:mm:ss,hourMsg\r\n
 
     def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
         super().__init__()

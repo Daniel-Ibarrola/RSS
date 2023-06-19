@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert
+from rss.api.models import Alert, State
 from rss.cap.alert import Alert as CapAlert
 
 
@@ -11,7 +11,7 @@ def test_get_alert_references():
     id_1 = "ALERT_1"
     alert_1 = Alert(
         time=datetime(2023, 5, 17),
-        city=40,
+        states=[State(state_id=40)],
         region=12205,
         is_event=False,
         identifier=id_1
@@ -22,7 +22,7 @@ def test_get_alert_references():
     id_2 = "ALERT_2"
     alert_2 = Alert(
         time=datetime(2023, 5, 18),
-        city=41,
+        states=[State(state_id=41)],
         region=12203,
         is_event=False,
         identifier=id_2
@@ -34,7 +34,7 @@ def test_get_alert_references():
     references = Alert.get_references([id_1, id_2])
     alert_3 = Alert(
         time=datetime(2023, 5, 18),
-        city=42,
+        states=[State(state_id=40)],
         region=12211,
         is_event=False,
         identifier="ALERT_3",
@@ -53,7 +53,7 @@ def add_alert_with_references() -> tuple[Alert, Alert]:
     date1 = datetime(2023, 5, 17)
     alert1 = Alert(
         time=date1,
-        city=40,
+        states=[State(state_id=40)],
         region=12205,
         is_event=False,
         identifier="ALERT1"
@@ -64,7 +64,7 @@ def add_alert_with_references() -> tuple[Alert, Alert]:
     date2 = datetime(2023, 5, 18)
     alert2 = Alert(
         time=date2,
-        city=41,
+        states=[State(state_id=41)],
         region=12203,
         is_event=False,
         identifier="ALERT2",
@@ -82,14 +82,14 @@ def test_to_json():
     json = alert2.to_json()
     assert json == {
         "time": alert2.time.isoformat(timespec="seconds"),
-        "city": 41,
+        "states": [41],
         "region": 12203,
         "is_event": False,
         "id": "ALERT2",
         "references": [
             {
                 "time": alert1.time.isoformat(timespec="seconds"),
-                "city": 40,
+                "states": [40],
                 "region": 12205,
                 "is_event": False,
                 "id": "ALERT1",
@@ -106,14 +106,14 @@ def test_to_cap_alert():
 
     expected = CapAlert(
         time=alert2.time,
-        city=41,
+        states=[41],
         region=12203,
         id="ALERT2",
         is_event=False,
         refs=[
             CapAlert(
                 time=alert1.time,
-                city=40,
+                states=[40],
                 region=12205,
                 id="ALERT1",
                 is_event=False,
@@ -127,28 +127,28 @@ def test_to_cap_alert():
 def add_alerts_to_db():
     alert1 = Alert(
         time=datetime(2023, 5, 17, 13, 20, 5),
-        city=40,
+        states=[State(state_id=40)],
         region=12202,
         identifier="ALERT1",
         is_event=False,
     )
     alert2 = Alert(
         time=datetime(2023, 5, 17, 13, 20, 15),
-        city=41,
+        states=[State(state_id=41)],
         region=12202,
         identifier="ALERT2",
         is_event=False,
     )
     alert3 = Alert(
         time=datetime(2023, 5, 18, 10, 15, 0),
-        city=42,
+        states=[State(state_id=42)],
         region=12202,
         identifier="ALERT3",
         is_event=True,
     )
     alert4 = Alert(
         time=datetime(2023, 5, 19, 10, 15, 0),
-        city=43,
+        states=[State(state_id=43)],
         region=12202,
         identifier="ALERT4",
         is_event=False,

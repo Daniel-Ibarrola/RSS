@@ -226,7 +226,7 @@ class RSSFeed:
         return title
 
     def _polygon_tags(self, parent):
-
+        # TODO: multiple cities
         polygons = []
         # First the references of polygons if any
         if self._refs is not None:

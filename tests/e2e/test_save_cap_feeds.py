@@ -74,11 +74,12 @@ def test_saves_cap_feeds_when_receiving_alerts(cleanup_files):
     with open(alert) as fp:
         data = BeautifulSoup(fp.read(), "xml")
 
-    # We check the first alert
+    # We check the first alert, which was triggered in two cities
+    # so, it should have two polygons
     alert = data.feed.entry.alert
     assert alert.info.event.string == "Alerta por sismo"
     assert alert.info.severity.string == "Severe"
-    assert len(alert.find_all("polygon")) == 1
+    assert len(alert.find_all("polygon")) == 2
 
     identifier = alert.identifier.string
 
@@ -92,7 +93,7 @@ def test_saves_cap_feeds_when_receiving_alerts(cleanup_files):
     assert alert.info.severity.string == "Severe"
 
     # The update should contain the previous polygon as well as the new one
-    assert len(alert.find_all("polygon")) == 2
+    assert len(alert.find_all("polygon")) == 3
     assert identifier in references
 
     with open(event) as fp:
