@@ -104,8 +104,7 @@ class Alert(db.Model):
     def save_to_file(self, path: str, logger: logging.Logger) -> None:
         cap_alert = self.to_cap_alert()
         feed = create_feed(cap_alert)
-        filename = get_cap_file_name(cap_alert)
-        save_path = os.path.join(path, f"{filename}_{feed.updated_date}.cap")
+        save_path = os.path.join(path, f"sasmex.xml")
         try:
             with open(save_path, "w") as fp:
                 fp.write(feed.content)
