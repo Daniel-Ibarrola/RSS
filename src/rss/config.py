@@ -46,7 +46,6 @@ class Config:
     API_PASSWORD = "abc123"
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
-    API_SAVE_ALERTS = False
 
     # API config
     # Flask and sql stuff
@@ -88,7 +87,6 @@ class ProdConfig(Config):
 
     # Api config
     # Flask and sql stuff
-    API_SAVE_ALERTS = True
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = get_postgres_uri()
 

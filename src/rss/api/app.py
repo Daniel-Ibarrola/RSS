@@ -1,4 +1,6 @@
-from flask import abort, request, jsonify, Response
+import os.path
+
+from flask import abort, current_app, request, jsonify, Response
 from flask_httpauth import HTTPBasicAuth
 
 from rss import CONFIG
@@ -55,7 +57,12 @@ def index():
 @app.route(f"{api_route}/new_alert", methods=["POST"])
 @auth.login_required
 def add_new_alert():
-    Alert.from_json(request.json)
+    alert = Alert.from_json(request.json)
+    save_path = request.args.get("save_path", "")
+    current_app.logger.info(f"Path {save_path}")
+    if save_path and os.path.isdir(save_path):
+        alert.save_to_file(save_path, current_app.logger)
+    db.session.commit()
     return "Ok", 201
 
 

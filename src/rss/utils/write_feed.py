@@ -8,12 +8,13 @@ from rss.cap.services import MessageProcessor
 
 
 if __name__ == "__main__":
-    base_path = os.path.dirname(__file__)
 
     is_test = True
     is_event = False
     refs = None
+    base_path = os.path.dirname(__file__)
     save_path = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
+
     if len(sys.argv) > 1:
         feed_type = sys.argv[1]
         if feed_type == "update":
@@ -21,7 +22,7 @@ if __name__ == "__main__":
             date = datetime.datetime.now()
             refs = [Alert(
                         time=date,
-                        city=42,
+                        states=[42],
                         region=41208,
                         is_event=is_event,
                         id=MessageProcessor.alert_id(date)
@@ -35,10 +36,16 @@ if __name__ == "__main__":
         else:
             raise ValueError(f"Invalid feed type {feed_type}")
 
+    if len(sys.argv) > 2:
+        save_path = sys.argv[2]
+
+    if not os.path.isdir(save_path):
+        raise ValueError(f"Incorrect path {save_path}")
+
     date = datetime.datetime.now()
     alert = Alert(
         time=date,
-        city=40,
+        states=[40],
         region=41208,
         is_event=is_event,
         id=MessageProcessor.alert_id(date)

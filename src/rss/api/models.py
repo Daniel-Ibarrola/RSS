@@ -70,7 +70,6 @@ class Alert(db.Model):
             references=references
         )
         db.session.add(alert)
-        db.session.commit()
         return alert
 
     def to_cap_file(self) -> str:

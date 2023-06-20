@@ -12,14 +12,15 @@ class APIClient:
         self.base_url = CONFIG.API_URL + "/api/v1"
         self.credentials = (CONFIG.API_USER, CONFIG.API_PASSWORD)
 
-    def post_alert(self, alert: Alert, save_file: bool = False) -> requests.Response:
+    def post_alert(self, alert: Alert, save_path: str = "") -> requests.Response:
         references = []
         if alert.refs is not None:
             references = [ref.id for ref in alert.refs]
 
         url = f"{self.base_url}/new_alert"
-        if save_file:
-            url += "?save=True"
+        if save_path:
+            url += f"?save_path={save_path}"
+
         res = requests.post(
             url,
             json={
