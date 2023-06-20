@@ -46,6 +46,7 @@ class Config:
     API_PASSWORD = "abc123"
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
+    POST_API_PATH = os.environ.get("POST_API_PATH", "")
 
     # API config
     # Flask and sql stuff
@@ -84,6 +85,7 @@ class ProdConfig(Config):
     API_PASSWORD = os.environ.get("API_PASSWORD")
 
     SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
+    POST_API_PATH = os.environ.get("POST_API_PATH", "")
 
     # Api config
     # Flask and sql stuff

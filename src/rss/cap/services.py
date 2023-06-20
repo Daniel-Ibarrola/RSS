@@ -261,7 +261,7 @@ class FeedPoster(AbstractService):
     def _post_alerts(self):
         alert = self._get_from_queue(self._alerts, self.wait)
         if alert is not None:
-            res = self._client.post_alert(alert)
+            res = self._client.post_alert(alert, CONFIG.POST_API_PATH)
             if res.ok:
                 logger.info("Posted new alert to API")
             else:
