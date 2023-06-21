@@ -265,5 +265,6 @@ class FeedPoster(AbstractService):
             if res.ok:
                 logger.info("Posted new alert to API")
             else:
-                logger.info("Failed to post alert to API")
-
+                logger.info(
+                    f"Failed to post alert to API "
+                    f"Status code: {res.status_code}")

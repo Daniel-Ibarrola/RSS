@@ -77,10 +77,10 @@ class ProdConfig(Config):
     EVENT_FILE_NAME = "sasmex_evento"
     EVENT_UPDATE_FILE_NAME = "sasmex_evento"
 
-    IP = "172.30.17.182"
-    PORT = 13084
+    IP = os.environ.get("IP")
+    PORT = int(os.environ.get("PORT"))
 
-    API_URL = get_api_url()
+    API_URL = os.environ.get("API_HOST")
     API_USER = os.environ.get("API_USER")
     API_PASSWORD = os.environ.get("API_PASSWORD")
 

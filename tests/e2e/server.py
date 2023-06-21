@@ -120,7 +120,7 @@ def get_time() -> str:
 
 def get_server(log: bool = True) -> Server:
     print("TCP Server")
-    server = Server("localhost", 12345, log=log)
+    server = Server("localhost", 12346, log=log)
 
     server.messages = [
         # Test 1: Skips unwanted messages

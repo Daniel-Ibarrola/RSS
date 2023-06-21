@@ -8,7 +8,7 @@ from rss.cap.alert import Alert
 
 def main():
     client = APIClient()
-    # client.base_url = "https://mapa.sasmex.net/api/v1"
+    client.base_url = "https://mapa.sasmex.net/api/v1"
 
     rss_type = "alert"
     if len(sys.argv) > 1:
@@ -19,7 +19,7 @@ def main():
     save_path = ""
     if len(sys.argv) > 2:
         save_path = sys.argv[2]
-        if not os.path.isdir(save_path):
+        if "localhost" in client.base_url and not os.path.isdir(save_path):
             raise ValueError(f"Incorrect path {save_path}")
 
     alert = Alert(

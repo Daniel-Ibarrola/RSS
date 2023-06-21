@@ -10,3 +10,4 @@ sasmex/
 build/
 src/build/
 .env
+env.sh
