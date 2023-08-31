@@ -9,7 +9,7 @@ import time
 from rss import CONFIG
 from rss.utils.logger import get_module_logger
 
-logger = get_module_logger(__name__)
+logger = get_module_logger(__name__, use_file_handler=False)
 
 
 @dataclasses.dataclass(frozen=True)

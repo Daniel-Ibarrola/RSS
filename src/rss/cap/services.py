@@ -14,7 +14,7 @@ from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file, get_cap_file_name
 from rss.utils.logger import get_module_logger
 
-logger = get_module_logger(__name__)
+logger = get_module_logger(__name__, use_file_handler=False)
 
 
 class AbstractService(abc.ABC):

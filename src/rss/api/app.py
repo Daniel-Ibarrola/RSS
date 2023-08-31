@@ -6,6 +6,7 @@ from flask_httpauth import HTTPBasicAuth
 from rss import CONFIG
 from rss.api import create_app, db
 from rss.api.models import Alert
+from rss.utils.wait_for_db import wait_for_postgres
 
 
 app = create_app(CONFIG)
@@ -146,3 +147,11 @@ def get_last_alert():
     if alert is None:
         abort(404)
     return jsonify(alert.to_json())
+
+
+@app.cli.command("wait-for-db")
+def wait_for_db():
+    """ Wait for the database to start. """
+    postgres_uri = CONFIG.SQLALCHEMY_DATABASE_URI
+    print(f"Attempting to connect to database in {postgres_uri}")
+    wait_for_postgres(postgres_uri)

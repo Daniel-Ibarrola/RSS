@@ -8,7 +8,7 @@ from rss.cap.alert import Alert
 
 def main():
     client = APIClient()
-    client.base_url = "https://mapa.sasmex.net/api/v1"
+    # client.base_url = "https://mapa.sasmex.net/api/v1"
 
     rss_type = "alert"
     if len(sys.argv) > 1:

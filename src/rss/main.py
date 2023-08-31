@@ -7,7 +7,8 @@ from rss.cap.client import TCPClient
 from rss.utils.logger import get_module_logger
 from rss.utils.watch_dog import WatchDog
 
-logger = get_module_logger(__name__)
+logger = get_module_logger(__name__,
+                           use_file_handler=False)
 
 
 def get_threads_dict(client: TCPClient,

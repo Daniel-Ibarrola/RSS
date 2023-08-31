@@ -1,45 +1,18 @@
 version: "3"
 services:
 
-  base:
+  rss-api:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - DB_HOST=postgres
-      - DB_PASSWORD=abc123
-    volumes:
-      - ./src:/src
-      - ./tests:/tests
-    command: "false"
-
-  app:
-    extends:
-      service: base
+    image: rss-api:latest
+    container_name: rss-api
     command: flask run --host=0.0.0.0 --port=80
-    environment:
-      - FLASK_APP=rss/api/app.py
-      - FLASK_DEBUG=1
-      - PYTHONUNBUFFERED=1
     depends_on:
       - postgres
-      - migrations
-    ports:
-      - "5000:80"
+    volumes:
+      - ./feeds:/feeds
 
   postgres:
-    image: postgres:15.2
-    # restart: always
-    environment:
-      # Note user and db name will be the same
-      - POSTGRES_USER=rss
-      - POSTGRES_PASSWORD=abc123
-    ports:
-      - "54321:5432"
-
-  migrations:
-    extends:
-      service: base
-    command: flask db upgrade
-    depends_on:
-      - postgres
+    image: postgres:15.2-alpine
+    container_name: rss-db

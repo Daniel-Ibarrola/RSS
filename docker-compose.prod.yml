@@ -1,0 +1,32 @@
+services:
+
+  rss-api:
+    command: >
+      sh -c "
+        flask wait-for-db &&
+        flask db upgrade &&
+        gunicorn --bind 0.0.0.0:5005 voltage.wsgi:app"
+    environment:
+      - FLASK_APP=rss/api/app.py
+      - CONFIG=prod
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/" ]
+      interval: 3m
+      timeout: 10s
+      retries: 3
+    ports:
+      - "5005:5005"
+
+  postgres:
+    image: postgres:15.2-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
