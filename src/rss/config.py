@@ -1,10 +1,37 @@
+from typing import Type
 import os
-
 
 base_path = os.path.dirname(__file__)
 
 
-def get_api_url():
+class MissingEnvVariableError(ValueError):
+    pass
+
+
+def get_env_variable(name: str, var_type: Type[str] | Type[int] = str) -> str | int:
+    """ Check that an environment variable is set in production mode.
+    """
+    config = os.environ.get("CONFIG", "dev")
+    if "prod" in config:
+        value = os.environ.get(name, None)
+        if value is None:
+            raise MissingEnvVariableError(
+                f"The env variable {name} is necessary to run the app"
+            )
+        if var_type is str:
+            return value
+        elif var_type is int:
+            return int(var_type)
+        raise ValueError(f"Invalid var type {var_type}")
+
+    if var_type is str:
+        return ""
+    elif var_type is int:
+        return 0
+    raise ValueError(f"Invalid var type {var_type}")
+
+
+def get_api_url() -> str:
     host = os.environ.get("API_HOST", "localhost")
     port = 5000 if host == "localhost" else 80
     return f"http://{host}:{port}"
@@ -15,17 +42,19 @@ def get_dev_postgres_uri(host: str = "localhost") -> str:
     if host == "localhost":
         port = 54321
     else:
+        # Port of the database in the docker container
         port = 5432
     user, db_name = "rss", "rss"
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
 def get_postgres_uri() -> str:
-    host = os.environ.get("DB_HOST", "localhost")
-    user = os.environ.get("DB_USER", "rss")
-    password = os.environ.get("DB_PASSWORD", "abc123")
-    port = os.environ.get("DB_PORT", 5432)
-    db_name = os.environ.get("DB_NAME", "rss")
+    """ Get the postgres uri for the production database. """
+    host = get_env_variable("DB_HOST")
+    user = get_env_variable("DB_USER")
+    password = get_env_variable("DB_PASSWORD")
+    port = get_env_variable("DB_PORT")
+    db_name = get_env_variable("DB_NAME")
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
@@ -77,12 +106,12 @@ class ProdConfig(Config):
     EVENT_FILE_NAME = "sasmex_evento"
     EVENT_UPDATE_FILE_NAME = "sasmex_evento"
 
-    IP = os.environ.get("IP")
-    PORT = int(os.environ.get("PORT", 12345))
+    IP = get_env_variable("CLIENT_IP")
+    PORT = get_env_variable("CLIENT_PORT", int)
 
-    API_URL = os.environ.get("API_HOST")
-    API_USER = os.environ.get("API_USER")
-    API_PASSWORD = os.environ.get("API_PASSWORD")
+    API_URL = get_env_variable("API_HOST")
+    API_USER = get_env_variable("API_USER")
+    API_PASSWORD = get_env_variable("API_PASSWORD")
 
     SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
     POST_API_PATH = os.environ.get("POST_API_PATH", "")

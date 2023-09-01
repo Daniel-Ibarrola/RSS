@@ -12,6 +12,7 @@ services:
       - DB_HOST=postgres
       - DB_PASSWORD=abc123
       - PYTHONUNBUFFERED=1
+      - API_HOST=rss-api
       - CONFIG=dev
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80/" ]
