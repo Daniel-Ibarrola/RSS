@@ -3,7 +3,7 @@ import queue
 import time
 
 from rss import CONFIG
-from rss.cap import services
+from rss.services import services
 from rss.cap.alert import Alert
 
 
@@ -238,7 +238,7 @@ class TestAlertDispatcher:
 class TestFeedPoster:
 
     def test_post_alerts(self, mocker):
-        mock_post = mocker.patch("rss.api.client.requests.post")
+        mock_post = mocker.patch("rss.services.api_client.requests.post")
 
         date = datetime.datetime.now()
         alert = Alert(

@@ -4,7 +4,8 @@ from xml.dom import minidom
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.data import STATES, REGIONS, POLYGONS, COORDS
+from rss.cap.polygon import STATES, POLYGONS
+from rss.cap.regions import COORDS, REGIONS
 
 
 class UpdateWithNoReferencesError(ValueError):

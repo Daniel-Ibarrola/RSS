@@ -1,25 +1,24 @@
-import queue
 import threading
+from socketlib import Client
+from socketlib.utils.watch_dog import WatchDog
+from socketlib.utils.logger import get_module_logger
 
 from rss import CONFIG
-from rss.cap import services
-from rss.cap.client import TCPClient
-from rss.utils.logger import get_module_logger
-from rss.utils.watch_dog import WatchDog
+from rss.services import services
 
 logger = get_module_logger(__name__,
+                           "dev",
                            use_file_handler=False)
 
 
-def get_threads_dict(client: TCPClient,
+def get_threads_dict(client: Client,
                      message_processor: services.MessageProcessor,
                      dispatcher: services.AlertDispatcher,
                      writer: services.FeedWriter,
                      poster: services.FeedPoster) -> dict[str, threading.Thread]:
     return {
         "client_send": client.send_thread,
-        "client_rcv": client.rcv_thread,
-        "reconnect": client.reconnect_thread,
+        "client_rcv": client.receive_thread,
         "message_processor": message_processor.process_thread,
         "dispatcher": dispatcher.process_thread,
         "feed_writer": writer.process_thread,
@@ -28,21 +27,19 @@ def get_threads_dict(client: TCPClient,
 
 
 def get_services() -> tuple[
-        TCPClient,
+        Client,
         services.MessageProcessor,
         services.AlertDispatcher,
         services.FeedWriter,
         services.FeedPoster,
         WatchDog,
 ]:
-    ip, port = CONFIG.IP, CONFIG.PORT
+    address = CONFIG.IP, CONFIG.PORT
 
-    data_queue = queue.Queue()
+    client = Client(address)
+    logger.info(f"Client will attempt to connect to {address}")
 
-    client = TCPClient(ip, port, data_queue)
-    logger.info("Starting client")
-
-    message_processor = services.MessageProcessor(data_queue)
+    message_processor = services.MessageProcessor(client.received)
     alert_dispatcher = services.AlertDispatcher(message_processor.alerts)
     feed_writer = services.FeedWriter(alert_dispatcher.to_write)
     feed_poster = services.FeedPoster(alert_dispatcher.to_post)
@@ -65,7 +62,7 @@ def get_services() -> tuple[
 
 
 def main(processes: tuple[
-        TCPClient,
+        Client,
         services.MessageProcessor,
         services.AlertDispatcher,
         services.FeedWriter,
@@ -79,7 +76,7 @@ def main(processes: tuple[
 
     with client:
         client.connect()
-        client.run()
+        client.start()
         for service in service_list:
             service.run()
         watch_dog.run()

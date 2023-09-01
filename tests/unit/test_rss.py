@@ -4,7 +4,7 @@ import pytest
 
 from rss import CONFIG
 from rss.cap import rss
-from rss.cap.data import COORDS
+from rss.cap.regions import COORDS
 from rss.cap.alert import Alert
 
 
