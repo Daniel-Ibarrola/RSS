@@ -3,7 +3,7 @@ import queue
 import time
 
 from rss import CONFIG
-from rss.cap import services
+from rss.services import services
 from rss.cap.alert import Alert
 
 
@@ -103,7 +103,7 @@ class TestMessageProcessor:
         )
         message_processor.updates.append(alert1)
         message_processor.updates.append(alert2)
-        message_processor._flush_updates()
+        message_processor._flush_updates(datetime.datetime.now())
         assert len(message_processor.updates) == 0
 
     def test_msgs_of_same_state_are_ignored_if_arrive_before_time(self):
@@ -143,7 +143,7 @@ class TestMessageProcessor:
         message_processor = services.MessageProcessor(data)
         message_processor.new_alert_time = 0.75
         message_processor.wait = 0
-        message_processor.run()
+        message_processor.start()
 
         time.sleep(1.5)
 
@@ -179,7 +179,7 @@ class TestMessageProcessor:
         message_processor = services.MessageProcessor(data)
         message_processor.new_alert_time = 5
         message_processor._wait = 0
-        message_processor.run()
+        message_processor.start()
 
         time.sleep(1)
 
@@ -238,7 +238,7 @@ class TestAlertDispatcher:
 class TestFeedPoster:
 
     def test_post_alerts(self, mocker):
-        mock_post = mocker.patch("rss.api.client.requests.post")
+        mock_post = mocker.patch("rss.services.api_client.requests.post")
 
         date = datetime.datetime.now()
         alert = Alert(

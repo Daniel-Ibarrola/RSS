@@ -4,7 +4,8 @@ from xml.dom import minidom
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.data import STATES, REGIONS, POLYGONS, COORDS
+from rss.cap.polygon import STATES, POLYGONS
+from rss.cap.regions import COORDS, REGIONS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -77,7 +78,7 @@ class RSSFeed:
 
         text_tags = [
             ("title", "SASMEX-CIRES RSS Feed"),
-            ("subtitle", "Sistema de Alerta Sísmica Mexicano"),
+            ("subtitle", "Sistema de Alerta Sismica Mexicano"),
             ("updated", self._updated_date),
             ("logo", "https://rss.sasmex.net/ciresFeedLogo2b.png"),
             ("icon", "https://rss.sasmex.net/ciresFeedFavicon.ico"),
@@ -166,7 +167,7 @@ class RSSFeed:
 
         event = "Alerta por sismo"
         severity = "Severe"
-        headline = "Alerta Sísmica"
+        headline = "Alerta Sismica"
         if self._alert.is_event:
             event = "Sismo"
             severity = "Minor"
@@ -182,9 +183,9 @@ class RSSFeed:
             ("certainty", "Observed"),
             ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
-            ("senderName", "Sistema de Alerta Sísmica Mexicano"),
+            ("senderName", "Sistema de Alerta Sismica Mexicano"),
             ("headline", headline),
-            ("description", "SASMEX registró un sismo"),
+            ("description", "SASMEX registro un sismo"),
             ("instruction", "Realice procedimiento en caso de sismo"),
             ("web", "https://rss.sasmex.net"),
             ("contact", "CIRES"),
@@ -203,7 +204,7 @@ class RSSFeed:
         if self._alert.is_event:
             area_desc = "Zona de sismo"
         else:
-            area_desc = "Zona de emisión de alerta"
+            area_desc = "Zona de emision de alerta"
 
         self._add_text_tag(area, "areaDesc", area_desc)
 

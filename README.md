@@ -104,7 +104,7 @@ sudo systemctl status rss_sasmex.service
 #### Configuring PostgreSQL
 
 Create the appropiate roles and databases in PostgreSQL. First connect
-to postgre with the default user.
+to postgres with the default user.
 
 ```shell
 sudo -u postgres psql

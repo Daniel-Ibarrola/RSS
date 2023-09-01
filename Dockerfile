@@ -1,13 +1,15 @@
-FROM python:3.10.11-slim-buster
+FROM python:3.11-alpine
 
-
-COPY requirements.txt /tmp/
-RUN pip install -r /tmp/requirements.txt
-
-RUN mkdir -p /src
+COPY pyproject.toml /pyproject.toml
+COPY requirements/ /requirements/
 COPY src/ /src/
-RUN pip install -e /src
 COPY tests/ /tests/
+COPY feeds/ /feeds/
+
+# Install curl to perform health checks
+RUN apk add --no-cache curl
+
+RUN mkdir /logs/ && pip install -r /requirements/dev.txt &&  \
+    pip install -e .
 
 WORKDIR /src
-ENV FLASK_APP=rss/api/app.py FLASK_DEBUG=1 PYTHONUNBUFFERED=1

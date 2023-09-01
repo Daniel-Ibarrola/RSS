@@ -1,35 +1,13 @@
 import os
+from rss.utils.api_url import get_api_url
+from rss.utils.env_variable import get_env_variable
 
 
 base_path = os.path.dirname(__file__)
 
 
-def get_api_url():
-    host = os.environ.get("API_HOST", "localhost")
-    port = 5000 if host == "localhost" else 80
-    return f"http://{host}:{port}"
-
-
-def get_dev_postgres_uri(host: str = "localhost") -> str:
-    password = os.environ.get("DB_PASSWORD", "abc123")
-    if host == "localhost":
-        port = 54321
-    else:
-        port = 5432
-    user, db_name = "rss", "rss"
-    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
-
-
-def get_postgres_uri() -> str:
-    host = os.environ.get("DB_HOST", "localhost")
-    user = os.environ.get("DB_USER", "rss")
-    password = os.environ.get("DB_PASSWORD", "abc123")
-    port = os.environ.get("DB_PORT", 5432)
-    db_name = os.environ.get("DB_NAME", "rss")
-    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
-
-
 class Config:
+    NAME = "dev"
     # rss.main.py config
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
@@ -38,8 +16,8 @@ class Config:
     EVENT_FILE_NAME = "test_event"
     EVENT_UPDATE_FILE_NAME = "test_event_update"
 
-    IP = os.environ.get("IP", "localhost")
-    PORT = int(os.environ.get("PORT", 12345))
+    IP = os.environ.get("CLIENT_IP", "localhost")
+    PORT = int(os.environ.get("CLIENT_PORT", 12345))
 
     API_URL = get_api_url()
     API_USER = "triton"
@@ -47,12 +25,6 @@ class Config:
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
     POST_API_PATH = os.environ.get("POST_API_PATH", "")
-
-    # API config
-    # Flask and sql stuff
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = get_dev_postgres_uri(host=os.environ.get("DB_HOST", "localhost"))
 
     @staticmethod
     def init_app(app):
@@ -63,12 +35,8 @@ class DevConfig(Config):
     pass
 
 
-class TestSQLiteConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-
-
 class ProdConfig(Config):
+    NAME = "prod"
     # rss.main.py config
     ALERT_TIME = 60
     MSG_TIME = 60
@@ -77,24 +45,18 @@ class ProdConfig(Config):
     EVENT_FILE_NAME = "sasmex_evento"
     EVENT_UPDATE_FILE_NAME = "sasmex_evento"
 
-    IP = os.environ.get("IP")
-    PORT = int(os.environ.get("PORT", 12345))
+    IP = get_env_variable("CLIENT_IP")
+    PORT = get_env_variable("CLIENT_PORT", int)
 
-    API_URL = os.environ.get("API_HOST")
-    API_USER = os.environ.get("API_USER")
-    API_PASSWORD = os.environ.get("API_PASSWORD")
+    API_URL = get_env_variable("API_HOST")
+    API_USER = get_env_variable("API_USER")
+    API_PASSWORD = get_env_variable("API_PASSWORD")
 
     SAVE_PATH = os.environ.get("SAVE_PATH", Config.SAVE_PATH)
     POST_API_PATH = os.environ.get("POST_API_PATH", "")
 
-    # Api config
-    # Flask and sql stuff
-    DEBUG = False
-    SQLALCHEMY_DATABASE_URI = get_postgres_uri()
-
 
 configurations = {
     "dev": DevConfig(),
-    "test-sqlite": TestSQLiteConfig(),
     "prod": ProdConfig(),
 }  # type: dict[str, Config]

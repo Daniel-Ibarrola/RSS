@@ -2,20 +2,21 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
+import os
 
-from rss import CONFIG
-from rss.config import DevConfig
+from rss.api.config import APIConfig, DevAPIConfig, api_configs
 
 db = SQLAlchemy()
+API_CONFIG = api_configs[os.environ.get("CONFIG", "dev")]
 
 
-def create_app(config):
+def create_app(configuration: APIConfig = API_CONFIG):
     app = Flask(__name__)
-    app.config.from_object(config)
+    app.config.from_object(configuration)
 
     db.init_app(app)
 
-    if isinstance(CONFIG, DevConfig):
+    if isinstance(configuration, DevAPIConfig):
         CORS(app)
     Migrate(app, db)
     return app

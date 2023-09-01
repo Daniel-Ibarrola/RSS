@@ -1,21 +1,17 @@
+import time
 from bs4 import BeautifulSoup
+import datetime
 import os
 import pytest
+import queue
+import random
+from socketlib import Server
+from socketlib.utils.logger import get_module_logger
 import threading
-from typing import Any
 
 from rss import CONFIG
-from rss.main import get_services, main
-from rss.api.client import APIClient
-from server import get_server, start_server
-
-
-def shutdown_services(server_shutdown: threading.Event, services: list[Any]):
-    watch_dog = services.pop()
-    server_shutdown.wait()
-    watch_dog.shutdown()
-    for serv in services:
-        serv.shutdown()
+from rss.main import main
+from rss.services.api_client import APIClient
 
 
 def get_cap_files() -> list[str]:
@@ -32,6 +28,54 @@ def remove_files(files: list[str]) -> None:
         os.remove(file)
 
 
+address = "localhost", random.randint(1024, 49150)
+
+
+@pytest.fixture
+def server() -> Server:
+    """ Server sends alert messages to client.
+        Also expects to receive alive messages from client.
+
+        Yields
+        ------
+        Server
+    """
+    logger = get_module_logger("Server", "dev", use_file_handler=False)
+    received = queue.Queue()
+    to_send = queue.Queue()
+
+    date1 = datetime.datetime.now()
+    date2 = date1 + datetime.timedelta(minutes=5)
+    date1_str = date1.strftime('%Y/%m/%d,%H:%M:%S')
+    date2_str = date2.strftime('%Y/%m/%d,%H:%M:%S')
+    # Test 1: Skips unwanted messages
+    to_send.put(f"15,3,3242,41203,{date1_str},46237.1234567890")
+    # Test 2: Alert with update
+    to_send.put(f"84,3,1,41/42,41203,{date1_str},46237.1234567890")
+    to_send.put(f"84,3,1,43,41203,{date1_str},46237.1234567890")
+    # Test 3: Non-alert event
+    to_send.put(f"84,3,0,44,41203,{date2_str},46237.1234567890")
+
+    stop = threading.Event()
+    server_ = Server(
+        address=address,
+        received=received,
+        to_send=to_send,
+        reconnect=False,
+        timeout=2,
+        stop_receive=lambda: received.qsize() >= 1,  # or stop.is_set(),
+        stop_send=lambda: to_send.empty(),  # or stop.is_set(),
+        logger=logger
+    )
+    server_.start()
+
+    yield server_
+
+    stop.set()
+    server_.join()
+    server_.close_connection()
+
+
 @pytest.fixture
 def cleanup_files():
     files = get_cap_files()
@@ -41,31 +85,40 @@ def cleanup_files():
     remove_files(files)
 
 
+@pytest.mark.timeout(10)
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
-def test_saves_cap_feeds_when_receiving_alerts(cleanup_files):
+def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # The client is started and will listen for alerts of the server
-    server = get_server(log=False)
-    services = get_services()
+    logger = get_module_logger("Main", "dev", use_file_handler=False)
+    stop_event = threading.Event()
+    thread = threading.Thread(
+        target=main,
+        kwargs=dict(
+            address=address,
+            reconnect=False,
+            timeout=2,
+            heart_beats=0.5,
+            use_watchdog=False,
+            stop=lambda: stop_event.is_set(),
+            logger=logger,
+            exit_error=False
+        )
+    )
+    thread.start()
+    time.sleep(3)  # Give the services some time to process all data
 
-    server_shutdown = threading.Event()
-    server_thread = threading.Thread(target=start_server, args=(server, server_shutdown, False))
-    services_thread = threading.Thread(target=main, args=(services, ))
-    shutdown_thread = threading.Thread(target=shutdown_services, args=(server_shutdown, list(services)))
-
-    shutdown_thread.start()
-    server_thread.start()
-    services_thread.start()
-
-    server_thread.join()
-    shutdown_thread.join()
-    services_thread.join()
+    logger.info("Waiting for services to end")
+    stop_event.set()
+    thread.join()
 
     # The client receives an alert with an update, and after a certain time an event
     # Three files should have been written. One for the alert, one for the update and
     # another for the event.
     files = get_cap_files()
     assert len(files) == 3
+
+    logger.info(f"Found files {files}")
 
     [alert] = [f for f in files if "alert" in f]
     [update] = [f for f in files if "update" in f]

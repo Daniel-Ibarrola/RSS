@@ -1,0 +1,36 @@
+services:
+
+  rss-api:
+    command: >
+      sh -c "
+        flask wait-for-db &&
+        flask db upgrade &&
+        flask run --host=0.0.0.0 --port=80"
+    environment:
+      - FLASK_APP=rss/api/app.py
+      - FLASK_DEBUG=1
+      - DB_HOST=postgres
+      - DB_PASSWORD=abc123
+      - PYTHONUNBUFFERED=1
+      - API_HOST=rss-api
+      - CONFIG=dev
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - postgres
+    ports:
+      - "5000:80"
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
+
+  postgres:
+    environment:
+      # Note user and db name will be the same
+      - POSTGRES_USER=rss
+      - POSTGRES_PASSWORD=abc123
+    ports:
+      - "54321:5432"

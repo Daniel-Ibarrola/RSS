@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+
+  cap-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rss-api:latest
+    container_name: cap-generator
+    env_file:
+      - .env
+    environment:
+      - CONFIG=dev
+    entrypoint: [
+      "python",
+      "rss/main.py"
+    ]
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
+      - ./feeds:/feeds
+
+  alerts-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rss-api:latest
+    container_name: cap-server
+    env_file:
+      - .env
+    environment:
+      - CONFIG=dev
+    entrypoint: [
+      "python",
+      "rss/test/server.py"
+    ]
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
