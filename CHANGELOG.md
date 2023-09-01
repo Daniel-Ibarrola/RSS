@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.1.0
+
+### Refactored
+The cap generator main program as well as the services was refactored. Main changes
+include the use of pysocklib `AbstractService` as an abstract base class for all services.
+The `TCPClient` class was removed and the new `AlertsClient` class inherits from pysocklib
+`Client`. 
+
+### Dependencies
+- Updated requests to 2.31.0. Previous version had security issues
+- Added pysocklib to dependencies
+
+### Continuous integration
+- Added CI with GitHub actions
+
+### Containerization
+- Can run tests in container.
+- Can start the api in production mode inside container.
+- Can start the cap generator program in container.
+
 ## v1.0.0
 
 ### Cap Generator
