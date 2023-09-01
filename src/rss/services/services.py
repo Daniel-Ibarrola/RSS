@@ -1,64 +1,18 @@
-import abc
 import copy
 from datetime import datetime
+import logging
 import os
 import queue
 import random
 import string
-import threading
-from typing import Optional, Union
-from socketlib.utils.logger import get_module_logger
+from typing import Callable, Optional, Union
+from socketlib.basic.queues import get_from_queue
+from socketlib.services import AbstractService
 
 from rss import CONFIG
 from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file, get_cap_file_name
-
-logger = get_module_logger(__name__, "dev", use_file_handler=False)
-
-
-class AbstractService(abc.ABC):
-    """ Abstract base class for all services.
-
-        To add a new service implement the _handle_event method
-    """
-    def __init__(self):
-        # Main thread of this service
-        self._process_thread = threading.Thread(
-            target=self._handle_event,
-            daemon=True
-        )
-        self._stop = False
-
-    @property
-    def process_thread(self) -> threading.Thread:
-        return self._process_thread
-
-    @abc.abstractmethod
-    def _handle_event(self):
-        raise NotImplementedError
-
-    def run(self) -> None:
-        self._process_thread.start()
-        logger.debug(f"Started {self.__class__.__name__}")
-
-    def join(self) -> None:
-        self._process_thread.join()
-
-    def shutdown(self) -> None:
-        self._stop = True
-        self.join()
-        logger.debug(f"Shutting down {self.__class__.__name__}")
-
-    @staticmethod
-    def _get_from_queue(data_queue: queue, timeout: float) -> Union[Alert, None]:
-        """ Get an item from the queue. If timeout expires and there is
-            nothing in the queue returns None.
-        """
-        try:
-            return data_queue.get(timeout=timeout)
-        except queue.Empty:
-            pass
 
 
 class MessageProcessor(AbstractService):
@@ -75,27 +29,39 @@ class MessageProcessor(AbstractService):
         hourMsg = unix time the message was sent
     """
 
-    def __init__(self, data_queue: queue.Queue, alerts: Optional[queue.Queue] = None):
-        super().__init__()
-        self.queue = data_queue  # type: queue.Queue[bytes]
+    def __init__(self,
+                 messages: Optional[queue.Queue[bytes]] = None,
+                 alerts: Optional[queue.Queue] = None,
+                 stop: Optional[Callable[[], bool]] = None,
+                 logger: Optional[logging.Logger] = None
+                 ):
+        super().__init__(
+            in_queue=messages,
+            out_queue=alerts,
+            stop=stop,
+            logger=logger
+        )
         self._updates = []  # type: list[Alert]
-
         self.new_alert_time = CONFIG.ALERT_TIME  # in seconds
         self.wait = 0.1
-
-        self.alerts = alerts
-        if alerts is None:
-            self.alerts = queue.Queue()  # type: queue.Queue[Alert]
 
     @property
     def updates(self) -> list[Alert]:
         return self._updates
 
-    def _handle_event(self) -> None:
+    @property
+    def messages(self) -> queue.Queue[bytes]:
+        return self._in
+
+    @property
+    def alerts(self) -> queue.Queue[Alert]:
+        return self._out
+
+    def _handle_message(self) -> None:
         """ Get new messages and create or update alerts.
         """
-        while not self._stop:
-            msg = self._get_message()
+        while not self._stop():
+            msg = get_from_queue(self.messages, 1)
             if msg is not None:
                 alert = self._get_alert(msg)
                 if alert is not None:
@@ -122,14 +88,9 @@ class MessageProcessor(AbstractService):
                     is_event=is_event,
                     refs=refs
                 )
-                logger.info(f"New alert: {self._alert_str(alert)}")
+                if self._logger:
+                    self._logger.info(f"New alert: {self._alert_str(alert)}")
                 return alert
-
-    def _get_message(self) -> bytes:
-        try:
-            return self.queue.get(timeout=self.wait)
-        except queue.Empty:
-            pass
 
     def _check_state(self, state: int) -> bool:
         """ Checks that the given state is not in the queue"""
@@ -177,27 +138,39 @@ class MessageProcessor(AbstractService):
 class AlertDispatcher(AbstractService):
     """ Send alerts to other services such as FeedWriter and FeedPoster.
     """
-    def __init__(self, alerts: queue.Queue):
-        super().__init__()
-        self._alerts = alerts
+    def __init__(
+            self,
+            alerts: Optional[queue.Queue[Alert]] = None,
+            stop: Optional[Callable[[], bool]] = None,
+            logger: Optional[logging.Logger] = None
+    ):
+        super().__init__(
+            in_queue=alerts,
+            stop=stop,
+            logger=logger
+        )
         self._to_write = queue.Queue()
         self._to_post = queue.Queue()
         self.wait = 0.1
 
     @property
-    def to_write(self) -> queue.Queue:
+    def to_write(self) -> queue.Queue[Alert]:
         return self._to_write
 
     @property
-    def to_post(self) -> queue.Queue:
+    def to_post(self) -> queue.Queue[Alert]:
         return self._to_post
 
-    def _handle_event(self):
-        while not self._stop:
+    @property
+    def alerts(self) -> queue.Queue[Alert]:
+        return self._in
+
+    def _handle_message(self):
+        while not self._stop():
             self._dispatch_alerts()
 
     def _dispatch_alerts(self) -> None:
-        alert = self._get_from_queue(self._alerts, self.wait)
+        alert = get_from_queue(self.alerts, self.wait)
         if alert is not None:
             self.to_write.put(alert)
             self.to_post.put(copy.deepcopy(alert))
@@ -206,9 +179,17 @@ class AlertDispatcher(AbstractService):
 class FeedWriter(AbstractService):
     """ Receives Alert objects and writes a cap file. """
 
-    def __init__(self, alerts: queue.Queue):
-        super().__init__()
-        self._alerts = alerts
+    def __init__(
+            self,
+            alerts: Optional[queue.Queue[Alert]] = None,
+            stop: Optional[Callable[[], bool]] = None,
+            logger: Optional[logging.Logger] = None
+    ):
+        super().__init__(
+            in_queue=alerts,
+            stop=stop,
+            logger=logger
+        )
         self.save_path = CONFIG.SAVE_PATH
 
         self.wait = 0.2
@@ -218,14 +199,14 @@ class FeedWriter(AbstractService):
         self.event_update_filename = CONFIG.EVENT_UPDATE_FILE_NAME
 
     @property
-    def alerts(self) -> queue.Queue:
-        return self._alerts
+    def alerts(self) -> queue.Queue[Alert]:
+        return self.alerts
 
-    def _handle_event(self):
+    def _handle_message(self):
         """ Get new Alerts and write a cap file.
         """
-        while not self._stop:
-            alert = self._get_from_queue(self._alerts, self.wait)
+        while not self._stop():
+            alert = get_from_queue(self.alerts, self.wait)
             if alert is not None:
                 self._write_alert(alert)
 
@@ -237,34 +218,47 @@ class FeedWriter(AbstractService):
             feed_path = os.path.join(self.save_path, f"{filename}_{feed.updated_date}.cap")
             write_feed_to_file(feed_path, feed)
 
-            logger.info(f"Cap file written to {feed_path}")
+            if self._logger:
+                self._logger.info(f"Cap file written to {feed_path}")
 
 
 class FeedPoster(AbstractService):
     """ Class to post the cap feeds to our API so, they can be saved
         in the database.
     """
-    def __init__(self, alerts: queue.Queue):
-        super().__init__()
+    def __init__(
+            self,
+            alerts: Optional[queue.Queue[Alert]] = None,
+            stop: Optional[Callable[[], bool]] = None,
+            logger: Optional[logging.Logger] = None
+    ):
+        super().__init__(
+            in_queue=alerts,
+            stop=stop,
+            logger=logger
+        )
         self.wait = 0.1
-        self._alerts = alerts
         self._client = APIClient()
 
     @property
     def client(self) -> APIClient:
         return self._client
 
-    def _handle_event(self):
-        while not self._stop:
+    @property
+    def alerts(self) -> queue.Queue[Alert]:
+        return self._in
+
+    def _handle_message(self):
+        while not self._stop():
             self._post_alerts()
 
     def _post_alerts(self):
-        alert = self._get_from_queue(self._alerts, self.wait)
+        alert = get_from_queue(self.alerts, self.wait)
         if alert is not None:
             res = self._client.post_alert(alert, CONFIG.POST_API_PATH)
-            if res.ok:
-                logger.info("Posted new alert to API")
-            else:
-                logger.info(
+            if res.ok and self._logger:
+                self._logger.info("Posted new alert to API")
+            elif self._logger:
+                self._logger.info(
                     f"Failed to post alert to API "
                     f"Status code: {res.status_code}")

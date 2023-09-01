@@ -1,97 +1,105 @@
-import threading
-from socketlib import Client
+import logging
 from socketlib.utils.watch_dog import WatchDog
 from socketlib.utils.logger import get_module_logger
+import sys
+from typing import Callable, Optional
 
 from rss import CONFIG
-from rss.services import services
-
-logger = get_module_logger(__name__,
-                           "dev",
-                           use_file_handler=False)
-
-
-def get_threads_dict(client: Client,
-                     message_processor: services.MessageProcessor,
-                     dispatcher: services.AlertDispatcher,
-                     writer: services.FeedWriter,
-                     poster: services.FeedPoster) -> dict[str, threading.Thread]:
-    return {
-        "client_send": client.send_thread,
-        "client_rcv": client.receive_thread,
-        "message_processor": message_processor.process_thread,
-        "dispatcher": dispatcher.process_thread,
-        "feed_writer": writer.process_thread,
-        "feed_poster": poster.process_thread,
-    }
+from rss.services import (
+    AlertsClient,
+    AlertDispatcher,
+    MessageProcessor,
+    FeedWriter,
+    FeedPoster
+)
 
 
-def get_services() -> tuple[
-        Client,
-        services.MessageProcessor,
-        services.AlertDispatcher,
-        services.FeedWriter,
-        services.FeedPoster,
-        WatchDog,
-]:
-    address = CONFIG.IP, CONFIG.PORT
+def main(
+        address: tuple[str, int],
+        reconnect: bool = False,
+        timeout: Optional[float] = None,
+        heart_beats: float = 30.,
+        use_watchdog: bool = False,
+        stop: Optional[Callable[[], bool]] = None,
+        logger: Optional[logging.Logger] = None,
+        exit_error: bool = True
+) -> None:
+    if logger is not None:
+        logger.info(f"Client will attempt to connect to {address}")
 
-    client = Client(address)
-    logger.info(f"Client will attempt to connect to {address}")
-
-    message_processor = services.MessageProcessor(client.received)
-    alert_dispatcher = services.AlertDispatcher(message_processor.alerts)
-    feed_writer = services.FeedWriter(alert_dispatcher.to_write)
-    feed_poster = services.FeedPoster(alert_dispatcher.to_post)
-
-    threads = get_threads_dict(
-        client, message_processor, alert_dispatcher, feed_writer, feed_poster
-    )
-    watch_dog = WatchDog(threads)
-
-    client.threads_dict = threads
-
-    return (
-        client,
-        message_processor,
-        alert_dispatcher,
-        feed_writer,
-        feed_poster,
-        watch_dog,
+    client = AlertsClient(
+        address=address,
+        reconnect=reconnect,
+        heartbeats=heart_beats,
+        timeout=timeout,
+        logger=logger,
+        stop_receive=stop,
+        stop_send=stop
     )
 
+    message_processor = MessageProcessor(client.received, stop=stop, logger=logger)
+    alert_dispatcher = AlertDispatcher(message_processor.alerts, stop=stop, logger=logger)
+    feed_writer = FeedWriter(alert_dispatcher.to_write, stop=stop, logger=logger)
+    feed_poster = FeedPoster(alert_dispatcher.to_post, stop=stop, logger=logger)
 
-def main(processes: tuple[
-        Client,
-        services.MessageProcessor,
-        services.AlertDispatcher,
-        services.FeedWriter,
-        services.FeedPoster,
-        WatchDog,
-]) -> None:
+    watchdog = None
+    if use_watchdog:
+        threads = {
+            "client_send": client.send_thread,
+            "client_rcv": client.receive_thread,
+            "message_processor": message_processor.process_thread,
+            "dispatcher": alert_dispatcher.process_thread,
+            "feed_writer": feed_writer.process_thread,
+            "feed_poster": feed_poster.process_thread,
+        }
+        watchdog = WatchDog(threads)
 
-    client = processes[0]
-    watch_dog = processes[-1]
-    service_list = list(processes[1:-1])
-
+    error = True
     with client:
         client.connect()
         client.start()
-        for service in service_list:
-            service.run()
-        watch_dog.run()
+        alert_dispatcher.start()
+        feed_writer.start()
+        feed_poster.start()
+
+        if watchdog:
+            watchdog.start()
 
         try:
-            # Join the watch dog
-            watch_dog.join()
+            if watchdog:
+                watchdog.join()
+            else:
+                client.join()
         except KeyboardInterrupt:
-            watch_dog.shutdown()
+            if logger:
+                logger.info("Shutting down...")
+            error = False
+
+            if watchdog:
+                watchdog.shutdown()
+        finally:
             client.shutdown()
-            for service in service_list:
-                service.shutdown()
+            alert_dispatcher.shutdown()
+            feed_writer.shutdown()
+            feed_poster.shutdown()
+
+    if error and exit_error:
+        if logger:
+            logger.info("An error occurred, exiting...")
+        sys.exit(1)
 
     logger.info("Graceful shutdown")
 
 
 if __name__ == "__main__":
-    main(get_services())
+    logger_ = get_module_logger(
+        __name__, CONFIG.NAME, use_file_handler=False)
+    logger_.info(f"RSS CAP generator")
+    address_ = CONFIG.IP, CONFIG.PORT
+    main(
+        address=address_,
+        timeout=None,
+        heart_beats=CONFIG.MSG_TIME,
+        use_watchdog=True,
+        logger=logger_
+    )

@@ -55,24 +55,24 @@ def server() -> Server:
     # Test 3: Non-alert event
     to_send.put(f"84,3,0,44,41203,{now_str},46237.1234567890")
 
+    stop = threading.Event()
     server_ = Server(
         address=address,
         received=received,
         to_send=to_send,
         reconnect=False,
         timeout=2,
-        stop_receive=lambda: received.qsize() >= 1,
-        stop_send=lambda: to_send.empty(),
+        stop_receive=lambda: received.qsize() >= 1 or stop.is_set(),
+        stop_send=lambda: to_send.empty() or stop.is_set(),
         logger=logger
     )
     server_.start()
 
     yield server_
 
-    try:
-        server_.shutdown()
-    finally:
-        server_.close_connection()
+    stop.set()
+    server_.join()
+    server_.close_connection()
 
 
 @pytest.fixture

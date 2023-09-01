@@ -143,7 +143,7 @@ class TestMessageProcessor:
         message_processor = services.MessageProcessor(data)
         message_processor.new_alert_time = 0.75
         message_processor.wait = 0
-        message_processor.run()
+        message_processor.start()
 
         time.sleep(1.5)
 
@@ -179,7 +179,7 @@ class TestMessageProcessor:
         message_processor = services.MessageProcessor(data)
         message_processor.new_alert_time = 5
         message_processor._wait = 0
-        message_processor.run()
+        message_processor.start()
 
         time.sleep(1)
 

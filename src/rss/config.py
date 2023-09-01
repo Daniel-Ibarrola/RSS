@@ -15,8 +15,8 @@ class Config:
     EVENT_FILE_NAME = "test_event"
     EVENT_UPDATE_FILE_NAME = "test_event_update"
 
-    IP = os.environ.get("IP", "localhost")
-    PORT = int(os.environ.get("PORT", 12345))
+    IP = os.environ.get("CLIENT_IP", "localhost")
+    PORT = int(os.environ.get("CLIENT_PORT", 12345))
 
     API_URL = get_api_url()
     API_USER = "triton"
