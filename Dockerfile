@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
 COPY pyproject.toml /pyproject.toml
 COPY requirements/ /requirements/

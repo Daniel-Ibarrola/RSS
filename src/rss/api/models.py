@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 from rss.api import db
 from rss.cap.alert import Alert as CapAlert
-from rss.cap.rss import create_feed, get_cap_file_name
+from rss.cap.rss import create_feed
 
 
 class Alert(db.Model):
