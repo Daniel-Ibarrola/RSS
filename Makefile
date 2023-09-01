@@ -20,6 +20,12 @@ down: ## Remove all containers
 destroy: ## Remove all containers and images
 	docker compose down --remove-orphans && docker image rm rss-api
 
+restart:
+	docker compose restart
+
+stop: ## Stop all containers
+	docker compose stop
+
 test:  ## Run all tests
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/
 

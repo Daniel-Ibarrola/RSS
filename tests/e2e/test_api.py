@@ -2,7 +2,7 @@ import datetime
 from bs4 import BeautifulSoup
 import pytest
 
-from rss.api.client import APIClient
+from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
 
 
