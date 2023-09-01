@@ -7,6 +7,7 @@ base_path = os.path.dirname(__file__)
 
 
 class Config:
+    NAME = "dev"
     # rss.main.py config
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
@@ -35,6 +36,7 @@ class DevConfig(Config):
 
 
 class ProdConfig(Config):
+    NAME = "prod"
     # rss.main.py config
     ALERT_TIME = 60
     MSG_TIME = 60

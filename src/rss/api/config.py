@@ -25,6 +25,7 @@ def get_postgres_uri() -> str:
 
 
 class APIConfig:
+    NAME = "dev"
     API_URL = get_api_url()
     # Flask and sql stuff
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -46,6 +47,7 @@ class TestSQLiteConfig(APIConfig):
 
 
 class ProdAPIConfig(APIConfig):
+    NAME = "prod"
     # Api config
     # Flask and sql stuff
     DEBUG = False

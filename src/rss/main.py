@@ -25,7 +25,7 @@ def main(
         exit_error: bool = True
 ) -> None:
     if logger is not None:
-        logger.info(f"Client will attempt to connect to {address}")
+        logger.info(f"AlertsClient will attempt to connect to {address}")
 
     client = AlertsClient(
         address=address,
