@@ -63,14 +63,14 @@ class TestRSSFeed:
         assert info.severity.string == "Severe"
         assert info.effective.string == effective_date
         assert info.expires.string == expire_date
-        assert info.headline.string == "Alerta Sísmica"
-        assert info.description.string == "SASMEX registró un sismo"
+        assert info.headline.string == "Alerta Sismica"
+        assert info.description.string == "SASMEX registro un sismo"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "CIRES"
 
         area = info.area
-        assert area.areaDesc.string == "Zona de emisión de alerta"
+        assert area.areaDesc.string == "Zona de emision de alerta"
 
         polygons = area.find_all("polygon")
         assert len(polygons) == 2
