@@ -1,5 +1,4 @@
 import time
-
 from bs4 import BeautifulSoup
 import datetime
 import os
@@ -45,15 +44,17 @@ def server() -> Server:
     received = queue.Queue()
     to_send = queue.Queue()
 
-    now = datetime.datetime.now()
-    now_str = now.strftime("%Y/%m/%d,%H:%M:%S")
+    date1 = datetime.datetime.now()
+    date2 = date1 + datetime.timedelta(minutes=5)
+    date1_str = date1.strftime('%Y/%m/%d,%H:%M:%S')
+    date2_str = date2.strftime('%Y/%m/%d,%H:%M:%S')
     # Test 1: Skips unwanted messages
-    to_send.put(f"15,3,3242,41203,{now_str},46237.1234567890")
+    to_send.put(f"15,3,3242,41203,{date1_str},46237.1234567890")
     # Test 2: Alert with update
-    to_send.put(f"84,3,1,41/42,41203,{now_str},46237.1234567890")
-    to_send.put(f"84,3,1,43,41203,{now_str},46237.1234567890")
+    to_send.put(f"84,3,1,41/42,41203,{date1_str},46237.1234567890")
+    to_send.put(f"84,3,1,43,41203,{date1_str},46237.1234567890")
     # Test 3: Non-alert event
-    to_send.put(f"84,3,0,44,41203,{now_str},46237.1234567890")
+    to_send.put(f"84,3,0,44,41203,{date2_str},46237.1234567890")
 
     stop = threading.Event()
     server_ = Server(
@@ -62,8 +63,8 @@ def server() -> Server:
         to_send=to_send,
         reconnect=False,
         timeout=2,
-        stop_receive=lambda: received.qsize() >= 1 or stop.is_set(),
-        stop_send=lambda: to_send.empty() or stop.is_set(),
+        stop_receive=lambda: received.qsize() >= 1,  # or stop.is_set(),
+        stop_send=lambda: to_send.empty(),  # or stop.is_set(),
         logger=logger
     )
     server_.start()
@@ -105,7 +106,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
         )
     )
     thread.start()
-    time.sleep(1)  # Give the services some time to process all data
+    time.sleep(3)  # Give the services some time to process all data
 
     logger.info("Waiting for services to end")
     stop_event.set()
@@ -116,6 +117,8 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # another for the event.
     files = get_cap_files()
     assert len(files) == 3
+
+    logger.info(f"Found files {files}")
 
     [alert] = [f for f in files if "alert" in f]
     [update] = [f for f in files if "update" in f]

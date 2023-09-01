@@ -74,8 +74,10 @@ class MessageProcessor(AbstractService):
         if msg.startswith("84,3"):
             states, region, date, is_event = self._parse_message(msg)
 
-            self._flush_updates()
+            self._flush_updates(date)
             if all(self._check_state(s) for s in states):
+                # TODO: events should only reference previous events, and alerts
+                #   previous alerts
                 if len(self.updates) == 0:
                     refs = None
                 else:
@@ -96,9 +98,9 @@ class MessageProcessor(AbstractService):
         """ Checks that the given state is not in the queue"""
         return not any(s == state for alert in self.updates for s in alert.states)
 
-    def _flush_updates(self) -> None:
+    def _flush_updates(self, new_alert_date: datetime) -> None:
         if self.updates:
-            diff = self._time_diff(datetime.now(), self.updates[0].time)
+            diff = self._time_diff(new_alert_date, self.updates[0].time)
             if diff > self.new_alert_time:
                 self.updates.clear()
 
@@ -130,9 +132,11 @@ class MessageProcessor(AbstractService):
 
     @staticmethod
     def _alert_str(alert: Alert) -> str:
+        refs = [] if alert.refs is None else alert.refs
         return f"Alert(time={alert.time.isoformat()}, " \
                f"states={alert.states}," \
-               f" region={alert.region})"
+               f"region={alert.region}) " \
+               f"refs={[a.id for a in refs]})"
 
 
 class AlertDispatcher(AbstractService):
@@ -191,16 +195,11 @@ class FeedWriter(AbstractService):
             logger=logger
         )
         self.save_path = CONFIG.SAVE_PATH
-
         self.wait = 0.2
-        self.alert_filename = CONFIG.ALERT_FILE_NAME
-        self.update_filename = CONFIG.UPDATE_FILE_NAME
-        self.event_filename = CONFIG.EVENT_FILE_NAME
-        self.event_update_filename = CONFIG.EVENT_UPDATE_FILE_NAME
 
     @property
     def alerts(self) -> queue.Queue[Alert]:
-        return self.alerts
+        return self._in
 
     def _handle_message(self):
         """ Get new Alerts and write a cap file.

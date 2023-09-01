@@ -58,6 +58,7 @@ def main(
     with client:
         client.connect()
         client.start()
+        message_processor.start()
         alert_dispatcher.start()
         feed_writer.start()
         feed_poster.start()
