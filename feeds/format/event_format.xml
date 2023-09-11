@@ -18,35 +18,38 @@
 		<title>12 Apr 2023 09:04:26 Sismo en Atoyac Gro</title>
 		<content type="text/xml">
 			<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
-				<identifier>20234129426</identifier>
-				<sender>sasmex.net</sender>
-				<sent>2023-04-12T09:04:26-06:00</sent>
-				<status>Actual</status>
+                <identifier>CIRES_20230911094414_842</identifier>
+                <sender>cires.org.mx</sender>
+                <sent>2023-09-11T09:44:14-06:00</sent>
+                <status>Actual</status>
 				<msgType>Alert</msgType>
 				<scope>Public</scope>
 				<info>
 					<language>es-MX</language>
 					<category>Geo</category>
-					<event>Sismo</event>
-					<responseType>Prepare</responseType>
+					<event>SASMEX: Sismo Moderado en Costa Col</event>
+					<responseType>Monitor</responseType>
 					<urgency>Immediate</urgency>
-					<severity>Minor</severity>
+					<severity>Unknown</severity>
 					<certainty>Observed</certainty>
-					<effective>2023-04-12T09:04:26-06:00</effective>
+                    <eventCode>
+                        <valueName>SAME</valueName>
+                        <value>EQW</value>
+                    </eventCode>
 					<expires>2023-04-12T09:05:26-06:00</expires>
-					<senderName>Sistema de Alerta Sísmica Mexicano</senderName>
-					<headline>Sismo</headline>
-					<description>SASMEX registró un sismo</description>
+					<senderName>SASMEX - CIRES</senderName>
+                    <headline>Sismo Moderado en Costa Col</headline>
+                    <description>Sismo Moderado en Costa Col, a 539km de CDMX</description>
 					<instruction>Realice procedimiento en caso de sismo</instruction>
-					<web>http://sasmex.net</web>
-					<contact>CIRES</contact>
+                    <web>https://rss.sasmex.net</web>
+                    <contact>infoCAP@cires-ac.mx</contact>
 					<parameter>
-						<valueName>EAS</valueName>
-						<value>1</value>
+						<valueName>SAME</valueName>
+						<value>CIV</value>
 					</parameter>
 					<area>
-						<areaDesc>Zona de emisión de alerta</areaDesc>
-						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
+                        <areaDesc>Zona Probable Epicentro</areaDesc>
+                        <circle>19.05661,-104.22400 70.0</circle>
 					</area>
 				</info>
 			</alert>
