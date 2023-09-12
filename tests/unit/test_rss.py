@@ -4,7 +4,7 @@ import pytest
 
 from rss import CONFIG
 from rss.cap import rss
-from rss.cap.regions import COORDS
+from rss.cap.regions import REGION_COORDS
 from rss.cap.alert import Alert
 
 
@@ -67,7 +67,7 @@ class TestCapAlert:
         assert info.expires.string == expire_date
         assert info.senderName.string == "SASMEX - CIRES"
         assert info.headline.string == "ALERTA SISMICA por sismo Severo en Costa Oax-Gro"
-        assert info.description.string == "Sismo Severo en Costa Oax-Gro, a 400km de CDMX"
+        assert info.description.string == "Sismo Severo en Costa Oax-Gro, a 347km de CDMX y a 126km de Guerrero"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "infoCAP@cires-ac.mx"
@@ -199,7 +199,7 @@ class TestCapEvent:
         assert info.expires.string == expire_date
         assert info.senderName.string == "SASMEX - CIRES"
         assert info.headline.string == "Sismo Moderado en Costa Oax-Gro"
-        assert info.description.string == "Sismo Moderado en Costa Oax-Gro, a 400km de CDMX"
+        assert info.description.string == "Sismo Moderado en Costa Oax-Gro, a 347km de CDMX"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "infoCAP@cires-ac.mx"
@@ -216,7 +216,7 @@ class TestCapEvent:
         circle = area.circle.string
         coords, radius = circle.split()
 
-        expected_coords = COORDS[42201]
+        expected_coords = REGION_COORDS[42201]
         expected_lat = f"{expected_coords.lat:0.2f}"
         expected_lon = f"{expected_coords.lon:0.2f}"
 

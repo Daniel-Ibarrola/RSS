@@ -63,8 +63,8 @@ def server() -> Server:
         to_send=to_send,
         reconnect=False,
         timeout=2,
-        stop_receive=lambda: received.qsize() >= 1,  # or stop.is_set(),
-        stop_send=lambda: to_send.empty(),  # or stop.is_set(),
+        stop_receive=lambda: received.qsize() >= 1,
+        stop_send=lambda: to_send.empty(),
         logger=logger
     )
     server_.start()

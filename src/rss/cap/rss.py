@@ -4,8 +4,10 @@ from xml.dom import minidom
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.polygon import STATES, POLYGONS
-from rss.cap.regions import COORDS, REGIONS
+from rss.cap.geopoint import distance_between_points
+from rss.cap.polygon import POLYGONS
+from rss.cap.regions import REGIONS, REGION_COORDS
+from rss.cap.states import STATES, STATES_COORDS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -215,20 +217,19 @@ class RSSFeed:
         expire_date = self._alert.time + datetime.timedelta(minutes=1)
 
         region = REGIONS[self._alert.region]
-        distance = 100  # TODO: calculate distance
         states = self._get_states()
 
         if not self._alert.is_event:
             event = f"SASMEX: ALERTA SISMICA en {states} por sismo en {region}"
             severity = "Severe"
             headline = f"ALERTA SISMICA por sismo Severo en {region}"
-            description = f"Sismo Severo en {region}, a {distance}km de {states}"
+            description = self._get_description(False, self._alert.region, self._alert.states)
             response_type = "Execute"
         else:
             event = f"SASMEX: Sismo Moderado en {region}"
             severity = "Unknown"
             headline = f"Sismo Moderado en {region}"
-            description = f"Sismo Moderado en {region}, a {distance}km de {states}"
+            description = self._get_description(True, self._alert.region, self._alert.states)
             response_type = "Monitor"
 
         text_tags = [
@@ -313,8 +314,8 @@ class RSSFeed:
         if self._refs is not None:
             for ref in self._refs:
                 for state in ref.states:
-                    polygons.append(POLYGONS[state])
-        polygons.extend(POLYGONS[p] for p in self._alert.states)
+                    polygons.append(POLYGONS[STATES[state]])
+        polygons.extend(POLYGONS[STATES[st]] for st in self._alert.states)
 
         for poly in polygons:
             text = ""
@@ -334,9 +335,35 @@ class RSSFeed:
 
                 <circle>lat,lon radius</circle>
         """
-        coords = COORDS[self._alert.region]
+        coords = REGION_COORDS[self._alert.region]
         text = f"{coords.lat:0.2f},{coords.lon:0.2f} 50.0"
         self._add_text_tag(parent, "circle", text)
+
+    @staticmethod
+    def _get_description(is_event: bool, region: int, states: list[int]) -> str:
+        """ Get the description string for the description tag
+        """
+        region_name = REGIONS[region]
+        if is_event:
+            description = f"Sismo Moderado en {region_name}"
+        else:
+            description = f"Sismo Severo en {region_name}"
+
+        region_coords = REGION_COORDS[region]
+        if len(states) > 1:
+            for ii in range(len(states) - 1):
+                st = STATES[states[ii]]
+                distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+                description += f", a {distance}km de {st}"
+            st = STATES[states[-1]]
+            distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+            description += f" y a {distance}km de {st}"
+        else:
+            st = STATES[states[0]]
+            distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+            description += f", a {distance}km de {st}"
+
+        return description
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
