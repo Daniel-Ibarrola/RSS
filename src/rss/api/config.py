@@ -32,6 +32,8 @@ class APIConfig:
     """
     NAME = "dev"
     API_URL = get_api_url()
+    API_USER = "triton"
+    API_PASSWORD = "dog"
     # Flask and sql stuff
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = True
@@ -66,6 +68,8 @@ class ProdAPIConfig(APIConfig):
         - DB_PASSWORD
         - DB_PORT
         - DB_NAME
+        - API_USER
+        - API_PASSWORD
 
         Optionally, API_HOST may need to be defined. Defaults to localhost.
     """
@@ -73,6 +77,8 @@ class ProdAPIConfig(APIConfig):
 
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = get_postgres_uri()
+    API_USER = get_env_variable("API_USER")
+    API_PASSWORD = get_env_variable("API_PASSWORD")
 
 
 api_configs = {

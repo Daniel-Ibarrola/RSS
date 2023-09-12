@@ -15,10 +15,10 @@ api: ## Start the gunicorn server on port 5005 and the PostgreSQL db
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 dev-generator: ## Start the cap generator in dev mode
-	docker compose -d docker-compose.cap_generator.yml
+	docker compose -f docker-compose.cap_generator.yml up
 
 generator:  ## Start the cap generator in production mode
-	docker compose -d docker-compose.cap_generator.prod.yml -d
+	docker compose -f docker-compose.cap_generator.prod.yml up -d
 
 down: ## Remove all containers
 	docker compose down --remove-orphans

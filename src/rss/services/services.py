@@ -6,6 +6,8 @@ import queue
 import random
 import string
 from typing import Callable, Optional, Union
+
+import requests
 from socketlib.basic.queues import get_from_queue
 from socketlib.services import AbstractService
 
@@ -254,7 +256,15 @@ class FeedPoster(AbstractService):
     def _post_alerts(self):
         alert = get_from_queue(self.alerts, self.wait)
         if alert is not None:
-            res = self._client.post_alert(alert, CONFIG.POST_API_PATH)
+            try:
+                res = self.client.post_alert(alert, CONFIG.POST_API_PATH)
+            except requests.ConnectionError:
+                if self._logger:
+                    self._logger.info(
+                        f"Post alert connection error. "
+                        f"Failed to post alert to {self.client.base_url}")
+                return
+
             if res.ok and self._logger:
                 self._logger.info("Posted new alert to API")
             elif self._logger:

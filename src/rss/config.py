@@ -21,9 +21,9 @@ class Config:
     IP = os.environ.get("CLIENT_IP", "localhost")
     PORT = int(os.environ.get("CLIENT_PORT", 12345))
 
-    API_URL = get_api_url()
+    API_URL = os.environ.get("API_URL", "http://localhost:5000")
     API_USER = "triton"
-    API_PASSWORD = "abc123"
+    API_PASSWORD = "dog"
 
     SAVE_PATH = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
     POST_API_PATH = os.environ.get("POST_API_PATH", "")
