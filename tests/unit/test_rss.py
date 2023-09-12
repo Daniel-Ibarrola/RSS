@@ -133,8 +133,8 @@ class TestCapAlert:
 
         references = alert.references.string.split()
         assert len(references) == 2
-        assert references[0] == "cires.org.mx,REF_ID_1,2023-03-13T16:07:05-06:00"
-        assert references[1] == "cires.org.mx,REF_ID_2,2023-03-13T16:07:10-06:00"
+        assert references[0] == "cires.org.mx,CIRES_REF_ID_1,2023-03-13T16:07:05-06:00"
+        assert references[1] == "cires.org.mx,CIRES_REF_ID_2,2023-03-13T16:07:10-06:00"
 
         polygons = data.find_all("polygon")
         assert len(polygons) == 3

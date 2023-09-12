@@ -157,7 +157,7 @@ def test_get_cap_file():
     assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
 
     alert = contents.feed.entry.content.alert
-    assert alert.identifier.string == "ALERT2"
+    assert alert.identifier.string == "CIRES_ALERT2"
     assert alert.sent.string == dates[1].isoformat(timespec="seconds") + "-06:00"
 
 
@@ -174,7 +174,7 @@ def test_get_last_cap_file():
     assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
 
     alert = contents.feed.entry.content.alert
-    assert alert.identifier.string == "ALERT3"
+    assert alert.identifier.string == "CIRES_ALERT3"
 
 
 @pytest.mark.usefixtures("postgres_session")

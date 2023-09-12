@@ -197,11 +197,11 @@ class RSSFeed:
         """
         references = ""
         for ii in range(len(self._refs) - 1):
-            ref_id = self._refs[ii].id
+            ref_id = "CIRES_" + self._refs[ii].id
             date = self._refs[ii].time.isoformat(timespec="seconds") + "-06:00"
             references += sender + "," + ref_id + "," + date + " "
 
-        ref_id = self._refs[-1].id
+        ref_id = "CIRES_" + self._refs[-1].id
         date = self._refs[-1].time.isoformat(timespec="seconds") + "-06:00"
         references += sender + "," + ref_id + "," + date
 

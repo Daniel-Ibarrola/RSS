@@ -130,7 +130,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # We check the first alert, which was triggered in two cities
     # so, it should have two polygons
     alert = data.feed.entry.alert
-    assert alert.info.event.string == "Alerta por sismo"
+    assert "SASMEX: ALERTA SISMICA" in alert.info.event.string
     assert alert.info.severity.string == "Severe"
     assert len(alert.find_all("polygon")) == 2
 
@@ -142,7 +142,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # We check the update alert. It should reference the previous alert
     alert = data.feed.entry.alert
     references = alert.references.string
-    assert alert.info.event.string == "Alerta por sismo"
+    assert "SASMEX: ALERTA SISMICA" in alert.info.event.string
     assert alert.info.severity.string == "Severe"
 
     # The update should contain the previous polygon as well as the new one
@@ -154,8 +154,8 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
 
     # Finally, we check the event
     event = data.feed.entry.alert
-    assert event.info.event.string == "Sismo"
-    assert event.info.severity.string == "Minor"
+    assert "SASMEX: Sismo Moderado" in event.info.event.string
+    assert event.info.severity.string == "Unknown"
     assert len(event.find_all("circle")) == 1
 
     remove_files(files)

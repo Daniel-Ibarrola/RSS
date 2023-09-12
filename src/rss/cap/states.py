@@ -17,7 +17,7 @@ STATES_COORDS = {
     'CDMX': GeoPoint(lat=19.42847, lon=-99.12766),
     'Guerrero': GeoPoint(lat=17.4392, lon=-99.5451),
     'Oaxaca': GeoPoint(lat=17.0732, lon=-96.7266),
-    'Michoacán': GeoPoint(lat=19.5665, lon=-101.7068),
+    'Michoacan': GeoPoint(lat=19.5665, lon=-101.7068),
     'Colima': GeoPoint(lat=19.2452, lon=-103.7241),
     'Jalisco': GeoPoint(lat=20.6595, lon=-103.3494),
     'Puebla': GeoPoint(lat=19.0414, lon=-98.2063),
