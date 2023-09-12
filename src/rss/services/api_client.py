@@ -8,8 +8,8 @@ from rss.cap.alert import Alert
 class APIClient:
     """ Client to post and get alerts from our API"""
 
-    def __init__(self):
-        self.base_url = CONFIG.API_URL + "/api/v1"
+    def __init__(self, base_url: str = CONFIG.API_URL):
+        self.base_url = base_url + "/api/v1"
         self.credentials = (CONFIG.API_USER, CONFIG.API_PASSWORD)
 
     def post_alert(self, alert: Alert, save_path: str = "") -> requests.Response:

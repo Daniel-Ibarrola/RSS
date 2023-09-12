@@ -19,6 +19,7 @@ def main(
         reconnect: bool = False,
         timeout: Optional[float] = None,
         heart_beats: float = 30.,
+        api_url: str = CONFIG.API_URL,
         use_watchdog: bool = False,
         stop: Optional[Callable[[], bool]] = None,
         logger: Optional[logging.Logger] = None,
@@ -41,7 +42,7 @@ def main(
     message_processor = MessageProcessor(client.received, stop=stop, logger=logger)
     alert_dispatcher = AlertDispatcher(message_processor.alerts, stop=stop, logger=logger)
     feed_writer = FeedWriter(alert_dispatcher.to_write, stop=stop, logger=logger)
-    feed_poster = FeedPoster(alert_dispatcher.to_post, stop=stop, logger=logger)
+    feed_poster = FeedPoster(alert_dispatcher.to_post, api_url, stop=stop, logger=logger)
 
     watchdog = None
     if use_watchdog:

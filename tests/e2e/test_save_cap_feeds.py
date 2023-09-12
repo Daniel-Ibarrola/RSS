@@ -10,6 +10,7 @@ from socketlib.utils.logger import get_module_logger
 import threading
 
 from rss import CONFIG
+from rss.api.config import APIConfig
 from rss.main import main
 from rss.services.api_client import APIClient
 
@@ -99,6 +100,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
             reconnect=False,
             timeout=2,
             heart_beats=0.5,
+            api_url=APIConfig.API_URL,
             use_watchdog=False,
             stop=lambda: stop_event.is_set(),
             logger=logger,
@@ -161,7 +163,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     remove_files(files)
 
     # Now we check that the feeds have been stored in the database
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     res = client.get_alerts()
     assert res.ok
 

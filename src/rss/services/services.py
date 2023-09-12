@@ -230,6 +230,7 @@ class FeedPoster(AbstractService):
     def __init__(
             self,
             alerts: Optional[queue.Queue[Alert]] = None,
+            api_url: str = CONFIG.API_URL,
             stop: Optional[Callable[[], bool]] = None,
             logger: Optional[logging.Logger] = None
     ):
@@ -239,7 +240,7 @@ class FeedPoster(AbstractService):
             logger=logger
         )
         self.wait = 0.1
-        self._client = APIClient()
+        self._client = APIClient(api_url)
 
     @property
     def client(self) -> APIClient:

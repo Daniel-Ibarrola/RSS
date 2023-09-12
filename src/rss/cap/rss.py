@@ -240,6 +240,12 @@ class RSSFeed:
             ("urgency", "Immediate"),
             ("severity", severity),
             ("certainty", "Observed"),
+        ]
+        for tag in text_tags:
+            self._add_text_tag(info, tag[0], tag[1])
+        self._add_event_code_tag(info, "SAME", "EQW")
+
+        text_tags = [
             ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
             ("senderName", "SASMEX - CIRES"),
@@ -251,8 +257,6 @@ class RSSFeed:
         ]
         for tag in text_tags:
             self._add_text_tag(info, tag[0], tag[1])
-
-        self._add_event_code_tag(info, "SAME", "EQW")
         self._add_parameter_tag(info, "SAME", "CIV")
 
         # Area tag

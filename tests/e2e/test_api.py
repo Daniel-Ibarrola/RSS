@@ -2,6 +2,7 @@ import datetime
 from bs4 import BeautifulSoup
 import pytest
 
+from rss.api.config import APIConfig
 from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
 
@@ -27,7 +28,7 @@ def test_post_and_get_alerts():
         refs=[alert]
     )
 
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
 
     res = client.post_alert(alert)
     assert res.status_code == 201
@@ -77,7 +78,7 @@ def post_alerts(client: APIClient) -> list[datetime.datetime]:
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
 def test_get_alerts_by_date():
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     date1, date2, _ = post_alerts(client)
 
     search_date = datetime.date(year=2023, month=3, day=13)
@@ -107,7 +108,7 @@ def test_get_alerts_by_date():
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
 def test_get_multiple_alerts():
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     date1, date2, date3 = post_alerts(client)
     res = client.get_alerts()
     assert res.ok
@@ -147,7 +148,7 @@ def test_get_multiple_alerts():
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
 def test_get_cap_file():
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     dates = post_alerts(client)
 
     res = client.get_cap_file(identifier="ALERT2")
@@ -164,7 +165,7 @@ def test_get_cap_file():
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
 def test_get_last_cap_file():
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     post_alerts(client)
 
     res = client.get_cap_file(identifier="latest")
@@ -180,7 +181,7 @@ def test_get_last_cap_file():
 @pytest.mark.usefixtures("postgres_session")
 @pytest.mark.usefixtures("wait_for_api")
 def test_get_last_alerts():
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     _, _, last_alert_date = post_alerts(client)
 
     res = client.get_last_alert()
@@ -205,7 +206,7 @@ def test_not_logged_user_cannot_post():
         is_event=False,
         id="TESTALERT",
     )
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     client.credentials = ("unknown_user", "dog")
     res = client.post_alert(alert)
     assert res.status_code == 401
