@@ -25,6 +25,7 @@ def main(
         exit_error: bool = True
 ) -> None:
     if logger is not None:
+        logger.info(f"RSS CAP generator")
         logger.info(f"AlertsClient will attempt to connect to {address}")
 
     client = AlertsClient(
@@ -93,14 +94,12 @@ def main(
 
 
 if __name__ == "__main__":
-    logger_ = get_module_logger(
-        __name__, CONFIG.NAME, use_file_handler=False)
-    logger_.info(f"RSS CAP generator")
-    address_ = CONFIG.IP, CONFIG.PORT
     main(
-        address=address_,
+        address=(CONFIG.IP, CONFIG.PORT),
         timeout=None,
         heart_beats=CONFIG.MSG_TIME,
         use_watchdog=True,
-        logger=logger_
+        logger=get_module_logger(
+            __name__, CONFIG.NAME, use_file_handler=False
+        )
     )

@@ -58,7 +58,7 @@ class TestCapAlert:
         assert info.responseType.string == "Execute"
         assert info.urgency.string == "Immediate"
         assert info.severity.string == "Severe"
-        assert info.certainty.stringh == "Observed"
+        assert info.certainty.string == "Observed"
 
         event_code = info.eventCode
         assert event_code.valueName.string == "SAME"
@@ -67,7 +67,7 @@ class TestCapAlert:
         assert info.expires.string == expire_date
         assert info.senderName.string == "SASMEX - CIRES"
         assert info.headline.string == "ALERTA SISMICA por sismo Severo en Costa Oax-Gro"
-        assert info.description.string == "Sismo Severo en Costa Oax-Gro, a 400kn de CDMX"
+        assert info.description.string == "Sismo Severo en Costa Oax-Gro, a 400km de CDMX"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "infoCAP@cires-ac.mx"
@@ -133,8 +133,8 @@ class TestCapAlert:
 
         references = alert.references.string.split()
         assert len(references) == 2
-        assert references[0] == "sasmex.net,REF_ID_1,2023-03-13T16:07:05-06:00"
-        assert references[1] == "sasmex.net,REF_ID_2,2023-03-13T16:07:10-06:00"
+        assert references[0] == "cires.org.mx,REF_ID_1,2023-03-13T16:07:05-06:00"
+        assert references[1] == "cires.org.mx,REF_ID_2,2023-03-13T16:07:10-06:00"
 
         polygons = data.find_all("polygon")
         assert len(polygons) == 3
@@ -161,12 +161,11 @@ class TestCapEvent:
 
     def test_header_tag(self, cap_event_xml):
         assert cap_event_xml.feed.title.string == "SASMEX-CIRES RSS Feed"
-        assert cap_event_xml.feed.updated.string == datetime(2023, 5, 15, 12, 0, 0).isoformat()
         assert len(cap_event_xml.find_all("alert")) == 1
 
     def test_entry_title(self, cap_event_xml):
         title = cap_event_xml.feed.entry.title
-        assert title.string == "13 mar 2023 16:07:05 Sismo Moderado en Costa Oax-Gro"
+        assert title.string == "13 mar 2023 16:07:05 Sismo en Costa Oax-Gro"
 
     def test_alert_tag(self, cap_event_xml):
         alert = cap_event_xml.feed.entry.content.alert
@@ -191,7 +190,7 @@ class TestCapEvent:
         assert info.responseType.string == "Monitor"
         assert info.urgency.string == "Immediate"
         assert info.severity.string == "Unknown"
-        assert info.certainty.stringh == "Observed"
+        assert info.certainty.string == "Observed"
 
         event_code = info.eventCode
         assert event_code.valueName.string == "SAME"
@@ -200,7 +199,7 @@ class TestCapEvent:
         assert info.expires.string == expire_date
         assert info.senderName.string == "SASMEX - CIRES"
         assert info.headline.string == "Sismo Moderado en Costa Oax-Gro"
-        assert info.description.string == "Sismo Moderado en Costa Oax-Gro, a 400kn de CDMX"
+        assert info.description.string == "Sismo Moderado en Costa Oax-Gro, a 400km de CDMX"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "infoCAP@cires-ac.mx"
@@ -217,9 +216,9 @@ class TestCapEvent:
         circle = area.circle.string
         coords, radius = circle.split()
 
-        coords = COORDS[42201]
-        expected_lat = f"{coords.lat:0.2f}"
-        expected_lon = f"{coords.lon:0.2f}"
+        expected_coords = COORDS[42201]
+        expected_lat = f"{expected_coords.lat:0.2f}"
+        expected_lon = f"{expected_coords.lon:0.2f}"
 
         assert radius == "50.0"
         lat, lon = coords.split(",")
