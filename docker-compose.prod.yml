@@ -10,7 +10,7 @@ services:
       - FLASK_APP=rss/api/app.py
       - CONFIG=prod
     env_file:
-      - .env
+      - api.env
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5000/" ]
@@ -19,14 +19,3 @@ services:
       retries: 3
     ports:
       - "5005:5005"
-
-  postgres:
-    image: postgres:15.2-alpine
-    restart: unless-stopped
-    env_file:
-      - .env
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-volumes:
-  postgres-data:

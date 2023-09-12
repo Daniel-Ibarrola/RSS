@@ -25,12 +25,19 @@ def get_postgres_uri() -> str:
 
 
 class APIConfig:
+    """ Configuration for the API.
+
+        It declares postgres URI and the API server URl. It also declares other
+        configuration parameters needed for flask and sql-alchemy.
+    """
     NAME = "dev"
     API_URL = get_api_url()
     # Flask and sql stuff
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = get_dev_postgres_uri(host=os.environ.get("DB_HOST", "localhost"))
+    SQLALCHEMY_DATABASE_URI = get_dev_postgres_uri(
+        host=os.environ.get("DB_HOST", "localhost")
+    )
 
     @staticmethod
     def init_app(app):
@@ -47,9 +54,23 @@ class TestSQLiteConfig(APIConfig):
 
 
 class ProdAPIConfig(APIConfig):
+    """ Configuration for the API in production.
+
+        It declares postgres URI and the API server URl. It also declares other
+        configuration parameters needed for flask and sql-alchemy.
+
+        The following environmental variables need to be defined:
+
+        - DB_HOST
+        - DB_USER
+        - DB_PASSWORD
+        - DB_PORT
+        - DB_NAME
+
+        Optionally, API_HOST may need to be defined. Defaults to localhost.
+    """
     NAME = "prod"
-    # Api config
-    # Flask and sql stuff
+
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = get_postgres_uri()
 
@@ -58,4 +79,4 @@ api_configs = {
     "dev": DevAPIConfig(),
     "test-sqlite": TestSQLiteConfig(),
     "prod": ProdAPIConfig(),
-}  # type: dict[str, Config]
+}  # type: dict[str, APIConfig]

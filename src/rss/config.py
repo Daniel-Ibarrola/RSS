@@ -7,6 +7,8 @@ base_path = os.path.dirname(__file__)
 
 
 class Config:
+    """ Configuration for the cap genertaor program.
+    """
     NAME = "dev"
     # rss.main.py config
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
@@ -36,6 +38,16 @@ class DevConfig(Config):
 
 
 class ProdConfig(Config):
+    """ Configuration for the cap generator program in development mode.
+
+        The following environmental variables need to be defined:
+
+        - API_URL
+        - API_USER
+        - API_PASSWORD
+        - CLIENT_IP
+        - CLIENT_PORT
+    """
     NAME = "prod"
     # rss.main.py config
     ALERT_TIME = 60
@@ -48,7 +60,7 @@ class ProdConfig(Config):
     IP = get_env_variable("CLIENT_IP")
     PORT = get_env_variable("CLIENT_PORT", int)
 
-    API_URL = get_env_variable("API_HOST")
+    API_URL = get_env_variable("API_URL")
     API_USER = get_env_variable("API_USER")
     API_PASSWORD = get_env_variable("API_PASSWORD")
 
