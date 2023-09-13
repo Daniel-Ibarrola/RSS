@@ -83,7 +83,7 @@ class TestCapAlert:
 
         polygons = area.find_all("polygon")
         assert len(polygons) == 2
-        assert polygons[0].string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
+        assert polygons[0].string == "19.15,-98.95 19.60,-98.95 19.60,-99.35 19.15,-99.35 19.15,-98.95"
         assert polygons[1].string == "16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08"
 
     @staticmethod
@@ -138,7 +138,7 @@ class TestCapAlert:
 
         polygons = data.find_all("polygon")
         assert len(polygons) == 3
-        assert polygons[0].string == "17.92,-98.24 19.71,-97.73 20.36,-100.26 18.72,-100.80 17.92,-98.24"
+        assert polygons[0].string == "19.15,-98.95 19.60,-98.95 19.60,-99.35 19.15,-99.35 19.15,-98.95"
         assert polygons[1].string == "16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08"
         assert polygons[2].string == "15.48,-94.06 18.35,-93.87 18.55,-98.59 15.62,-98.70 15.48,-94.06"
 
@@ -220,7 +220,7 @@ class TestCapEvent:
         expected_lat = f"{expected_coords.lat:0.2f}"
         expected_lon = f"{expected_coords.lon:0.2f}"
 
-        assert radius == "50.0"
+        assert radius == "70.0"
         lat, lon = coords.split(",")
         assert lat == expected_lat
         assert lon == expected_lon

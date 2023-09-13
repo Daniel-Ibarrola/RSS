@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Optional
 from sqlalchemy import func
 
 from rss.api import db
@@ -26,6 +26,8 @@ class Alert(db.Model):
 
     @staticmethod
     def get_references(identifiers: list[str]) -> list["Alert"]:
+        """ Get the alerts referenced by the alert with given id.
+        """
         alert_refs = []
         for id_ in identifiers:
             alert = db.session.execute(
@@ -36,15 +38,24 @@ class Alert(db.Model):
     @staticmethod
     def get_by_date(date: str):
         """ Get all alerts that match a specific date.
-            Time is not considered.
+            Time is not considered, only date.
         """
         date = datetime.date.fromisoformat(date)
-        alerts = db.session.execute(
+        return db.session.execute(
             db.select(Alert).filter(
                 func.date(Alert.time) == date
             )
         ).scalars().all()
-        return alerts
+
+    @staticmethod
+    def get_by_identifier(identifier: str) -> Optional["Alert"]:
+        if identifier == "latest":
+            return db.session.execute(
+                db.select(Alert).order_by(Alert.time.desc())
+            ).scalars().first()
+        else:
+            return db.session.execute(
+                db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
 
     @staticmethod
     def get_pagination(page: int = 1):
@@ -59,6 +70,8 @@ class Alert(db.Model):
 
     @staticmethod
     def from_json(json: dict[str, Any]) -> "Alert":
+        """ Construct an Alert from a json object
+        """
         references = Alert.get_references(json["references"])
         states = [State(state_id=s) for s in json["states"]]
         alert = Alert(
