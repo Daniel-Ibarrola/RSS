@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.0
+
+### CAP format updated
+
+Updated CAP files format to comply with the newest specifications. The code has been updated
+to generate CAPs with the new format. Also, the sample cap files in the feeds directory were updated.
+
+### Bugfixes
+Fixed issues regarding environment variables in production mode.
+
+### Documentation
+The documentation was restructured and updated with instructions to run the apps in docker
+containers.
+
 ## v1.1.0
 
 ### Refactored
