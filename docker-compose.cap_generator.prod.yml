@@ -9,7 +9,7 @@ services:
     image: rss-api:latest
     container_name: cap-generator
     env_file:
-      - .env
+      - generator.env
     environment:
       - CONFIG=prod
     entrypoint: [

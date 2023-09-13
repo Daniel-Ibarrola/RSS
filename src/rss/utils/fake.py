@@ -4,15 +4,16 @@ import random
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from rss.config import configurations
+from rss.api.config import APIConfig
 from rss.api import create_app, db
 from rss.api.models import Alert, State
-from rss.cap.services import MessageProcessor
-from rss.cap.data import STATES, REGIONS
+from rss.services import MessageProcessor
+from rss.cap.states import STATES
+from rss.cap.regions import REGIONS
 
 
 def clear_database() -> None:
-    engine = create_engine(configurations["dev"].SQLALCHEMY_DATABASE_URI)
+    engine = create_engine(APIConfig.SQLALCHEMY_DATABASE_URI)
     engine.connect()
     session = sessionmaker(bind=engine)()
 
@@ -27,7 +28,7 @@ def generate_fake_alerts():
     """
     clear_database()
 
-    app = create_app(configurations["dev"])
+    app = create_app(APIConfig())
 
     end_date = datetime.date.today()
     end_date = datetime.datetime(year=end_date.year, month=end_date.month, day=end_date.day)

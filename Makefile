@@ -11,8 +11,14 @@ build:  ## Build docker image
 dev:  ## Start the development server on port 5000 and PostgresSQL container
 	docker compose up -d && docker compose logs -f
 
-up: ## Start the gunicorn server on port 5005 and the PostgreSQL db
+api: ## Start the gunicorn server on port 5005 and the PostgreSQL db
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+dev-generator: ## Start the cap generator in dev mode
+	docker compose -f docker-compose.cap_generator.yml up
+
+generator:  ## Start the cap generator in production mode
+	docker compose -f docker-compose.cap_generator.prod.yml up -d
 
 down: ## Remove all containers
 	docker compose down --remove-orphans
@@ -20,7 +26,7 @@ down: ## Remove all containers
 destroy: ## Remove all containers and images
 	docker compose down --remove-orphans && docker image rm rss-api
 
-restart:
+restart:  ## Restart all containers
 	docker compose restart
 
 stop: ## Stop all containers

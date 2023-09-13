@@ -4,8 +4,10 @@ from xml.dom import minidom
 
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.polygon import STATES, POLYGONS
-from rss.cap.regions import COORDS, REGIONS
+from rss.cap.geopoint import distance_between_points
+from rss.cap.polygon import POLYGONS
+from rss.cap.regions import REGIONS, REGION_COORDS
+from rss.cap.states import STATES, STATES_COORDS
 
 
 class UpdateWithNoReferencesError(ValueError):
@@ -45,7 +47,9 @@ class RSSFeed:
     def updated_date(self, date: str) -> None:
         self._updated_date = date
 
-    def _add_text_tag(self, parent, tag_name, text):
+    def _add_text_tag(
+            self, parent: minidom.Element, tag_name: str, text: str
+    ) -> None:
         """ Add a tag that contains text"""
         temp = self._root.createElement(tag_name)
         parent.appendChild(temp)
@@ -53,8 +57,10 @@ class RSSFeed:
         text_node = self._root.createTextNode(text)
         temp.appendChild(text_node)
 
-    def _add_link_tag(self, parent, ltype, rel, href):
-        """ Add a link tag"""
+    def _add_link_tag(
+            self, parent: minidom.Element, ltype: str, rel: str, href: str
+    ) -> None:
+        """ Add a link tag. """
         link = self._root.createElement("link")
         link.setAttribute("type", ltype)
         link.setAttribute("rel", rel)
@@ -62,7 +68,7 @@ class RSSFeed:
 
         parent.appendChild(link)
 
-    def _create_header(self):
+    def _create_header(self) -> minidom.Element:
         """ Create the header and returns the entry tags which store the
             main body.
         """
@@ -108,14 +114,43 @@ class RSSFeed:
         entry.appendChild(author)
         self._add_text_tag(author, "name", "CIRES A.C.")
 
-    def _add_parameter_tag(self, parent, value_name: str, value: str):
+    def _add_parameter_tag(self, parent, value_name: str, value: str) -> None:
+        """ Add a parameter tag with the following structure:
+            <parameter>
+                    <valueName>value_name</valueName>
+                    <value>value</value>
+            </parameter>
+        """
         parameter = self._root.createElement("parameter")
         parent.appendChild(parameter)
 
         self._add_text_tag(parameter, "valueName", value_name)
         self._add_text_tag(parameter, "value", value)
 
-    def _create_content_tag(self):
+    def _add_event_code_tag(self, parent, value_name: str, value: str) -> None:
+        """ Add a event code tag with the following structure:
+            <eventCode>
+                    <valueName>value_name</valueName>
+                    <value>value</value>
+            </eventCode>
+        """
+        parameter = self._root.createElement("eventCode")
+        parent.appendChild(parameter)
+
+        self._add_text_tag(parameter, "valueName", value_name)
+        self._add_text_tag(parameter, "value", value)
+
+    def _create_content_and_alert_tag(self) -> tuple[minidom.Element, minidom.Element]:
+        """ Creates the content and alert tag.
+
+            The content is the parent of the alert. It just contains the alert.
+
+            The alert is the most important section of the feed. It consists of some metadata,
+            namely, identifier, sender, sent, status, msg type and scope and also contains
+            the info tag, which contains the alert information. This method does not
+            create the info tag, it just adds the metadata.
+
+        """
         content = self._root.createElement("content")
         content.setAttribute("type", "text/xml")
 
@@ -127,12 +162,13 @@ class RSSFeed:
         if self._is_test:
             status = "Test"
 
-        sender = "sasmex.net"
+        sender = "cires.org.mx"
         msg_type = "Alert"
         if self._is_update:
             msg_type = "Update"
+
         text_tags = [
-            ("identifier", self._alert.id),
+            ("identifier", "CIRES_" + self._alert.id),
             ("sender", sender),
             ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("status", status),
@@ -149,62 +185,99 @@ class RSSFeed:
         return content, alert
 
     def _get_references(self, sender: str) -> str:
+        """ Get the list of references for an update as a single string
+            where each reference is separated by a space.
+
+            A reference has the following format:
+                sender,refID,date
+
+            If there are multiple references a string with the following format
+            is returned:
+                sender,refID_1,date_1 sender,refID_2,date_2
+        """
         references = ""
         for ii in range(len(self._refs) - 1):
-            ref_id = self._refs[ii].id
+            ref_id = "CIRES_" + self._refs[ii].id
             date = self._refs[ii].time.isoformat(timespec="seconds") + "-06:00"
             references += sender + "," + ref_id + "," + date + " "
 
-        ref_id = self._refs[-1].id
+        ref_id = "CIRES_" + self._refs[-1].id
         date = self._refs[-1].time.isoformat(timespec="seconds") + "-06:00"
         references += sender + "," + ref_id + "," + date
 
         return references
 
-    def _create_info_tag(self):
+    def _create_info_tag(self) -> minidom.Element:
+        """ Create the info tag.
+
+            This is a subtag of the alert tag, it contains the most important information
+            such as the area, severity, etc.
+        """
         info = self._root.createElement("info")
         expire_date = self._alert.time + datetime.timedelta(minutes=1)
 
-        event = "Alerta por sismo"
-        severity = "Severe"
-        headline = "Alerta Sismica"
-        if self._alert.is_event:
-            event = "Sismo"
-            severity = "Minor"
-            headline = "Sismo"
+        region = REGIONS[self._alert.region]
+        states = self._get_states()
+
+        if not self._alert.is_event:
+            event = f"SASMEX: ALERTA SISMICA en {states} por sismo en {region}"
+            severity = "Severe"
+            headline = f"ALERTA SISMICA por sismo Severo en {region}"
+            description = self._get_description(False, self._alert.region, self._alert.states)
+            response_type = "Execute"
+        else:
+            event = f"SASMEX: Sismo Moderado en {region}"
+            severity = "Unknown"
+            headline = f"Sismo Moderado en {region}"
+            description = self._get_description(True, self._alert.region, self._alert.states)
+            response_type = "Monitor"
 
         text_tags = [
             ("language", "es-MX"),
             ("category", "Geo"),
             ("event", event),
-            ("responseType", "Prepare"),
+            ("responseType", response_type),
             ("urgency", "Immediate"),
             ("severity", severity),
             ("certainty", "Observed"),
-            ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
-            ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
-            ("senderName", "Sistema de Alerta Sismica Mexicano"),
-            ("headline", headline),
-            ("description", "SASMEX registro un sismo"),
-            ("instruction", "Realice procedimiento en caso de sismo"),
-            ("web", "https://rss.sasmex.net"),
-            ("contact", "CIRES"),
         ]
         for tag in text_tags:
             self._add_text_tag(info, tag[0], tag[1])
+        self._add_event_code_tag(info, "SAME", "EQW")
 
-        parameter_tags = [
-            ("EAS", "1"),
+        text_tags = [
+            ("effective", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
+            ("expires", expire_date.isoformat(timespec="seconds") + "-06:00"),
+            ("senderName", "SASMEX - CIRES"),
+            ("headline", headline),
+            ("description", description),
+            ("instruction", "Realice procedimiento en caso de sismo"),
+            ("web", "https://rss.sasmex.net"),
+            ("contact", "infoCAP@cires-ac.mx"),
         ]
-        for tag in parameter_tags:
-            self._add_parameter_tag(info, tag[0], tag[1])
+        for tag in text_tags:
+            self._add_text_tag(info, tag[0], tag[1])
+        self._add_parameter_tag(info, "SAME", "CIV")
 
         # Area tag
+        area = self._create_area_tag()
+        info.appendChild(area)
+        return info
+
+    def _create_area_tag(self) -> minidom.Element:
+        """ Creates the area tag.
+
+            If the event is an alert, the area is one or multiple polygons
+            of the affected cities.
+
+            If the event is not an alert, the area is a circle centered in the
+            region of the earthquake.
+        """
         area = self._root.createElement("area")
         if self._alert.is_event:
-            area_desc = "Zona de sismo"
+            area_desc = "Zona Probable Epicentro"
         else:
-            area_desc = "Zona de emision de alerta"
+            area_desc = "Region de Alertamiento"
 
         self._add_text_tag(area, "areaDesc", area_desc)
 
@@ -212,29 +285,41 @@ class RSSFeed:
             self._circle_tag(area)
         else:
             self._polygon_tags(area)
-
-        info.appendChild(area)
-        return info
+        return area
 
     def _get_title(self) -> str:
+        """ Returns the title of the feed.
+        """
         title = format_datetime(self._alert.time, locale="es_MX")
-        state_list = [STATES[s] for s in self._alert.states]
-        states = "/".join(state_list)
         region = REGIONS[self._alert.region]
         if self._alert.is_event:
             title += f" Sismo en {region}"
         else:
-            title += f" Alerta en {states} por sismo en {region}"
+            title += f" Alerta en {self._get_states()} por sismo en {region}"
         return title
 
-    def _polygon_tags(self, parent):
+    def _get_states(self) -> str:
+        """ Returns the states of the alert as a string with the
+            following format:
+                state1/state2/.../stateN
+        """
+        state_list = [STATES[s] for s in self._alert.states]
+        return "/".join(state_list)
+
+    def _polygon_tags(self, parent: minidom.Element) -> None:
+        """ Add the polygons tags that describes the area of alerting.
+
+            A polygon has the following format:
+
+                <polygon>lat1,lon1 lat2,lon2, lat3,lon3, lat4,lon4, lat5,lon5</polygon>
+        """
         polygons = []
         # First the references of polygons if any
         if self._refs is not None:
             for ref in self._refs:
                 for state in ref.states:
-                    polygons.append(POLYGONS[state])
-        polygons.extend(POLYGONS[p] for p in self._alert.states)
+                    polygons.append(POLYGONS[STATES[state]])
+        polygons.extend(POLYGONS[STATES[st]] for st in self._alert.states)
 
         for poly in polygons:
             text = ""
@@ -247,10 +332,42 @@ class RSSFeed:
             text += f"{point.lat:0.2f},{point.lon:0.2f}"
             self._add_text_tag(parent, "polygon", text)
 
-    def _circle_tag(self, parent):
-        coords = COORDS[self._alert.region]
+    def _circle_tag(self, parent: minidom.Element) -> None:
+        """ Add a circle tag to describe the epicenter region of an earthquake.
+
+            It has the following format:
+
+                <circle>lat,lon radius</circle>
+        """
+        coords = REGION_COORDS[self._alert.region]
         text = f"{coords.lat:0.2f},{coords.lon:0.2f} 50.0"
         self._add_text_tag(parent, "circle", text)
+
+    @staticmethod
+    def _get_description(is_event: bool, region: int, states: list[int]) -> str:
+        """ Get the description string for the description tag
+        """
+        region_name = REGIONS[region]
+        if is_event:
+            description = f"Sismo Moderado en {region_name}"
+        else:
+            description = f"Sismo Severo en {region_name}"
+
+        region_coords = REGION_COORDS[region]
+        if len(states) > 1:
+            for ii in range(len(states) - 1):
+                st = STATES[states[ii]]
+                distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+                description += f", a {distance}km de {st}"
+            st = STATES[states[-1]]
+            distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+            description += f" y a {distance}km de {st}"
+        else:
+            st = STATES[states[0]]
+            distance = round(distance_between_points(STATES_COORDS[st], region_coords))
+            description += f", a {distance}km de {st}"
+
+        return description
 
     def build(self, indentation: str = '\t') -> None:
         """ Creates a string with the contents of the rss feed.
@@ -258,7 +375,7 @@ class RSSFeed:
         entry = self._create_header()
         self._create_entry_tag(entry)
 
-        content_tag, alert_tag = self._create_content_tag()
+        content_tag, alert_tag = self._create_content_and_alert_tag()
         info_tag = self._create_info_tag()
         alert_tag.appendChild(info_tag)
         entry.appendChild(content_tag)

@@ -13,6 +13,8 @@ services:
       - DB_PASSWORD=abc123
       - PYTHONUNBUFFERED=1
       - API_HOST=rss-api
+      - API_USER=triton
+      - API_PASSWORD=dog
       - CONFIG=dev
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80/" ]
@@ -28,6 +30,8 @@ services:
       - ./tests:/tests
 
   postgres:
+    image: postgres:15.2-alpine
+    container_name: rss-db
     environment:
       # Note user and db name will be the same
       - POSTGRES_USER=rss

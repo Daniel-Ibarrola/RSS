@@ -4,7 +4,7 @@ import sys
 
 from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file
-from rss.cap.services import MessageProcessor
+from rss.services import MessageProcessor
 
 
 if __name__ == "__main__":
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     is_event = False
     refs = None
     base_path = os.path.dirname(__file__)
-    save_path = os.path.abspath(os.path.join(base_path, "..", "..", "feeds/"))
+    save_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", "feeds/"))
 
     if len(sys.argv) > 1:
         feed_type = sys.argv[1]
@@ -48,7 +48,8 @@ if __name__ == "__main__":
         states=[40],
         region=41208,
         is_event=is_event,
-        id=MessageProcessor.alert_id(date)
+        id=MessageProcessor.alert_id(date),
+        refs=refs
     )
     feed = create_feed(alert, is_test=is_test)
 

@@ -10,6 +10,7 @@ from socketlib.utils.logger import get_module_logger
 import threading
 
 from rss import CONFIG
+from rss.api.config import APIConfig
 from rss.main import main
 from rss.services.api_client import APIClient
 
@@ -63,8 +64,8 @@ def server() -> Server:
         to_send=to_send,
         reconnect=False,
         timeout=2,
-        stop_receive=lambda: received.qsize() >= 1,  # or stop.is_set(),
-        stop_send=lambda: to_send.empty(),  # or stop.is_set(),
+        stop_receive=lambda: received.qsize() >= 1,
+        stop_send=lambda: to_send.empty(),
         logger=logger
     )
     server_.start()
@@ -99,6 +100,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
             reconnect=False,
             timeout=2,
             heart_beats=0.5,
+            api_url=APIConfig.API_URL,
             use_watchdog=False,
             stop=lambda: stop_event.is_set(),
             logger=logger,
@@ -130,7 +132,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # We check the first alert, which was triggered in two cities
     # so, it should have two polygons
     alert = data.feed.entry.alert
-    assert alert.info.event.string == "Alerta por sismo"
+    assert "SASMEX: ALERTA SISMICA" in alert.info.event.string
     assert alert.info.severity.string == "Severe"
     assert len(alert.find_all("polygon")) == 2
 
@@ -142,7 +144,7 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
     # We check the update alert. It should reference the previous alert
     alert = data.feed.entry.alert
     references = alert.references.string
-    assert alert.info.event.string == "Alerta por sismo"
+    assert "SASMEX: ALERTA SISMICA" in alert.info.event.string
     assert alert.info.severity.string == "Severe"
 
     # The update should contain the previous polygon as well as the new one
@@ -154,14 +156,14 @@ def test_saves_cap_feeds_when_receiving_alerts(server, cleanup_files):
 
     # Finally, we check the event
     event = data.feed.entry.alert
-    assert event.info.event.string == "Sismo"
-    assert event.info.severity.string == "Minor"
+    assert "SASMEX: Sismo Moderado" in event.info.event.string
+    assert event.info.severity.string == "Unknown"
     assert len(event.find_all("circle")) == 1
 
     remove_files(files)
 
     # Now we check that the feeds have been stored in the database
-    client = APIClient()
+    client = APIClient(APIConfig.API_URL)
     res = client.get_alerts()
     assert res.ok
 

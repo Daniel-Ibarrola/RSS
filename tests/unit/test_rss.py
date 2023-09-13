@@ -4,11 +4,11 @@ import pytest
 
 from rss import CONFIG
 from rss.cap import rss
-from rss.cap.regions import COORDS
+from rss.cap.regions import REGION_COORDS
 from rss.cap.alert import Alert
 
 
-class TestRSSFeed:
+class TestCapAlert:
     @pytest.fixture
     def cap_xml(self):
         alert = Alert(
@@ -16,7 +16,7 @@ class TestRSSFeed:
             states=[40, 41],
             region=42201,
             is_event=False,
-            id="TESTEVENT",
+            id="TEST-ALERT",
             refs=None
         )
         feed = rss.RSSFeed(alert, is_test=False)
@@ -24,8 +24,7 @@ class TestRSSFeed:
         feed.updated_date = datetime(2023, 5, 15, 12, 0, 0).isoformat()
 
         feed.build()
-        data = BeautifulSoup(feed.content, "xml")
-        return data
+        return BeautifulSoup(feed.content, "xml")
 
     def test_header_feed_tag(self, cap_xml):
         assert cap_xml.feed.title.string == "SASMEX-CIRES RSS Feed"
@@ -41,8 +40,8 @@ class TestRSSFeed:
         sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5).\
             isoformat(timespec="seconds") + "-06:00"
 
-        assert alert.identifier.string == "TESTEVENT"
-        assert alert.sender.string == "sasmex.net"
+        assert alert.identifier.string == "CIRES_TEST-ALERT"
+        assert alert.sender.string == "cires.org.mx"
         assert alert.sent.string == sent_time
         assert alert.status.string == "Actual"
         assert alert.msgType.string == "Alert"
@@ -50,27 +49,37 @@ class TestRSSFeed:
 
     def test_info_tag(self, cap_xml):
         info = cap_xml.feed.entry.alert.info
-        effective_date = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5).\
-            isoformat(timespec="seconds") + "-06:00"
         expire_date = datetime(year=2023, month=3, day=13, hour=16, minute=8, second=5).\
             isoformat(timespec="seconds") + "-06:00"
 
         assert info.language.string == "es-MX"
         assert info.category.string == "Geo"
-        assert info.event.string == "Alerta por sismo"
-        assert info.responseType.string == "Prepare"
+        assert info.event.string == "SASMEX: ALERTA SISMICA en CDMX/Guerrero por sismo en Costa Oax-Gro"
+        assert info.responseType.string == "Execute"
         assert info.urgency.string == "Immediate"
         assert info.severity.string == "Severe"
-        assert info.effective.string == effective_date
+        assert info.certainty.string == "Observed"
+
+        event_code = info.eventCode
+        assert event_code.valueName.string == "SAME"
+        assert event_code.value.string == "EQW"
+
         assert info.expires.string == expire_date
-        assert info.headline.string == "Alerta Sismica"
-        assert info.description.string == "SASMEX registro un sismo"
+        assert info.senderName.string == "SASMEX - CIRES"
+        assert info.headline.string == "ALERTA SISMICA por sismo Severo en Costa Oax-Gro"
+        assert info.description.string == "Sismo Severo en Costa Oax-Gro, a 347km de CDMX y a 126km de Guerrero"
         assert info.instruction.string == "Realice procedimiento en caso de sismo"
         assert info.web.string == "https://rss.sasmex.net"
-        assert info.contact.string == "CIRES"
+        assert info.contact.string == "infoCAP@cires-ac.mx"
 
+        parameter = info.parameter
+        assert parameter.valueName.string == "SAME"
+        assert parameter.value.string == "CIV"
+
+    def test_area_tag(self, cap_xml):
+        info = cap_xml.feed.entry.alert.info
         area = info.area
-        assert area.areaDesc.string == "Zona de emision de alerta"
+        assert area.areaDesc.string == "Region de Alertamiento"
 
         polygons = area.find_all("polygon")
         assert len(polygons) == 2
@@ -124,8 +133,8 @@ class TestRSSFeed:
 
         references = alert.references.string.split()
         assert len(references) == 2
-        assert references[0] == "sasmex.net,REF_ID_1,2023-03-13T16:07:05-06:00"
-        assert references[1] == "sasmex.net,REF_ID_2,2023-03-13T16:07:10-06:00"
+        assert references[0] == "cires.org.mx,CIRES_REF_ID_1,2023-03-13T16:07:05-06:00"
+        assert references[1] == "cires.org.mx,CIRES_REF_ID_2,2023-03-13T16:07:10-06:00"
 
         polygons = data.find_all("polygon")
         assert len(polygons) == 3
@@ -133,34 +142,83 @@ class TestRSSFeed:
         assert polygons[1].string == "16.01,-98.08 17.84,-97.55 19.29,-101.88 17.73,-102.54 16.01,-98.08"
         assert polygons[2].string == "15.48,-94.06 18.35,-93.87 18.55,-98.59 15.62,-98.70 15.48,-94.06"
 
-    def test_event_feed(self):
-        region = 42201
+
+class TestCapEvent:
+
+    @pytest.fixture
+    def cap_event_xml(self):
         event_alert = Alert(
             time=datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5),
             states=[40],
-            region=region,
+            region=42201,
             is_event=True,
-            id="TEST_ALERT"
+            id="TEST-EVENT"
         )
         feed = rss.RSSFeed(alert=event_alert, is_test=False)
         feed.build()
 
-        data = BeautifulSoup(feed.content, "xml")
-        assert "Sismo en" in data.feed.entry.title.string
+        return BeautifulSoup(feed.content, "xml")
 
-        info = data.feed.entry.alert.info
+    def test_header_tag(self, cap_event_xml):
+        assert cap_event_xml.feed.title.string == "SASMEX-CIRES RSS Feed"
+        assert len(cap_event_xml.find_all("alert")) == 1
 
-        assert info.event.string == "Sismo"
-        assert info.severity.string == "Minor"
-        assert info.headline.string == "Sismo"
-        assert info.area.areaDesc.string == "Zona de sismo"
+    def test_entry_title(self, cap_event_xml):
+        title = cap_event_xml.feed.entry.title
+        assert title.string == "13 mar 2023 16:07:05 Sismo en Costa Oax-Gro"
 
-        coords = COORDS[region]
-        expected_lat = f"{coords.lat:0.2f}"
-        expected_lon = f"{coords.lon:0.2f}"
+    def test_alert_tag(self, cap_event_xml):
+        alert = cap_event_xml.feed.entry.content.alert
+        sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5). \
+                        isoformat(timespec="seconds") + "-06:00"
 
-        circle = info.area.circle.string
+        assert alert.identifier.string == "CIRES_TEST-EVENT"
+        assert alert.sender.string == "cires.org.mx"
+        assert alert.sent.string == sent_time
+        assert alert.status.string == "Actual"
+        assert alert.msgType.string == "Alert"
+        assert alert.scope.string == "Public"
+
+    def test_info_tag(self, cap_event_xml):
+        info = cap_event_xml.feed.entry.alert.info
+        expire_date = datetime(year=2023, month=3, day=13, hour=16, minute=8, second=5). \
+                          isoformat(timespec="seconds") + "-06:00"
+
+        assert info.language.string == "es-MX"
+        assert info.category.string == "Geo"
+        assert info.event.string == "SASMEX: Sismo Moderado en Costa Oax-Gro"
+        assert info.responseType.string == "Monitor"
+        assert info.urgency.string == "Immediate"
+        assert info.severity.string == "Unknown"
+        assert info.certainty.string == "Observed"
+
+        event_code = info.eventCode
+        assert event_code.valueName.string == "SAME"
+        assert event_code.value.string == "EQW"
+
+        assert info.expires.string == expire_date
+        assert info.senderName.string == "SASMEX - CIRES"
+        assert info.headline.string == "Sismo Moderado en Costa Oax-Gro"
+        assert info.description.string == "Sismo Moderado en Costa Oax-Gro, a 347km de CDMX"
+        assert info.instruction.string == "Realice procedimiento en caso de sismo"
+        assert info.web.string == "https://rss.sasmex.net"
+        assert info.contact.string == "infoCAP@cires-ac.mx"
+
+        parameter = info.parameter
+        assert parameter.valueName.string == "SAME"
+        assert parameter.value.string == "CIV"
+
+    def test_area_tag(self, cap_event_xml):
+        info = cap_event_xml.feed.entry.alert.info
+        area = info.area
+        assert area.areaDesc.string == "Zona Probable Epicentro"
+
+        circle = area.circle.string
         coords, radius = circle.split()
+
+        expected_coords = REGION_COORDS[42201]
+        expected_lat = f"{expected_coords.lat:0.2f}"
+        expected_lon = f"{expected_coords.lon:0.2f}"
 
         assert radius == "50.0"
         lat, lon = coords.split(",")

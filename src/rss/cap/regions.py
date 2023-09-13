@@ -1,7 +1,7 @@
 from rss.cap.polygon import GeoPoint
 
 # Lat and long of each region
-COORDS = {
+REGION_COORDS = {
     40101: GeoPoint(lat=19.38714, lon=-99.15771),
     40102: GeoPoint(lat=19.314858, lon=-99.174865),
     40103: GeoPoint(lat=19.424536, lon=-99.118108),
@@ -46,7 +46,7 @@ COORDS = {
     41231: GeoPoint(lat=16.96152, lon=-99.08932),
     41232: GeoPoint(lat=16.81131, lon=-98.74218),
     41233: GeoPoint(lat=16.8788, lon=-98.36163),
-    42201: GeoPoint(lat=16.30636, lon=-98.44299),
+    42201: GeoPoint(lat=16.30636, lon=-98.44299),  # This one
     42202: GeoPoint(lat=16.53936, lon=-98.25224),
     42203: GeoPoint(lat=16.67263, lon=-98.04842),
     42204: GeoPoint(lat=16.29569, lon=-97.90988),

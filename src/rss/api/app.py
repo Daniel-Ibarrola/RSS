@@ -3,7 +3,6 @@ import os.path
 from flask import abort, current_app, request, jsonify, Response
 from flask_httpauth import HTTPBasicAuth
 
-from rss import CONFIG
 from rss.api import API_CONFIG, create_app, db
 from rss.api.models import Alert
 from rss.utils.wait_for_db import wait_for_postgres
@@ -16,7 +15,7 @@ api_route = "/api/v1"
 
 @auth.verify_password
 def verify_password(user: str, password: str) -> bool:
-    return user == CONFIG.API_USER and password == CONFIG.API_PASSWORD
+    return user == API_CONFIG.API_USER and password == API_CONFIG.API_PASSWORD
 
 
 def handle_error(error_type: str, status_code: int):
@@ -102,6 +101,7 @@ def get_alerts():
 
 @app.route(f"{api_route}/cap_contents/<identifier>")
 def get_cap_file_contents(identifier):
+    # TODO: duplicate code. Create method to get alert by identifier
     if identifier == "latest":
         alert = db.session.execute(
             db.select(Alert).order_by(Alert.time.desc())

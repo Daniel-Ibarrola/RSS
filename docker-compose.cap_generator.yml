@@ -8,10 +8,13 @@ services:
       dockerfile: Dockerfile
     image: rss-api:latest
     container_name: cap-generator
-    env_file:
-      - .env
     environment:
       - CONFIG=dev
+      - API_URL=http://rss-api
+      - API_USER=triton
+      - API_PASSWORD=dog
+      - CLIENT_IP=alerts-server
+      - CLIENT_PORT=12250
     entrypoint: [
       "python",
       "rss/main.py"
@@ -27,10 +30,10 @@ services:
       dockerfile: Dockerfile
     image: rss-api:latest
     container_name: cap-server
-    env_file:
-      - .env
     environment:
       - CONFIG=dev
+      - CLIENT_IP=alerts-server
+      - CLIENT_PORT=12250
     entrypoint: [
       "python",
       "rss/test/server.py"

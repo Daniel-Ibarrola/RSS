@@ -19,12 +19,14 @@ def main(
         reconnect: bool = False,
         timeout: Optional[float] = None,
         heart_beats: float = 30.,
+        api_url: str = CONFIG.API_URL,
         use_watchdog: bool = False,
         stop: Optional[Callable[[], bool]] = None,
         logger: Optional[logging.Logger] = None,
         exit_error: bool = True
 ) -> None:
     if logger is not None:
+        logger.info(f"RSS CAP generator")
         logger.info(f"AlertsClient will attempt to connect to {address}")
 
     client = AlertsClient(
@@ -40,7 +42,7 @@ def main(
     message_processor = MessageProcessor(client.received, stop=stop, logger=logger)
     alert_dispatcher = AlertDispatcher(message_processor.alerts, stop=stop, logger=logger)
     feed_writer = FeedWriter(alert_dispatcher.to_write, stop=stop, logger=logger)
-    feed_poster = FeedPoster(alert_dispatcher.to_post, stop=stop, logger=logger)
+    feed_poster = FeedPoster(alert_dispatcher.to_post, api_url, stop=stop, logger=logger)
 
     watchdog = None
     if use_watchdog:
@@ -93,14 +95,12 @@ def main(
 
 
 if __name__ == "__main__":
-    logger_ = get_module_logger(
-        __name__, CONFIG.NAME, use_file_handler=False)
-    logger_.info(f"RSS CAP generator")
-    address_ = CONFIG.IP, CONFIG.PORT
     main(
-        address=address_,
+        address=(CONFIG.IP, CONFIG.PORT),
         timeout=None,
         heart_beats=CONFIG.MSG_TIME,
         use_watchdog=True,
-        logger=logger_
+        logger=get_module_logger(
+            __name__, CONFIG.NAME, use_file_handler=False
+        )
     )

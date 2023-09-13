@@ -14,15 +14,15 @@
 	</author>
 	<entry>
 		<id>20234129426</id>
-		<updated>2023-04-12T09:04:26.271401</updated>
+		<updated>2023-09-11T09:44:22-06:00</updated>
 		<title>12 Apr 2023 09:04:26 Alerta en Colima por sismo en Atoyac Gro</title>
 		<content type="text/xml">
 			<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
-				<identifier>20234129426</identifier>
-				<sender>sasmex.net</sender>
+				<identifier>CIRES_20230911094414_842</identifier>
+                <sender>cires.org.mx</sender>
 				<!--Alphabetic timezone designators such as “Z” MUST NOT be used.
 					The timezone for UTC MUST be represented as “-00:00”. -->
-				<sent>2023-04-12T09:04:26-06:00</sent>
+				<sent>2023-09-11T09:44:22-06:00</sent>
 				<!-- Status [Actual, Exercise, System, Test, Draft]-->
 				<status>Actual</status>
 				<msgType>Alert</msgType>
@@ -32,31 +32,34 @@
 					<category>Geo</category>
 					<!-- Event length < 35 char.  The set of event types should be defined in
 						a CSV or Google Spreadsheet document-->
-					<event>Alerta por sismo</event>
+					<event>SASMEX: ALERTA SISMICA en CDMX por sismo en PtoEscondido Oax</event>
 					<!--  <responseType> must be one of [Shelter, Evacuate, Prepare, Execute, Monitor, Assess, None]. -->
-					<responseType>Prepare</responseType>
+					<responseType>Execute</responseType>
 					<!-- Urgency = [Immediate, Expected, Future, Past, Unknown] -->
 					<urgency>Immediate</urgency>
 					<!-- Severity = ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]-->
 					<severity>Severe</severity>
 					<!-- Certainty = [Observed, Likely, Possible, Unlikely, Unknown]-->
 					<certainty>Observed</certainty>
-					<effective>2023-04-12T09:04:26-06:00</effective>
-					<expires>2023-04-12T09:05:26-06:00</expires>
-					<senderName>SASMEX-CIRES</senderName>
-					<headline>Alerta Sismica</headline>
-					<description>SASMEX registro sismo</description>
+                    <eventCode>
+                         <valueName>SAME</valueName>
+                         <value>EQW</value>
+                    </eventCode>
+					<expires>2023-09-11T09:45:22-06:00</expires>
+					<senderName>SASMEX - CIRES</senderName>
+					<headline>ALERTA SISMICA por sismo Severo en PtoEscondido Oax</headline>
+                    <description>Sismo Severo en PtoEscondido Oax, a 437km de CDMX</description>
 					<instruction>Realice procedimiento por sismo</instruction>
-					<web>http://sasmex.net</web>
-					<contact>CIRES</contact>
+					<web>https://rss.sasmex.net</web>
+                    <contact>infoCAP@cires-ac.mx</contact>
 					<!-- A system-specific additional parameter associated with the alert message -->
 					<parameter>
-						<valueName>EAS</valueName>
-						<value>1</value>
+						<valueName>SAME</valueName>
+                        <value>CIV</value>
 					</parameter>
 					<area>
 						<!-- Area description is too generic -->
-						<areaDesc>Zona de emision de alerta</areaDesc>
+						<areaDesc>Region de Alertamiento</areaDesc>
 						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
 					</area>
 				</info>
