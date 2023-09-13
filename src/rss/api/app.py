@@ -63,6 +63,7 @@ def add_new_alert():
     if save_path and os.path.isdir(save_path):
         alert.save_to_file(save_path, current_app.logger)
     db.session.commit()
+    # TODO: respond with json that contains the alert id
     return "Ok", 201
 
 
