@@ -340,7 +340,7 @@ class RSSFeed:
                 <circle>lat,lon radius</circle>
         """
         coords = REGION_COORDS[self._alert.region]
-        text = f"{coords.lat:0.2f},{coords.lon:0.2f} 50.0"
+        text = f"{coords.lat:0.2f},{coords.lon:0.2f} 70.0"
         self._add_text_tag(parent, "circle", text)
 
     @staticmethod
