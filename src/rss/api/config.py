@@ -16,11 +16,11 @@ def get_dev_postgres_uri(host: str = "localhost") -> str:
 
 def get_postgres_uri() -> str:
     """ Get the postgres uri for the production database. """
-    host = get_env_variable("DB_HOST")
-    user = get_env_variable("DB_USER")
-    password = get_env_variable("DB_PASSWORD")
-    port = get_env_variable("DB_PORT")
-    db_name = get_env_variable("DB_NAME")
+    host = get_env_variable("DB_HOST", service="api")
+    user = get_env_variable("DB_USER", service="api")
+    password = get_env_variable("DB_PASSWORD", service="api")
+    port = get_env_variable("DB_PORT", service="api")
+    db_name = get_env_variable("DB_NAME", service="api")
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
@@ -77,8 +77,8 @@ class ProdAPIConfig(APIConfig):
 
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = get_postgres_uri()
-    API_USER = get_env_variable("API_USER")
-    API_PASSWORD = get_env_variable("API_PASSWORD")
+    API_USER = get_env_variable("API_USER", service="api")
+    API_PASSWORD = get_env_variable("API_PASSWORD", service="api")
 
 
 api_configs = {

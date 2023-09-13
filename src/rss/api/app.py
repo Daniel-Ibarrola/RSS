@@ -101,6 +101,7 @@ def get_alerts():
 
 @app.route(f"{api_route}/cap_contents/<identifier>")
 def get_cap_file_contents(identifier):
+    # TODO: duplicate code. Create method to get alert by identifier
     if identifier == "latest":
         alert = db.session.execute(
             db.select(Alert).order_by(Alert.time.desc())
