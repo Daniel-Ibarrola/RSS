@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.3.0
+
+## Documentation
+
+- Added JSON API documentation.
+- Added region and states code table to documentation.
+
+## Refactoring
+
+- Removed duplicate code in API endpoints.
+- New unit tests for alert model.
+
+## API
+
+- Added custom JSON errors to API
+
 ## v1.2.0
 
 ### CAP format updated

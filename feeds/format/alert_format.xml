@@ -20,26 +20,17 @@
 			<alert xmlns="urn:oasis:names:tc:emergency:cap:1.1">
 				<identifier>CIRES_20230911094414_842</identifier>
                 <sender>cires.org.mx</sender>
-				<!--Alphabetic timezone designators such as “Z” MUST NOT be used.
-					The timezone for UTC MUST be represented as “-00:00”. -->
 				<sent>2023-09-11T09:44:22-06:00</sent>
-				<!-- Status [Actual, Exercise, System, Test, Draft]-->
 				<status>Actual</status>
 				<msgType>Alert</msgType>
 				<scope>Public</scope>
 				<info>
 					<language>es-MX</language>
 					<category>Geo</category>
-					<!-- Event length < 35 char.  The set of event types should be defined in
-						a CSV or Google Spreadsheet document-->
 					<event>SASMEX: ALERTA SISMICA en CDMX por sismo en PtoEscondido Oax</event>
-					<!--  <responseType> must be one of [Shelter, Evacuate, Prepare, Execute, Monitor, Assess, None]. -->
 					<responseType>Execute</responseType>
-					<!-- Urgency = [Immediate, Expected, Future, Past, Unknown] -->
 					<urgency>Immediate</urgency>
-					<!-- Severity = ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]-->
 					<severity>Severe</severity>
-					<!-- Certainty = [Observed, Likely, Possible, Unlikely, Unknown]-->
 					<certainty>Observed</certainty>
                     <eventCode>
                          <valueName>SAME</valueName>
@@ -52,13 +43,11 @@
 					<instruction>Realice procedimiento por sismo</instruction>
 					<web>https://rss.sasmex.net</web>
                     <contact>infoCAP@cires-ac.mx</contact>
-					<!-- A system-specific additional parameter associated with the alert message -->
 					<parameter>
 						<valueName>SAME</valueName>
                         <value>CIV</value>
 					</parameter>
 					<area>
-						<!-- Area description is too generic -->
 						<areaDesc>Region de Alertamiento</areaDesc>
 						<polygon>17.52,-102.17 19.34,-100.11 20.50,-103.18 19.07,-104.96 17.52,-102.17</polygon>
 					</area>
