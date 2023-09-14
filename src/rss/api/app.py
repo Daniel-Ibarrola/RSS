@@ -5,7 +5,7 @@ from flask_httpauth import HTTPBasicAuth
 
 from rss.api import API_CONFIG, create_app, db
 from rss.api import errors
-from rss.api.models import Alert
+from rss.api.models import Alert, get_alerts_by_type
 from rss.utils.wait_for_db import wait_for_postgres
 
 
@@ -87,8 +87,12 @@ def get_alerts_by_date(date):
 
 @app.route(f"{api_route}/alerts/")
 def get_alerts():
+    alert_type = request.args.get("type", "all")
     page = request.args.get("page", 1, type=int)
-    alerts, prev, next_page, total = Alert.get_pagination(page)
+    if alert_type not in {"all", "alert", "event"}:
+        return errors.bad_request("Invalid alert type")
+
+    alerts, prev, next_page, total = get_alerts_by_type(alert_type, page)
     if len(alerts) > 0:
         return jsonify({
             "alerts": [al.to_json() for al in alerts],

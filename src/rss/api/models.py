@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Literal, Optional
 from sqlalchemy import func
 
 from rss.api import db
@@ -58,8 +58,33 @@ class Alert(db.Model):
                 db.select(Alert).filter_by(identifier=identifier)).scalar_one_or_none()
 
     @staticmethod
-    def get_pagination(page: int = 1):
+    def get_pagination(page: int = 1) -> tuple[list["Alert"], int, int, int]:
+        """ Returns the paginated alerts in descending order of date"""
         select = db.select(Alert).order_by(Alert.time.desc())
+        pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
+        return (
+            pagination.items,
+            pagination.prev_num,
+            pagination.next_num,
+            pagination.total
+        )
+
+    @staticmethod
+    def get_non_events(page: int = 1) -> tuple[list["Alert"], int, int, int]:
+        """ Returns the paginated alerts which are not events in descending order of date"""
+        select = db.select(Alert).filter_by(is_event=False).order_by(Alert.time.desc())
+        pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
+        return (
+            pagination.items,
+            pagination.prev_num,
+            pagination.next_num,
+            pagination.total
+        )
+
+    @staticmethod
+    def get_events(page: int = 1) -> tuple[list["Alert"], int, int, int]:
+        """ Returns the paginated events in descending order of date"""
+        select = db.select(Alert).filter_by(is_event=True).order_by(Alert.time.desc())
         pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
         return (
             pagination.items,
@@ -141,3 +166,17 @@ class State(db.Model):
 
     def __repr__(self) -> str:
         return f"State(id={self.id}, state_id={self.state_id})"
+
+
+def get_alerts_by_type(
+        alert_type: Literal["alert", "event", "all"],
+        page: int
+) -> tuple[list["Alert"], int, int, int]:
+    if alert_type == "all":
+        return Alert.get_pagination(page)
+    elif alert_type == "alert":
+        return Alert.get_non_events(page)
+    elif alert_type == "event":
+        return Alert.get_events(page)
+    raise ValueError(f"Invalid alert type {alert_type}")
+

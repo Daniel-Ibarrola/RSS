@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert, State
+from rss.api.models import Alert, State, get_alerts_by_type
 from rss.cap.alert import Alert as CapAlert
 
 
@@ -173,9 +173,15 @@ class TestGetByDate:
 
 class TestPagination:
 
-    @pytest.mark.usefixtures("sqlite_session")
-    def test_get_pagination(self):
+    @pytest.fixture
+    def set_max_pages(self):
+        original = Alert.PER_PAGE
         Alert.PER_PAGE = 2
+        yield
+        Alert.PER_PAGE = original
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_pagination(self, set_max_pages):
         alert1, alert2, alert3, alert4 = add_alerts_to_db()
 
         alerts, prev, next_page, total = Alert.get_pagination(1)
@@ -213,3 +219,38 @@ class TestGetAlertByIdentifier:
         not_found = Alert.get_by_identifier("ALERT5")
         assert not_found is None
 
+
+class TestGetAlertsByType:
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_all(self):
+        expected = add_alerts_to_db()
+        expected.reverse()
+        alerts, prev, next_page,  total = get_alerts_by_type("all", 1)
+        assert alerts == expected
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_only_alerts(self):
+        alert1, alert2, _, alert4 = add_alerts_to_db()
+        alerts, prev, next_page, total = get_alerts_by_type("alert", 1)
+        assert alerts == [alert4, alert2, alert1]
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_events(self):
+        expected = add_alerts_to_db()[2]
+        alerts, prev, next_page, total = get_alerts_by_type("event", 1)
+        assert len(alerts) == 1
+        assert alerts[0] == expected
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_invalid_type_raises_error(self):
+        alert_type = "earthquake"
+        match = f"Invalid alert type {alert_type}"
+        with pytest.raises(ValueError, match=match):
+            get_alerts_by_type(alert_type, 1)

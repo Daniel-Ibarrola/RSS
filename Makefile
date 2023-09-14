@@ -38,6 +38,9 @@ test:  ## Run all tests
 unit-tests: ## Run unit tests
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/unit
 
+integration-tests: ## Run integration tests
+	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/integration
+
 e2e-tests:  ## Run end to end test
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/e2e
 

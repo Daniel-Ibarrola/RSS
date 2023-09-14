@@ -116,7 +116,7 @@ class TestAlertsAPI:
             ],
             "prev": None,
             "next": None,
-            "count": 3
+            "count": 4
         }
 
     @pytest.mark.usefixtures("postgres_session")
@@ -227,7 +227,7 @@ class TestAlertFilters:
     @pytest.mark.usefixtures("wait_for_api")
     def test_get_event_alerts(self):
         dates = post_alerts()
-        res = client.get_events()
+        res = client.get_alerts(alert_type="event")
         assert res.ok
         assert res.json() == {
             "alerts": [
@@ -249,7 +249,7 @@ class TestAlertFilters:
     @pytest.mark.usefixtures("wait_for_api")
     def test_get_alerts(self):
         dates = post_alerts()
-        res = client.get_alerts(events=False)
+        res = client.get_alerts(alert_type="alert")
         assert res.ok
         assert res.json() == {
             "alerts": [

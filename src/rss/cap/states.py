@@ -25,3 +25,6 @@ STATES_COORDS = {
     'Veracruz': GeoPoint(lat=19.1738, lon=-96.1342),
     'Chiapas': GeoPoint(lat=16.7569, lon=-93.1292),
 }
+
+# Inverse STATES dictionary
+STATES_CODES = {name: code for code, name in STATES.items()}
