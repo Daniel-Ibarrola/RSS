@@ -5,22 +5,9 @@ from typing import Optional
 from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
 from rss.cap.states import STATES
-from rss.cap.regions import REGIONS
-
-
-def region_codes_map() -> dict[str, set[int]]:
-    """ Returns a map of the region name to region codes.
-
-        A region can have multiple codes
-    """
-    region_codes = defaultdict(set)
-    for code, region in REGIONS.items():
-        region_codes[region].add(code)
-    return region_codes
 
 
 STATE_CODES = {name: code for code, name in STATES.items()}
-REGION_CODES = region_codes_map()
 
 
 class AlertFetchError(ValueError):
@@ -47,7 +34,7 @@ def post_alert(
         url: str,
         date_str: str,
         states: list[str],
-        region: str,
+        region: int,
         alert_id: str,
         is_event: bool,
         ref_ids: Optional[list[str]] = None
@@ -57,7 +44,6 @@ def post_alert(
     client = APIClient(url)
     date = datetime.datetime.fromisoformat(date_str)
     state_codes = [STATE_CODES[st] for st in states]
-    region_code = list(REGION_CODES[region])[0]
 
     if ref_ids:
         alert_refs = []
@@ -68,7 +54,7 @@ def post_alert(
     alert = Alert(
         time=date,
         states=state_codes,
-        region=region_code,
+        region=region,
         id=alert_id,
         is_event=is_event,
         refs=alert_refs

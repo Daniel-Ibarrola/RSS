@@ -37,8 +37,8 @@ def create_parser() -> argparse.Namespace:
     post_parser.add_argument(
         "--region",
         "-r",
-        type=str,
-        help="Region of the alert."
+        type=int,
+        help="Region code of the alert."
     )
     post_parser.add_argument(
         "--id",
