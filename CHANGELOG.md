@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.0
+
+### CLI
+
+New CLI tool, currently allows only to post new alerts to the API.
+
+### API
+
+- POST /new_alert endpoint returns the json of the new posted alert on success.
+
 ## v1.3.0
 
 ## Documentation

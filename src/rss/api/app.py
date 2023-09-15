@@ -57,14 +57,14 @@ def index():
 @app.route(f"{api_route}/new_alert", methods=["POST"])
 @auth.login_required
 def add_new_alert():
+    # TODO: verify that identifier is unique
     alert = Alert.from_json(request.json)
     save_path = request.args.get("save_path", "")
     current_app.logger.info(f"Path {save_path}")
     if save_path and os.path.isdir(save_path):
         alert.save_to_file(save_path, current_app.logger)
     db.session.commit()
-    # TODO: respond with json that contains the alert id
-    return "Ok", 201
+    return jsonify(alert.to_json()), 201
 
 
 @app.route(f"{api_route}/alerts/<identifier>")
