@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.1
+
+### CLI
+Post alert uses region code instead of name.
+
 ## v1.4.0
 
 ### CLI
