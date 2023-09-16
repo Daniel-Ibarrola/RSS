@@ -1,11 +1,22 @@
 # Changelog
 
-## v1.4.1
+## v1.4.0
+
+### API
+- New endpoint to get alerts by state.
+- New endpoint to get alerts by region.
+- List alert endpoint can filter by events and not events.
+- Dates endpoint can get alerts in a given range
+
+### Tests
+- API test were moved to the integration folder.
+
+## v1.3.2
 
 ### CLI
 Post alert uses region code instead of name.
 
-## v1.4.0
+## v1.3.1
 
 ### CLI
 
