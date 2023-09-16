@@ -3,6 +3,7 @@ version: "3"
 services:
 
   cap-generator:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile

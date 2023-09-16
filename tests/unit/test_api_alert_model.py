@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert, State
+from rss.api.models import Alert, State, get_alerts_by_type
 from rss.cap.alert import Alert as CapAlert
 
 
@@ -130,28 +130,28 @@ def add_alerts_to_db() -> list[Alert]:
     alert1 = Alert(
         time=datetime(2023, 5, 17, 13, 20, 5),
         states=[State(state_id=40)],
-        region=12202,
+        region=41219,  # Guerrero
         identifier="ALERT1",
         is_event=False,
     )
     alert2 = Alert(
         time=datetime(2023, 5, 17, 13, 20, 15),
         states=[State(state_id=41)],
-        region=12202,
+        region=41220,  # Guerrero
         identifier="ALERT2",
         is_event=False,
     )
     alert3 = Alert(
         time=datetime(2023, 5, 18, 10, 15, 0),
         states=[State(state_id=42)],
-        region=12202,
+        region=42210,  # Oaxaca
         identifier="ALERT3",
         is_event=True,
     )
     alert4 = Alert(
         time=datetime(2023, 5, 19, 10, 15, 0),
         states=[State(state_id=43)],
-        region=12202,
+        region=43204,  # Costa Mich
         identifier="ALERT4",
         is_event=False,
     )
@@ -170,12 +170,35 @@ class TestGetByDate:
         alerts = Alert.get_by_date("2023-05-17")
         assert alerts == [alert1, alert2]
 
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_by_date_range_desc_order(self):
+        expected = add_alerts_to_db()[2:]
+        expected.reverse()
+        start = "2023-05-18"
+        end = "2023-05-19"
+        alerts = Alert.get_by_date_range(start, end, desc=True)
+        assert alerts == expected
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_by_date_range_asc_order(self):
+        expected = add_alerts_to_db()[2:]
+        start = "2023-05-18"
+        end = "2023-05-19"
+        alerts = Alert.get_by_date_range(start, end)
+        assert alerts == expected
+
 
 class TestPagination:
 
-    @pytest.mark.usefixtures("sqlite_session")
-    def test_get_pagination(self):
+    @pytest.fixture
+    def set_max_pages(self):
+        original = Alert.PER_PAGE
         Alert.PER_PAGE = 2
+        yield
+        Alert.PER_PAGE = original
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_pagination(self, set_max_pages):
         alert1, alert2, alert3, alert4 = add_alerts_to_db()
 
         alerts, prev, next_page, total = Alert.get_pagination(1)
@@ -213,3 +236,59 @@ class TestGetAlertByIdentifier:
         not_found = Alert.get_by_identifier("ALERT5")
         assert not_found is None
 
+
+class TestGetAlertsByType:
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_all(self):
+        expected = add_alerts_to_db()
+        expected.reverse()
+        alerts, prev, next_page,  total = get_alerts_by_type("all", 1)
+        assert alerts == expected
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_only_alerts(self):
+        alert1, alert2, _, alert4 = add_alerts_to_db()
+        alerts, prev, next_page, total = get_alerts_by_type("alert", 1)
+        assert alerts == [alert4, alert2, alert1]
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_events(self):
+        expected = add_alerts_to_db()[2]
+        alerts, prev, next_page, total = get_alerts_by_type("event", 1)
+        assert len(alerts) == 1
+        assert alerts[0] == expected
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_invalid_type_raises_error(self):
+        alert_type = "earthquake"
+        match = f"Invalid alert type {alert_type}"
+        with pytest.raises(ValueError, match=match):
+            get_alerts_by_type(alert_type, 1)
+
+
+class TestGetAlertByLocation:
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_by_state_code(self):
+        expected = add_alerts_to_db()[1]
+        alerts, prev, next_page, total = Alert.get_by_state_code("41")
+        assert len(alerts) == 1
+        assert alerts[0] == expected
+        assert prev is None
+        assert next_page is None
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_get_by_region(self):
+        expected = add_alerts_to_db()[:2]
+        expected.reverse()
+        alerts, prev, next_page, total = Alert.get_by_region("guerrero")
+        assert alerts == expected
+        assert prev is None
+        assert next_page is None

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from rss.cap.polygon import GeoPoint
 
 # Lat and long of each region
@@ -358,3 +359,17 @@ REGIONS = {
     49215: 'Chiapas',
     49216: 'Chiapas',
 }
+
+
+def region_codes_map() -> dict[str, set[int]]:
+    """ Returns a map of the region name to region codes.
+
+        A region can have multiple codes
+    """
+    region_codes = defaultdict(set)
+    for code, region in REGIONS.items():
+        region_codes[region].add(code)
+    return region_codes
+
+
+REGION_CODES = region_codes_map()
