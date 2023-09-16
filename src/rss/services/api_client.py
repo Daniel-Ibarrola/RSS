@@ -3,7 +3,6 @@ import requests
 from typing import Literal
 from rss import CONFIG
 from rss.cap.alert import Alert
-from rss.cap.regions import REGION_CODES
 from rss.cap.states import STATES_CODES
 
 
@@ -57,7 +56,7 @@ class APIClient:
         """ Get all alerts that were emitted from the given start date
             to the given end date.
         """
-        url = f"{self.base_url}/alerts/date/{start.isoformat()}?end={end.isoformat()}"
+        url = f"{self.base_url}/alerts/dates/{start.isoformat()}?end={end.isoformat()}"
         return requests.get(url)
 
     def get_alerts(
@@ -96,7 +95,7 @@ class APIClient:
         """Get all the alerts in a given region.
         """
         state_code = STATES_CODES[state]
-        url = f"{self.base_url}/regions/{state_code}"
+        url = f"{self.base_url}/states/{state_code}"
         if page is not None:
             url += f"&page={page}"
         return requests.get(url)

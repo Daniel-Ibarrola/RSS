@@ -77,7 +77,11 @@ def get_alert(identifier):
 
 @app.route(f"{api_route}/alerts/dates/<date>")
 def get_alerts_by_date(date):
-    alerts = Alert.get_by_date(date)
+    end_date = request.args.get("end", "")
+    if not end_date:
+        alerts = Alert.get_by_date(date)
+    else:
+        alerts = Alert.get_by_date_range(date, end_date)
     if len(alerts) > 0:
         return jsonify({
             "alerts": [al.to_json() for al in alerts]
@@ -134,6 +138,34 @@ def get_last_alert():
     alert = Alert.get_by_identifier("latest")
     if alert is not None:
         return jsonify(alert.to_json())
+    return errors.not_found("No alerts found")
+
+
+@app.route(f"{api_route}/regions/<region>")
+def get_alerts_by_region(region):
+    page = request.args.get("page", 1, type=int)
+    alerts, prev, next_page, total = Alert.get_by_region(region, page)
+    if len(alerts) > 0:
+        return jsonify({
+            "alerts": [al.to_json() for al in alerts],
+            "prev": prev,
+            "next": next_page,
+            "count": total,
+        })
+    return errors.not_found("No alerts found")
+
+
+@app.route(f"{api_route}/states/<state_code>")
+def get_alerts_by_state(state_code):
+    page = request.args.get("page", 1, type=int)
+    alerts, prev, next_page, total = Alert.get_by_state_code(state_code, page)
+    if len(alerts) > 0:
+        return jsonify({
+            "alerts": [al.to_json() for al in alerts],
+            "prev": prev,
+            "next": next_page,
+            "count": total,
+        })
     return errors.not_found("No alerts found")
 
 
