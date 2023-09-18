@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.5.0 (18/09/2023)
+
+### CLI
+Some utilities are now available via the CLI tool and can be accessed more easily. Example:
+
+```shell
+cap write --date 2023-09-15T00:00:00 --states CDMX --region 41109 --file test.cap
+```
+
+The following utilities can be access via the CLI:
+- **write**: Write a CAP file with the specified parameters.
+- **post**: Post a new alert to the API
+- **generate**: Generate new alerts and add them to the database. Can only be used in dev mode.
+- **server**: Start the test server that generates samples alerts. This can be used to test the integration of the CAP generator with the API
+
 ## v1.4.0
 
 ### API

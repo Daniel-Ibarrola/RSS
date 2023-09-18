@@ -63,7 +63,7 @@ def get_time() -> str:
     return now.strftime("%Y/%m/%d,%H:%M:%S")
 
 
-def main() -> None:
+def start_server() -> None:
     logger = get_module_logger("AlertServer", "dev", use_file_handler=False)
     server = AlertServer(
         address=(CONFIG.IP, CONFIG.PORT),
@@ -84,4 +84,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    start_server()
