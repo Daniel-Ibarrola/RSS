@@ -1,57 +1,30 @@
 import datetime
-import os
-import sys
-
+from typing import Literal
 from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file
+from rss.cap.states import STATES_CODES
 from rss.services import MessageProcessor
 
 
-if __name__ == "__main__":
+def write_cap_file(
+        date_str: str,
+        states: list[str],
+        region: int,
+        alert_type: Literal["alert", "event", "test"],
+        save_path: str
+):
+    date = datetime.datetime.fromisoformat(date_str)
+    state_codes = [STATES_CODES[st] for st in states]
+    is_event = True if alert_type == "event" else False
+    is_test = True if alert_type == "test" else False
 
-    is_test = True
-    is_event = False
-    refs = None
-    base_path = os.path.dirname(__file__)
-    save_path = os.path.abspath(os.path.join(base_path, "..", "..", "..", "feeds/"))
-
-    if len(sys.argv) > 1:
-        feed_type = sys.argv[1]
-        if feed_type == "update":
-            is_test = False
-            date = datetime.datetime.now()
-            refs = [Alert(
-                        time=date,
-                        states=[42],
-                        region=41208,
-                        is_event=is_event,
-                        id=MessageProcessor.alert_id(date)
-                    )]
-        elif feed_type == "alert":
-            is_test = False
-        elif feed_type == "event":
-            is_event = True
-        elif feed_type == "test":
-            pass
-        else:
-            raise ValueError(f"Invalid feed type {feed_type}")
-
-    if len(sys.argv) > 2:
-        save_path = sys.argv[2]
-
-    if not os.path.isdir(save_path):
-        raise ValueError(f"Incorrect path {save_path}")
-
-    date = datetime.datetime.now()
     alert = Alert(
         time=date,
-        states=[40],
-        region=41208,
-        is_event=is_event,
+        states=state_codes,
+        region=region,
         id=MessageProcessor.alert_id(date),
-        refs=refs
+        is_event=is_event,
     )
     feed = create_feed(alert, is_test=is_test)
-
-    write_feed_to_file(os.path.join(save_path, "test.cap"), feed)
+    write_feed_to_file(save_path, feed)
     print(f"CAP file written to {save_path}")

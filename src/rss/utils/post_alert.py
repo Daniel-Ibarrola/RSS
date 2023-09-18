@@ -1,13 +1,10 @@
-from collections import defaultdict
 import datetime
 from typing import Optional
 
 from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
-from rss.cap.states import STATES
+from rss.cap.states import STATES, STATES_CODES
 
-
-STATE_CODES = {name: code for code, name in STATES.items()}
 
 
 class AlertFetchError(ValueError):
@@ -43,7 +40,7 @@ def post_alert(
     """
     client = APIClient(url)
     date = datetime.datetime.fromisoformat(date_str)
-    state_codes = [STATE_CODES[st] for st in states]
+    state_codes = [STATES_CODES[st] for st in states]
 
     if ref_ids:
         alert_refs = []
