@@ -58,7 +58,7 @@ class APIClient:
     ) -> requests.Response:
         """ Fetch all alerts of the given page. Accepts multiple filters
         """
-        params = {"alert_type": alert_type}
+        params = {"type": alert_type}
         if page is not None:
             params["page"] = page
         if start_date is not None:

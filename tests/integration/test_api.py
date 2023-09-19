@@ -169,14 +169,6 @@ class TestAlertFilters:
         assert res.json() == {
             "alerts": [
                 {
-                    "time": dates[1].isoformat(timespec="seconds"),
-                    "states": [40],
-                    "region": 41201,
-                    "is_event": False,
-                    "id": "ALERT1",
-                    "references": [],
-                },
-                {
                     "time": dates[2].isoformat(timespec="seconds"),
                     "states": [41],
                     "region": 41204,
@@ -184,7 +176,19 @@ class TestAlertFilters:
                     "id": "ALERT2",
                     "references": [],
                 },
-            ]}
+                {
+                    "time": dates[1].isoformat(timespec="seconds"),
+                    "states": [40],
+                    "region": 41201,
+                    "is_event": False,
+                    "id": "ALERT1",
+                    "references": [],
+                },
+            ],
+            "prev": None,
+            "next": None,
+            "count": 2
+        }
 
     @pytest.mark.usefixtures("postgres_session")
     @pytest.mark.usefixtures("wait_for_api")
@@ -197,11 +201,11 @@ class TestAlertFilters:
         assert res.json() == {
             "alerts": [
                 {
-                    "time": dates[0].isoformat(timespec="seconds"),
-                    "states": [43],
-                    "region": 41216,
-                    "is_event": True,
-                    "id": "ALERT0",
+                    "time": dates[2].isoformat(timespec="seconds"),
+                    "states": [41],
+                    "region": 41204,
+                    "is_event": False,
+                    "id": "ALERT2",
                     "references": [],
                 },
                 {
@@ -213,14 +217,17 @@ class TestAlertFilters:
                     "references": [],
                 },
                 {
-                    "time": dates[2].isoformat(timespec="seconds"),
-                    "states": [41],
-                    "region": 41204,
-                    "is_event": False,
-                    "id": "ALERT2",
+                    "time": dates[0].isoformat(timespec="seconds"),
+                    "states": [43],
+                    "region": 41216,
+                    "is_event": True,
+                    "id": "ALERT0",
                     "references": [],
                 },
-            ]
+            ],
+            "prev": None,
+            "next": None,
+            "count": 3
         }
 
     @pytest.mark.usefixtures("postgres_session")
