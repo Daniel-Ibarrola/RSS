@@ -1,6 +1,6 @@
 import datetime
 import requests
-from typing import Literal
+from typing import Literal, Optional
 from rss import CONFIG
 from rss.cap.alert import Alert
 from rss.cap.states import STATES_CODES
@@ -47,30 +47,31 @@ class APIClient:
         """ Get the alert with the given identifier. """
         return requests.get(f"{self.base_url}/alerts/{identifier}")
 
-    def get_alerts_by_date(self, date: datetime.date) -> requests.Response:
-        """ Get all alerts emitted in the given day
-        """
-        return requests.get(f"{self.base_url}/alerts/dates/{date.isoformat()}")
-
-    def get_alerts_in_date_range(self, start: datetime.date, end: datetime.date):
-        """ Get all alerts that were emitted from the given start date
-            to the given end date.
-        """
-        url = f"{self.base_url}/alerts/dates/{start.isoformat()}?end={end.isoformat()}"
-        return requests.get(url)
-
     def get_alerts(
             self,
             page: int = None,
-            alert_type: Literal["alert", "event", "all"] = "all"
+            alert_type: Literal["alert", "event", "all"] = "all",
+            start_date: Optional[datetime.date] = None,
+            end_date: Optional[datetime.date] = None,
+            region: str = "",
+            state: str = "",
     ) -> requests.Response:
-        """ Fetch all alerts of the given page. If not page is given, the first one
-            is fetched.
+        """ Fetch all alerts of the given page. Accepts multiple filters
         """
-        url = f"{self.base_url}/alerts/?type={alert_type}"
+        params = {"type": alert_type}
         if page is not None:
-            url += f"&page={page}"
-        return requests.get(url)
+            params["page"] = page
+        if start_date is not None:
+            params["start_date"] = start_date.isoformat()
+        if end_date is not None:
+            params["end_date"] = end_date.isoformat()
+        if region:
+            params["region"] = "".join(region.lower().split())
+        if state:
+            params["state"] = STATES_CODES[state]
+
+        url = f"{self.base_url}/alerts/"
+        return requests.get(url, params=params)
 
     def get_cap_file(self, identifier: str) -> requests.Response:
         """ Returns a response with the contents of the solicited cap file as string"""
@@ -79,23 +80,3 @@ class APIClient:
     def get_last_alert(self) -> requests.Response:
         """ Fetch the last published alert. """
         return requests.get(f"{self.base_url}/last_alert/")
-
-    def get_alerts_by_region(self, region: str, page: int = None) -> requests.Response:
-        """Get all the alerts in a given region.
-
-            Note: region name must have no accents
-        """
-        region = "".join(region.lower().split())
-        url = f"{self.base_url}/regions/{region}"
-        if page is not None:
-            url += f"&page={page}"
-        return requests.get(url)
-
-    def get_alerts_by_state(self, state: str, page: int = None) -> requests.Response:
-        """Get all the alerts in a given region.
-        """
-        state_code = STATES_CODES[state]
-        url = f"{self.base_url}/states/{state_code}"
-        if page is not None:
-            url += f"&page={page}"
-        return requests.get(url)

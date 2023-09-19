@@ -48,33 +48,6 @@ class TestAlertsAPI:
 
     @pytest.mark.usefixtures("postgres_session")
     @pytest.mark.usefixtures("wait_for_api")
-    def test_get_alerts_by_date(self):
-        dates = post_alerts()
-        search_date = datetime.date(year=2023, month=3, day=13)
-        res = client.get_alerts_by_date(search_date)
-        assert res.ok
-        assert res.json() == {
-            "alerts": [
-                {
-                    "time": dates[1].isoformat(timespec="seconds"),
-                    "states": [40],
-                    "region": 41201,
-                    "is_event": False,
-                    "id": "ALERT1",
-                    "references": [],
-                },
-                {
-                    "time": dates[2].isoformat(timespec="seconds"),
-                    "states": [41],
-                    "region": 41204,
-                    "is_event": False,
-                    "id": "ALERT2",
-                    "references": [],
-                },
-            ]}
-
-    @pytest.mark.usefixtures("postgres_session")
-    @pytest.mark.usefixtures("wait_for_api")
     def test_alerts_pagination(self):
         dates = post_alerts()
         res = client.get_alerts()
@@ -188,20 +161,51 @@ class TestAlertFilters:
 
     @pytest.mark.usefixtures("postgres_session")
     @pytest.mark.usefixtures("wait_for_api")
-    def test_get_alerts_in_date_range(self):
+    def test_get_alerts_by_date(self):
         dates = post_alerts()
-        start = datetime.date(2023, 3, 11)
-        end = datetime.date(2023, 3, 13)
-        res = client.get_alerts_in_date_range(start, end)
+        start_date = datetime.date(year=2023, month=3, day=13)
+        res = client.get_alerts(start_date=start_date)
         assert res.ok
         assert res.json() == {
             "alerts": [
                 {
-                    "time": dates[0].isoformat(timespec="seconds"),
-                    "states": [43],
-                    "region": 41216,
-                    "is_event": True,
-                    "id": "ALERT0",
+                    "time": dates[2].isoformat(timespec="seconds"),
+                    "states": [41],
+                    "region": 41204,
+                    "is_event": False,
+                    "id": "ALERT2",
+                    "references": [],
+                },
+                {
+                    "time": dates[1].isoformat(timespec="seconds"),
+                    "states": [40],
+                    "region": 41201,
+                    "is_event": False,
+                    "id": "ALERT1",
+                    "references": [],
+                },
+            ],
+            "prev": None,
+            "next": None,
+            "count": 2
+        }
+
+    @pytest.mark.usefixtures("postgres_session")
+    @pytest.mark.usefixtures("wait_for_api")
+    def test_get_alerts_in_date_range(self):
+        dates = post_alerts()
+        start = datetime.date(2023, 3, 11)
+        end = datetime.date(2023, 3, 13)
+        res = client.get_alerts(start_date=start, end_date=end)
+        assert res.ok
+        assert res.json() == {
+            "alerts": [
+                {
+                    "time": dates[2].isoformat(timespec="seconds"),
+                    "states": [41],
+                    "region": 41204,
+                    "is_event": False,
+                    "id": "ALERT2",
                     "references": [],
                 },
                 {
@@ -213,14 +217,17 @@ class TestAlertFilters:
                     "references": [],
                 },
                 {
-                    "time": dates[2].isoformat(timespec="seconds"),
-                    "states": [41],
-                    "region": 41204,
-                    "is_event": False,
-                    "id": "ALERT2",
+                    "time": dates[0].isoformat(timespec="seconds"),
+                    "states": [43],
+                    "region": 41216,
+                    "is_event": True,
+                    "id": "ALERT0",
                     "references": [],
                 },
-            ]
+            ],
+            "prev": None,
+            "next": None,
+            "count": 3
         }
 
     @pytest.mark.usefixtures("postgres_session")
@@ -287,7 +294,7 @@ class TestAlertFilters:
     @pytest.mark.usefixtures("wait_for_api")
     def test_get_alerts_by_region(self):
         dates = post_alerts()
-        res = client.get_alerts_by_region("Guerrero")
+        res = client.get_alerts(region="Guerrero")
         assert res.ok
         assert res.json() == {
             "alerts": [
@@ -317,7 +324,7 @@ class TestAlertFilters:
     @pytest.mark.usefixtures("wait_for_api")
     def test_get_alerts_by_state(self):
         dates = post_alerts()
-        res = client.get_alerts_by_state("CDMX")
+        res = client.get_alerts(state="CDMX")
         assert res.ok
         assert res.json() == {
             "alerts": [

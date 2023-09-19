@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.6.0 (19/09/2023)
+
+### API
+The GET /alerts/ endpoint accepts multiple optional parameters that can be used as filters.
+The following endpoints are now redundant and were removed:
+- GET /alerts/dates/{date}. Get alerts by date.
+- GET /regions/{region_name}. Get alerts by region.
+- GET /states/{state_code}. Get alerts by state.
+
+Date, region, state, and type can now be used as parameters with the GET /alerts/ endpoint.
+
+Removed many obsolete methods from `rss.api.alert.Alert` model.
+
+APIClient was updated with the new endpoints.
+
 ## v1.5.0 (18/09/2023)
 
 ### CLI

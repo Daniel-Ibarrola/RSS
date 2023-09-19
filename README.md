@@ -207,9 +207,14 @@ only used when the alert is an update of a previous one.
 - **Endpoint**: GET /alerts/
 - **Description**: List alerts in descending order of date time. Uses pagination.
 - **Parameters**:
-    - `{page}`: (optional) Page to retrieve
+    - `{page}`:  Page to retrieve. By default, retrieves the first page.
     - `{type}`: The type of alerts to retrieve. It can be 'alert', 'event' or 'all'. The
       default is to use 'all'.
+    - `{start_date} (optional)`: The desired date of the alerts. If `end_date`is also passed, it will
+    retrieve alerts in the range from the start to end date (inclusive).
+    - `{end_date} (optional)`: Range end date of the alerts. Must be used along with `start_date`.
+    - `{region} (optional)`: Region name of the alerts. Must be in lower case and no spaces.
+    - `{state} (optional)`: State code of the alerts.
 - **Response Format**: JSON
 - **Response Example**:
 
@@ -265,78 +270,6 @@ only used when the alert is an update of a previous one.
 }
 ```
 
-#### Get alerts by region
-
-- **Endpoint**: GET /regions/{region_name}
-- **Description**: Get alerts in the given region.
-- **Response Format**: JSON
-- **Response Example**:
-
-```json
-{
-    "alerts": [
-        {
-            "time": "2023-09-13T15:00:00",
-            "states": [41],
-            "region": 41204,
-            "is_event": false,
-            "id": "ALERT2",
-            "references": []
-        },
-        {
-            "time": "2023-09-13T18:00:00",
-            "states": [43],
-            "region": 41216,
-            "is_event": false,
-            "id": "ALERT0",
-            "references": []
-        }
-    ],
-    "prev": null,
-    "next": null,
-    "count": 2
-}
-```
-
-**Notes**:
-- Note that a region name can be associated with multiple codes.
-- The region name must be given without spaces, accents and in lower case. For example,
-"Costa Gro-Mich" becomes "costagro-mich"
-
-#### Get alerts by state
-
-- **Endpoint**: GET /states/{state_code}
-- **Description**: Get alerts in the given state.
-- **Response Format**: JSON
-- **Response Example**:
-
-```json
-{
-    "alerts": [
-        {
-            "time": "2023-09-13T15:00:00",
-            "states": [41],
-            "region": 41204,
-            "is_event": false,
-            "id": "ALERT2",
-            "references": []
-        },
-        {
-            "time": "2023-09-13T18:00:00",
-            "states": [41],
-            "region": 41216,
-            "is_event": false,
-            "id": "ALERT0",
-            "references": []
-        }
-    ],
-    "prev": null,
-    "next": null,
-    "count": 2
-}
-```
-
-**Note**: state code is required not name.
 
 #### Get cap file by identifier
 
