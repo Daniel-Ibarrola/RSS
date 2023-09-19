@@ -198,13 +198,13 @@ class TestPagination:
     def test_get_pagination(self, set_max_pages):
         alert1, alert2, alert3, alert4 = add_alerts_to_db()
 
-        alerts, prev, next_page, total = Alert.get_pagination(1)
+        alerts, prev, next_page, total = query_alerts(page=1)
         assert alerts == [alert4, alert3]
         assert prev is None
         assert next_page == 2
         assert total == 4
 
-        alerts, prev, next_page, total = Alert.get_pagination(next_page)
+        alerts, prev, next_page, total = query_alerts(page=next_page)
         assert alerts == [alert2, alert1]
         assert prev == 1
         assert next_page is None

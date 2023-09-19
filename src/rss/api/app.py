@@ -57,10 +57,13 @@ def index():
 @app.route(f"{api_route}/new_alert", methods=["POST"])
 @auth.login_required
 def add_new_alert():
-    # TODO: verify that identifier is unique
+    id_ = request.json["id"]
+    if Alert.get_by_identifier(id_) is not None:
+        return errors.bad_request(f"Alert with identifier {id_} already in database")
+
     alert = Alert.from_json(request.json)
     save_path = request.args.get("save_path", "")
-    current_app.logger.info(f"Path {save_path}")
+
     if save_path and os.path.isdir(save_path):
         alert.save_to_file(save_path, current_app.logger)
     db.session.commit()
