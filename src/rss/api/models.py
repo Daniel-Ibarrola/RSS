@@ -94,9 +94,9 @@ class Alert(db.Model):
         """ Get all alerts in the given state in descending order of time.
         """
         code_int = int(code)
-        select = db.select(Alert)\
-            .join(State)\
-            .filter(State.state_id == code_int)\
+        select = db.select(Alert) \
+            .join(State) \
+            .filter(State.state_id == code_int) \
             .order_by(Alert.time.desc())
         pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
         return (
@@ -128,8 +128,8 @@ class Alert(db.Model):
         if region_codes is None:
             raise ValueError(f"Invalid region {region}")
 
-        select = db.select(Alert)\
-            .filter(Alert.region.in_(region_codes))\
+        select = db.select(Alert) \
+            .filter(Alert.region.in_(region_codes)) \
             .order_by(Alert.time.desc())
         pagination = db.paginate(select, page=page, per_page=Alert.PER_PAGE)
         return (
@@ -253,6 +253,21 @@ class State(db.Model):
         return f"State(id={self.id}, state_id={self.state_id})"
 
 
+def get_region_codes(region: str) -> set[int]:
+    """ Return the codes that match a region.
+
+        :param region: The region name in lower case and with no spaces.
+        :return: A set with the region codes.
+        :raises ValueError: If the region is not found.
+    """
+    for reg, codes in REGION_CODES.items():
+        reg_lower = "".join(reg.lower().split())
+        if reg_lower == region:
+            return codes
+
+    raise ValueError(f"Invalid region {region}")
+
+
 def query_alerts(
         page: int = 1,
         alert_type: Literal["alert", "event", "all"] = "all",
@@ -263,5 +278,50 @@ def query_alerts(
 ) -> tuple[list["Alert"], int, int, int]:
     """ Query the alerts model, optionally apply multiple filters. Returns
         alerts paginated and in descending order of date.
+
+        :param page: The page to retrieve.
+        :param alert_type: The type of the alert.
+        :param start_date: Start date in isoformat.
+        :param end_date: End date in isoformat.
+        :param region: Region name in lower case, no accents and no spaces.
+        :param state: String with state code.
+        :return: A tuple containing the following elements:
+            - A list of alerts queried by the specified parameters.
+            - The previous page number (null if there is no previous page).
+            - The next page number (null if there is no next page).
+            - The number of alerts in this page.
     """
-    pass
+    query = db.select(Alert)
+
+    if state:
+        state_code = int(state)
+        query = query.join(State) \
+            .filter(State.state_id == state_code)
+
+    if alert_type == "alert":
+        query = query.filter(Alert.is_event == False)
+    elif alert_type == "event":
+        query = query.filter(Alert.is_event == True)
+    elif alert_type != "all":
+        raise ValueError(f"Invalid alert type {alert_type}")
+
+    if start_date and end_date:
+        query = query.filter(
+                    func.date(Alert.time) >= start_date,
+                    func.date(Alert.time) <= end_date
+            )
+    elif start_date:
+        query = query.filter(func.date(Alert.time) == start_date)
+
+    if region:
+        codes = get_region_codes(region)
+        query = query.filter(Alert.region.in_(codes))
+
+    query = query.order_by(Alert.time.desc())
+    pagination = db.paginate(query, page=page, per_page=Alert.PER_PAGE)
+    return (
+        pagination.items,
+        pagination.prev_num,
+        pagination.next_num,
+        pagination.total
+    )

@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert, State, query_alerts
+from rss.api.models import Alert, State, get_region_codes, query_alerts
 from rss.cap.alert import Alert as CapAlert
 
 
@@ -217,7 +217,7 @@ class TestGetByDate:
     def test_get_by_date(self):
         alert1, alert2, _, _ = add_alerts_to_db()
         alerts, prev, next_page, total = query_alerts(start_date="2023-05-17")
-        assert alerts == [alert1, alert2]
+        assert alerts == [alert2, alert1]
         assert prev is None
         assert next_page is None
 
@@ -307,3 +307,19 @@ class TestMultipleFilters:
         assert prev is None
         assert next_page is None
         assert total == 1
+
+
+class TestGetRegionCodes:
+
+    def test_get_correct_codes(self):
+        region = "costajal"  # should match Costa Jal
+        region_codes = get_region_codes(region)
+        expected = {
+            45201, 45202, 45203, 45204, 45205, 45206,
+            45301, 45302, 45303, 45304, 45401, 46101,
+        }
+        assert region_codes == expected
+
+    def test_raises_error_if_region_is_not_found(self):
+        with pytest.raises(ValueError):
+            get_region_codes("Cancun")
