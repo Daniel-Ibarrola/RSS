@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert, State, get_alerts_by_type
+from rss.api.models import Alert, State, query_alerts
 from rss.cap.alert import Alert as CapAlert
 
 
@@ -162,30 +162,27 @@ def add_alerts_to_db() -> list[Alert]:
     return alerts
 
 
-class TestGetByDate:
+class TestGetAlertByIdentifier:
 
     @pytest.mark.usefixtures("sqlite_session")
-    def test_get_by_date(self):
-        alert1, alert2, _, _ = add_alerts_to_db()
-        alerts = Alert.get_by_date("2023-05-17")
-        assert alerts == [alert1, alert2]
+    def test_get_latest_alert(self):
+        alerts = add_alerts_to_db()
+        latest = Alert.get_by_identifier("latest")
+        expected = alerts[-1]
+        assert latest == expected
 
     @pytest.mark.usefixtures("sqlite_session")
-    def test_get_by_date_range_desc_order(self):
-        expected = add_alerts_to_db()[2:]
-        expected.reverse()
-        start = "2023-05-18"
-        end = "2023-05-19"
-        alerts = Alert.get_by_date_range(start, end, desc=True)
-        assert alerts == expected
+    def test_alert_with_identifier_found(self):
+        alerts = add_alerts_to_db()
+        alert_2 = Alert.get_by_identifier("ALERT2")
+        expected = alerts[1]
+        assert alert_2 == expected
 
     @pytest.mark.usefixtures("sqlite_session")
-    def test_get_by_date_range_asc_order(self):
-        expected = add_alerts_to_db()[2:]
-        start = "2023-05-18"
-        end = "2023-05-19"
-        alerts = Alert.get_by_date_range(start, end)
-        assert alerts == expected
+    def test_alert_is_not_found(self):
+        add_alerts_to_db()
+        not_found = Alert.get_by_identifier("ALERT5")
+        assert not_found is None
 
 
 class TestPagination:
@@ -214,27 +211,26 @@ class TestPagination:
         assert total == 4
 
 
-class TestGetAlertByIdentifier:
+class TestGetByDate:
 
     @pytest.mark.usefixtures("sqlite_session")
-    def test_get_latest_alert(self):
-        alerts = add_alerts_to_db()
-        latest = Alert.get_by_identifier("latest")
-        expected = alerts[-1]
-        assert latest == expected
+    def test_get_by_date(self):
+        alert1, alert2, _, _ = add_alerts_to_db()
+        alerts, prev, next_page, total = query_alerts(start_date="2023-05-17")
+        assert alerts == [alert1, alert2]
+        assert prev is None
+        assert next_page is None
 
     @pytest.mark.usefixtures("sqlite_session")
-    def test_alert_with_identifier_found(self):
-        alerts = add_alerts_to_db()
-        alert_2 = Alert.get_by_identifier("ALERT2")
-        expected = alerts[1]
-        assert alert_2 == expected
-
-    @pytest.mark.usefixtures("sqlite_session")
-    def test_alert_is_not_found(self):
-        add_alerts_to_db()
-        not_found = Alert.get_by_identifier("ALERT5")
-        assert not_found is None
+    def test_get_by_date_range_desc_order(self):
+        expected = add_alerts_to_db()[2:]
+        expected.reverse()
+        start = "2023-05-18"
+        end = "2023-05-19"
+        alerts, prev, next_page, total = query_alerts(start_date=start, end_date=end)
+        assert alerts == expected
+        assert prev is None
+        assert next_page is None
 
 
 class TestGetAlertsByType:
@@ -243,7 +239,7 @@ class TestGetAlertsByType:
     def test_get_all(self):
         expected = add_alerts_to_db()
         expected.reverse()
-        alerts, prev, next_page,  total = get_alerts_by_type("all", 1)
+        alerts, prev, next_page, total = query_alerts(alert_type="all")
         assert alerts == expected
         assert prev is None
         assert next_page is None
@@ -251,7 +247,7 @@ class TestGetAlertsByType:
     @pytest.mark.usefixtures("sqlite_session")
     def test_get_only_alerts(self):
         alert1, alert2, _, alert4 = add_alerts_to_db()
-        alerts, prev, next_page, total = get_alerts_by_type("alert", 1)
+        alerts, prev, next_page, total = query_alerts(alert_type="alert")
         assert alerts == [alert4, alert2, alert1]
         assert prev is None
         assert next_page is None
@@ -259,7 +255,7 @@ class TestGetAlertsByType:
     @pytest.mark.usefixtures("sqlite_session")
     def test_get_events(self):
         expected = add_alerts_to_db()[2]
-        alerts, prev, next_page, total = get_alerts_by_type("event", 1)
+        alerts, prev, next_page, total = query_alerts(alert_type="event")
         assert len(alerts) == 1
         assert alerts[0] == expected
         assert prev is None
@@ -270,7 +266,7 @@ class TestGetAlertsByType:
         alert_type = "earthquake"
         match = f"Invalid alert type {alert_type}"
         with pytest.raises(ValueError, match=match):
-            get_alerts_by_type(alert_type, 1)
+            query_alerts(alert_type=alert_type)
 
 
 class TestGetAlertByLocation:
@@ -278,7 +274,7 @@ class TestGetAlertByLocation:
     @pytest.mark.usefixtures("sqlite_session")
     def test_get_by_state_code(self):
         expected = add_alerts_to_db()[1]
-        alerts, prev, next_page, total = Alert.get_by_state_code("41")
+        alerts, prev, next_page, total = query_alerts(state="41")
         assert len(alerts) == 1
         assert alerts[0] == expected
         assert prev is None
@@ -288,7 +284,26 @@ class TestGetAlertByLocation:
     def test_get_by_region(self):
         expected = add_alerts_to_db()[:2]
         expected.reverse()
-        alerts, prev, next_page, total = Alert.get_by_region("guerrero")
+        alerts, prev, next_page, total = query_alerts(region="guerrero")
         assert alerts == expected
         assert prev is None
         assert next_page is None
+
+
+class TestMultipleFilters:
+
+    @pytest.mark.usefixtures("sqlite_session")
+    def test_query_with_multiple_filters(self):
+        expected = add_alerts_to_db()[0]
+        alerts, prev, next_page, total = query_alerts(
+            alert_type="alert",
+            region="guerrero",
+            state="40",
+            start_date="2023-05-17",
+            end_date="2023-05-18"
+        )
+        assert len(alerts) == 1
+        assert alerts[0] == expected
+        assert prev is None
+        assert next_page is None
+        assert total == 1

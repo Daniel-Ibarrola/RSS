@@ -253,14 +253,15 @@ class State(db.Model):
         return f"State(id={self.id}, state_id={self.state_id})"
 
 
-def get_alerts_by_type(
-        alert_type: Literal["alert", "event", "all"],
-        page: int
+def query_alerts(
+        page: int = 1,
+        alert_type: Literal["alert", "event", "all"] = "all",
+        start_date: str = "",
+        end_date: str = "",
+        region: str = "",
+        state: str = ""
 ) -> tuple[list["Alert"], int, int, int]:
-    if alert_type == "all":
-        return Alert.get_pagination(page)
-    elif alert_type == "alert":
-        return Alert.get_non_events(page)
-    elif alert_type == "event":
-        return Alert.get_events(page)
-    raise ValueError(f"Invalid alert type {alert_type}")
+    """ Query the alerts model, optionally apply multiple filters. Returns
+        alerts paginated and in descending order of date.
+    """
+    pass
