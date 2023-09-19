@@ -78,8 +78,6 @@ class MessageProcessor(AbstractService):
 
             self._flush_updates(date)
             if all(self._check_state(s) for s in states):
-                # TODO: events should only reference previous events, and alerts
-                #   previous alerts
                 if len(self.updates) == 0:
                     refs = None
                 else:
