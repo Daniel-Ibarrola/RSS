@@ -54,12 +54,12 @@ def index():
     return "OK", 200
 
 
-@app.route(f"{api_route}/new_alert", methods=["POST"])
+@app.route(f"{api_route}/alerts/", methods=["POST"])
 @auth.login_required
 def add_new_alert():
     id_ = request.json["id"]
     if Alert.get_by_identifier(id_) is not None:
-        return errors.bad_request(f"Alert with identifier {id_} already in database")
+        return errors.bad_request(f"Alert with identifier {id_} already exists")
 
     alert = Alert.from_json(request.json)
     save_path = request.args.get("save_path", "")
@@ -100,38 +100,34 @@ def get_alerts():
     })
 
 
-@app.route(f"{api_route}/cap_contents/<identifier>")
-def get_cap_file_contents(identifier):
-    alert = Alert.get_by_identifier(identifier)
-    if alert is not None:
-        file_contents = alert.to_cap_file()
-        return jsonify({
-            "contents": file_contents
-        })
-    return errors.not_found(f"Alert with identifier {identifier} could not be found")
-
-
-@app.route(f"{api_route}/cap/<identifier>")
+@app.route(f"{api_route}/alerts/<identifier>/cap/")
 def get_cap_file(identifier):
+    save_file = request.args.get("save", "false")
+
     alert = Alert.get_by_identifier(identifier)
     if alert is not None:
         file_contents = alert.to_cap_file()
-        if identifier == "latest":
-            identifier = "sasmex"
-        response = Response(file_contents, mimetype="text/xml")
-        response.headers.set(
-            "Content-Disposition", "attachment", filename=f"{identifier}.cap"
-        )
-        return response
+        if save_file.lower() == "true":
+            if identifier == "latest":
+                identifier = "sasmex"
+            response = Response(file_contents, mimetype="text/xml")
+            response.headers.set(
+                "Content-Disposition", "attachment", filename=f"{identifier}.cap"
+            )
+            return response
+        else:
+            return jsonify({
+                "contents": file_contents
+            })
     return errors.not_found(f"Alert with identifier {identifier} could not be found")
 
 
-@app.route(f"{api_route}/last_alert/")
+@app.route(f"{api_route}/alerts/latest/")
 def get_last_alert():
     alert = Alert.get_by_identifier("latest")
     if alert is not None:
         return jsonify(alert.to_json())
-    return errors.not_found("No alerts found")
+    return errors.not_found("No latest alerts found")
 
 
 @app.cli.command("wait-for-db")
