@@ -256,7 +256,7 @@ class TestFeedPoster:
         assert alerts.empty()
 
         url = poster.client.base_url
-        url += "/new_alert"
+        url += "/alerts/"
 
         mock_post.assert_called_once_with(
             url,

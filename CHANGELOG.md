@@ -1,5 +1,14 @@
 # Changelog
 
+## v.1.7.0 (25/09/2023)
+Renamed API endpoints and organized them by resource.
+- Renamed ` POST /new_alert` to `POST /alerts/`.
+- Renamed `GET /last_alert/` to  `GET /alerts/latest/`.
+- Renamed `GET /cap/{identidier}` to `GET /alerts/{identifier}/cap/`. This endpoint takes
+the optional argument 'save' that takes on the values 'true' or 'false'. If set to 'true' indicates
+to download the cap file. Else, the cap files contents are returned as part of the JSON response.
+- Removed `GET /cap_contents/{identifier}` as its now part of the `/alertst/{identifier}/cap/` endpoint.
+
 ## v1.6.0 (19/09/2023)
 
 ### API

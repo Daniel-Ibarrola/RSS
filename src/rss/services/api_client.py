@@ -14,13 +14,12 @@ class APIClient:
         self.credentials = (CONFIG.API_USER, CONFIG.API_PASSWORD)
 
     def post_alert(self, alert: Alert, save_path: str = "") -> requests.Response:
-        """ Post a new alert.
-        """
+        """ Post a new alert. """
         references = []
         if alert.refs is not None:
             references = [ref.id for ref in alert.refs]
 
-        url = f"{self.base_url}/new_alert"
+        url = f"{self.base_url}/alerts/"
         if save_path:
             url += f"?save_path={save_path}"
 
@@ -75,8 +74,8 @@ class APIClient:
 
     def get_cap_file(self, identifier: str) -> requests.Response:
         """ Returns a response with the contents of the solicited cap file as string"""
-        return requests.get(f"{self.base_url}/cap_contents/{identifier}")
+        return requests.get(f"{self.base_url}/alerts/{identifier}/cap?save=false")
 
     def get_last_alert(self) -> requests.Response:
         """ Fetch the last published alert. """
-        return requests.get(f"{self.base_url}/last_alert/")
+        return requests.get(f"{self.base_url}/alerts/latest/")

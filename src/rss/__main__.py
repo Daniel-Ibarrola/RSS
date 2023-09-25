@@ -135,6 +135,8 @@ def main():
         )
     elif args.entry == "server":
         start_server()
+    elif args.entry is None:
+        return
     else:
         raise ValueError(f"Invalid mode {args.entry}")
 
