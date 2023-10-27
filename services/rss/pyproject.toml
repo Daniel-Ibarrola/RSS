@@ -3,13 +3,6 @@
 [build-system]
 requires      = [
     "setuptools>=65.5.0",
-    "flask>=2.2.3",
-    "flask-sqlalchemy>=3.0.3",
-    "flask-migrate>=4.0.4",
-    "flask-httpauth>=4.8.0",
-    "itsdangerous>=2.1.2",
-    "psycopg2-binary>=2.9.5",
-    "sqlalchemy>=2.0.7",
 ]
 build-backend = "setuptools.build_meta"
 
