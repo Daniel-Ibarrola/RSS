@@ -1,6 +1,6 @@
 .idea/
 venv/
-src/rss.egg-info/
+*.egg-info/
 *.pyc
 sasmex/
 *.pickle
