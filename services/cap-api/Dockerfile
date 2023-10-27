@@ -1,17 +1,18 @@
 FROM python:3.11-alpine
 
 COPY pyproject.toml /pyproject.toml
-COPY requirements/dev.txt /requirements.txt
+COPY requirements/ /requirements/
 COPY src/ /src/
 COPY tests/ /tests/
 
-COPY ../rss /rss/
-
 # Install curl to perform health checks
 RUN apk add --no-cache curl
+# Git is necessary to install the rss dependency
+RUN apk add --no-cache git
 
-RUN pip install -r /requirements.txt && pip install /rss/ && pip install -e .
+# TODO: can we find another way to install the rss module without git?
+RUN pip install "git+https://github.com/Daniel-Ibarrola/RSS.git@ecs#subdirectory=services/rss" \
+    && pip install -r /requirements/dev.txt \
+    && pip install -e .
 
 WORKDIR /src
-
-CMD echo "All Set"

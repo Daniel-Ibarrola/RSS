@@ -3,6 +3,7 @@
 [build-system]
 requires      = [
     "setuptools>=65.5.0",
+    "Babel>=2.13.1"
 ]
 build-backend = "setuptools.build_meta"
 

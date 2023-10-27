@@ -1,6 +1,11 @@
 import os
-from rss.utils.api_url import get_api_url
 from rss.utils.env_variable import get_env_variable
+
+
+def get_api_url() -> str:
+    host = os.environ.get("API_HOST", "localhost")
+    port = 5000 if host == "localhost" else 80
+    return f"http://{host}:{port}"
 
 
 def get_dev_postgres_uri(host: str = "localhost") -> str:
@@ -24,7 +29,7 @@ def get_postgres_uri() -> str:
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
-class APIConfig:
+class Config:
     """ Configuration for the API.
 
         It declares postgres URI and the API server URl. It also declares other
@@ -46,16 +51,16 @@ class APIConfig:
         pass
 
 
-class DevAPIConfig(APIConfig):
+class DevConfig(Config):
     pass
 
 
-class TestSQLiteConfig(APIConfig):
+class TestSQLiteConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 
-class ProdAPIConfig(APIConfig):
+class ProdConfig(Config):
     """ Configuration for the API in production.
 
         It declares postgres URI and the API server URl. It also declares other
@@ -82,7 +87,7 @@ class ProdAPIConfig(APIConfig):
 
 
 api_configs = {
-    "dev": DevAPIConfig(),
+    "dev": DevConfig(),
     "test-sqlite": TestSQLiteConfig(),
-    "prod": ProdAPIConfig(),
-}  # type: dict[str, APIConfig]
+    "prod": ProdConfig(),
+}  # type: dict[str, Config]

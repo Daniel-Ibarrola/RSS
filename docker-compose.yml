@@ -13,7 +13,7 @@ services:
         flask db upgrade &&
         flask run --host=0.0.0.0 --port=80"
     environment:
-      - FLASK_APP=rss/api/app.py
+      - FLASK_APP=alerts/app.py
       - FLASK_DEBUG=1
       - DB_HOST=postgres
       - DB_PASSWORD=abc123
@@ -32,8 +32,8 @@ services:
     ports:
       - "5000:80"
     volumes:
-      - ./src:/src
-      - ./tests:/tests
+      - ./services/cap-api/src:/src
+      - ./services/cap-api/tests:/tests
 
   postgres:
     image: postgres:15.2-alpine

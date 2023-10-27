@@ -5,15 +5,14 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
-from rss.api import API_CONFIG
-from rss.api.config import api_configs
-from rss.api import create_app, db
+from alerts import CONFIG, create_app, db
+from alerts.config import api_configs
 
 
 @pytest.fixture
 def wait_for_api():
     start = time.time()
-    url = API_CONFIG.API_URL
+    url = CONFIG.API_URL
     while time.time() - start < 10:
         try:
             requests.get(url)
@@ -25,7 +24,7 @@ def wait_for_api():
 
 
 def wait_for_postgres():
-    engine = create_engine(API_CONFIG.SQLALCHEMY_DATABASE_URI)
+    engine = create_engine(CONFIG.SQLALCHEMY_DATABASE_URI)
     deadline = time.time() + 10
     while time.time() < deadline:
         try:

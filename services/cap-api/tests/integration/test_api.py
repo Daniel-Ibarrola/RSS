@@ -1,13 +1,14 @@
 import datetime
+
 from bs4 import BeautifulSoup
 import pytest
-
-from rss.api.config import APIConfig
-from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
 
+from alerts import CONFIG
+from alerts.client.api_client import APIClient
 
-client = APIClient(APIConfig.API_URL)
+
+client = APIClient(CONFIG.API_URL)
 
 
 def post_alerts() -> list[datetime.datetime]:
@@ -151,7 +152,7 @@ class TestAuthentication:
             is_event=False,
             id="TESTALERT",
         )
-        unauthorized_client = APIClient(APIConfig.API_URL)
+        unauthorized_client = APIClient(CONFIG.API_URL)
         unauthorized_client.credentials = ("unknown_user", "dog")
         res = unauthorized_client.post_alert(alert)
         assert res.status_code == 401

@@ -2,12 +2,13 @@ import datetime
 import logging
 import os
 from typing import Any, List, Literal, Optional
-from sqlalchemy import func
 
-from rss.api import db
 from rss.cap.alert import Alert as CapAlert
 from rss.cap.rss import create_feed
 from rss.cap.regions import REGION_CODES
+from sqlalchemy import func
+
+from alerts import db
 
 
 class Alert(db.Model):
