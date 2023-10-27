@@ -3,7 +3,6 @@ from typing import Literal
 from rss.cap.alert import Alert
 from rss.cap.rss import create_feed, write_feed_to_file
 from rss.cap.states import STATES_CODES
-from rss.services import MessageProcessor
 
 
 def write_cap_file(
@@ -22,7 +21,7 @@ def write_cap_file(
         time=date,
         states=state_codes,
         region=region,
-        id=MessageProcessor.alert_id(date),
+        id="TEST_ID",
         is_event=is_event,
     )
     feed = create_feed(alert, is_test=is_test)

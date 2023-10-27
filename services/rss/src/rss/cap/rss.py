@@ -2,7 +2,6 @@ from babel.dates import format_datetime
 import datetime
 from xml.dom import minidom
 
-from rss import CONFIG
 from rss.cap.alert import Alert
 from rss.cap.geopoint import distance_between_points
 from rss.cap.polygon import POLYGONS
