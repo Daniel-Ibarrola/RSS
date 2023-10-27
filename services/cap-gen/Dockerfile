@@ -10,6 +10,6 @@ COPY feeds/ /feeds/
 RUN apk add --no-cache curl
 
 RUN mkdir /logs/ && pip install -r /requirements/dev.txt &&  \
-    pip install -e .
+    pip install -e ../rss && pip install -e .
 
 WORKDIR /src

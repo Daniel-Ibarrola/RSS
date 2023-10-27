@@ -1,5 +1,5 @@
 import os
-from rss.config import configurations
+from capgen.config import configurations
 
 config_type = os.environ.get("CONFIG", "dev")
 

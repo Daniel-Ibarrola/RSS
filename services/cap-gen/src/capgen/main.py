@@ -4,8 +4,8 @@ from socketlib.utils.logger import get_module_logger
 import sys
 from typing import Callable, Optional
 
-from rss import CONFIG
-from rss.services import (
+from capgen import CONFIG
+from capgen.services import (
     AlertsClient,
     AlertDispatcher,
     MessageProcessor,
@@ -42,7 +42,10 @@ def main(
     message_processor = MessageProcessor(client.received, stop=stop, logger=logger)
     alert_dispatcher = AlertDispatcher(message_processor.alerts, stop=stop, logger=logger)
     feed_writer = FeedWriter(alert_dispatcher.to_write, stop=stop, logger=logger)
-    feed_poster = FeedPoster(alert_dispatcher.to_post, api_url, stop=stop, logger=logger)
+
+    feed_poster = None
+    if api_url:
+        feed_poster = FeedPoster(alert_dispatcher.to_post, api_url, stop=stop, logger=logger)
 
     watchdog = None
     if use_watchdog:
@@ -52,8 +55,10 @@ def main(
             "message_processor": message_processor.process_thread,
             "dispatcher": alert_dispatcher.process_thread,
             "feed_writer": feed_writer.process_thread,
-            "feed_poster": feed_poster.process_thread,
         }
+        if feed_poster is not None:
+            threads["feed_poster"] = feed_poster.process_thread
+
         watchdog = WatchDog(threads)
 
     error = True
@@ -63,7 +68,9 @@ def main(
         message_processor.start()
         alert_dispatcher.start()
         feed_writer.start()
-        feed_poster.start()
+
+        if feed_poster is not None:
+            feed_poster.start()
 
         if watchdog:
             watchdog.start()
@@ -84,7 +91,9 @@ def main(
             client.shutdown()
             alert_dispatcher.shutdown()
             feed_writer.shutdown()
-            feed_poster.shutdown()
+
+            if feed_poster is not None:
+                feed_poster.shutdown()
 
     if error and exit_error:
         if logger:

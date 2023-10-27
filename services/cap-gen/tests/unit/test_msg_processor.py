@@ -2,16 +2,16 @@ import datetime
 import queue
 import time
 
-from rss import CONFIG
-from rss.services import services
 from rss.cap.alert import Alert
+
+from capgen.services import MessageProcessor
 
 
 class TestMessageProcessor:
 
     def test_parse_message(self):
         msg = "84,3,1,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        [state], region, date, is_event = services.MessageProcessor._parse_message(msg)
+        [state], region, date, is_event = MessageProcessor._parse_message(msg)
         assert state == 40
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
@@ -19,7 +19,7 @@ class TestMessageProcessor:
 
     def test_parse_message_multiple_states(self):
         msg = "84,3,1,40/41/42,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        states, region, date, is_event = services.MessageProcessor._parse_message(msg)
+        states, region, date, is_event = MessageProcessor._parse_message(msg)
         assert states == [40, 41, 42]
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
@@ -27,7 +27,7 @@ class TestMessageProcessor:
 
     def test_parse_event_message(self):
         msg = "84,3,0,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        [state], region, date, is_event = services.MessageProcessor._parse_message(msg)
+        [state], region, date, is_event = MessageProcessor._parse_message(msg)
         assert state == 40
         assert region == 41203
         assert date == datetime.datetime(2023, 3, 22, 14, 4, 33)
@@ -61,13 +61,13 @@ class TestMessageProcessor:
 
     def test_only_process_messages_with_correct_code(self):
         msg = b"15,3,40,41203,2023/03/22,14:04:33,46237.1234567890\r\n"
-        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor = MessageProcessor(queue.Queue())
         alert = message_processor._get_alert(msg)
 
         assert alert is None
 
     def test_check_state_not_in_queue(self):
-        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor = MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
             states=[40],
@@ -77,7 +77,7 @@ class TestMessageProcessor:
         assert message_processor._check_state(42)
 
     def test_check_state_in_queue(self):
-        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor = MessageProcessor(queue.Queue())
         alert = Alert(
             time=datetime.datetime(2023, 3, 24),
             states=[40],
@@ -87,7 +87,7 @@ class TestMessageProcessor:
         assert not message_processor._check_state(40)
 
     def test_flush_updates_queue(self):
-        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor = MessageProcessor(queue.Queue())
         message_processor.new_alert_time = 60
 
         date1 = datetime.datetime.now() - datetime.timedelta(seconds=70)
@@ -116,7 +116,7 @@ class TestMessageProcessor:
         msg1 = f"84,3,1,40,41203,{date1_str},46237.1234567890\r\n"
         msg2 = f"84,3,1,40,41203,{date2_str},46237.1234567890\r\n"
 
-        message_processor = services.MessageProcessor(queue.Queue())
+        message_processor = MessageProcessor(queue.Queue())
         message_processor.new_alert_time = 60
 
         alert1 = message_processor._get_alert(msg1.encode("utf-8"))
@@ -140,7 +140,7 @@ class TestMessageProcessor:
             # Garbage data should be ignored
             f"15,3,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
-        message_processor = services.MessageProcessor(data)
+        message_processor = MessageProcessor(data)
         message_processor.new_alert_time = 0.75
         message_processor.wait = 0
         message_processor.start()
@@ -176,7 +176,7 @@ class TestMessageProcessor:
         data = self.put_in_queue([
             f"84,3,1,40,41203,{date1},46237.1234567890\r\n".encode("utf-8"),
         ])
-        message_processor = services.MessageProcessor(data)
+        message_processor = MessageProcessor(data)
         message_processor.new_alert_time = 5
         message_processor._wait = 0
         message_processor.start()
@@ -207,66 +207,3 @@ class TestMessageProcessor:
         assert second_alert.time == datetime.datetime.strptime(date2, "%Y/%m/%d,%H:%M:%S")
         assert second_alert.states == [41]
         assert second_alert.region == 41203
-
-
-class TestAlertDispatcher:
-
-    def test_dispatch_alerts(self):
-        initial_alert = Alert(
-            time=datetime.datetime.now(),
-            states=[40],
-            region=41203,
-            id="TESTALERT"
-        )
-        alerts = queue.Queue()
-        alerts.put(initial_alert)
-        dispatcher = services.AlertDispatcher(alerts)
-        dispatcher._dispatch_alerts()
-
-        assert alerts.empty()
-
-        alert_write = dispatcher.to_write.get()
-        assert dispatcher.to_write.empty()
-        assert alert_write == initial_alert
-
-        alert_post = dispatcher.to_post.get()
-        assert dispatcher.to_post.empty()
-        assert alert_post == initial_alert
-        assert alert_post is not alert_write
-
-
-class TestFeedPoster:
-
-    def test_post_alerts(self, mocker):
-        mock_post = mocker.patch("rss.services.api_client.requests.post")
-
-        date = datetime.datetime.now()
-        alert = Alert(
-            time=date,
-            states=[40],
-            region=41203,
-            id="TESTALERT",
-            is_event=False
-        )
-        alerts = queue.Queue()
-        alerts.put(alert)
-        poster = services.FeedPoster(alerts)
-        poster._post_alerts()
-
-        assert alerts.empty()
-
-        url = poster.client.base_url
-        url += "/alerts/"
-
-        mock_post.assert_called_once_with(
-            url,
-            json={
-                "time": date.isoformat(timespec="seconds"),
-                "states": [40],
-                "region": 41203,
-                "is_event": False,
-                "id": "TESTALERT",
-                "references": []
-            },
-            auth=(CONFIG.API_USER, CONFIG.API_PASSWORD)
-        )

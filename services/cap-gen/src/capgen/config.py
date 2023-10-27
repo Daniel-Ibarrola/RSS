@@ -1,5 +1,4 @@
 import os
-from rss.utils.api_url import get_api_url
 from rss.utils.env_variable import get_env_variable
 
 

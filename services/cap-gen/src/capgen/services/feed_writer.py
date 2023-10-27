@@ -3,12 +3,12 @@ import os
 import queue
 from typing import Callable, Optional
 
+from rss.cap.alert import Alert
+from rss.cap.rss import create_feed, write_feed_to_file
 from socketlib.basic.queues import get_from_queue
 from socketlib.services import AbstractService
 
-from rss import CONFIG
-from rss.cap.alert import Alert
-from rss.cap.rss import create_feed, write_feed_to_file, get_cap_file_name
+from capgen import CONFIG
 
 
 class FeedWriter(AbstractService):
@@ -50,3 +50,14 @@ class FeedWriter(AbstractService):
 
             if self._logger:
                 self._logger.info(f"Cap file written to {feed_path}")
+
+
+def get_cap_file_name(alert: Alert) -> str:
+    if alert.is_event and alert.refs is not None:
+        return CONFIG.EVENT_UPDATE_FILE_NAME
+    elif alert.is_event and alert.refs is None:
+        return CONFIG.EVENT_FILE_NAME
+    elif not alert.is_event and alert.refs is not None:
+        return CONFIG.UPDATE_FILE_NAME
+    else:
+        return CONFIG.ALERT_FILE_NAME

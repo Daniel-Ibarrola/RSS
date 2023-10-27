@@ -1,9 +1,11 @@
 import datetime
-import requests
 from typing import Literal, Optional
-from rss import CONFIG
+
+import requests
 from rss.cap.alert import Alert
 from rss.cap.states import STATES_CODES
+
+from capgen import CONFIG
 
 
 class APIClient:
