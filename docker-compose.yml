@@ -45,6 +45,20 @@ services:
     ports:
       - "54321:5432"
 
+  rss-client:
+    stdin_open: true
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/client/src:/app/src
+      - ./services/client/test:/app/tests
+      - ./services/client/node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - services/client/.env
+
   cap-generator:
     build:
       context: ./services/cap-gen

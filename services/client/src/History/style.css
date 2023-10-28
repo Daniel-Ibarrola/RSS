@@ -1,0 +1,31 @@
+.history-accordion {
+    padding-top: 5em;
+}
+
+.filter-container{
+    margin-bottom: 1.5em;
+}
+
+.dropdown-btn > button {
+    background-color: #212f3d;
+    border-color: #212f3d;
+    --bs-btn-active-bg:  #1c2833;
+    --bs-btn-active-border-color:  #1c2833;
+}
+
+.dropdown-btn > button:hover {
+    background-color: #1c2833;
+    border-color: #1c2833;
+}
+
+.form-selectors {
+    margin-bottom: 1em;
+}
+
+.date-pickers {
+    margin-bottom: 1em;
+}
+
+.filters-form {
+    margin-bottom: 1.5em;
+}
