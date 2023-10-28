@@ -44,3 +44,43 @@ services:
       - POSTGRES_PASSWORD=abc123
     ports:
       - "54321:5432"
+
+  cap-generator:
+    build:
+      context: ./services/cap-gen
+      dockerfile: Dockerfile
+    image: cap-gen:latest
+    container_name: cap-generator
+    environment:
+      - CONFIG=dev
+      - API_URL=http://rss-api
+      - API_USER=triton
+      - API_PASSWORD=dog
+      - CLIENT_IP=alerts-server
+      - CLIENT_PORT=12250
+    entrypoint: [
+      "python",
+      "rss/main.py"
+    ]
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
+      - ./feeds:/feeds
+
+  alerts-server:
+    build:
+      context: ./services/cap-gen
+      dockerfile: Dockerfile
+    image: cap-gen:latest
+    container_name: cap-server
+    environment:
+      - CONFIG=dev
+      - CLIENT_IP=alerts-server
+      - CLIENT_PORT=12250
+    entrypoint: [
+      "python",
+      "rss/test/server.py"
+    ]
+    volumes:
+      - ./src:/src
+      - ./tests:/tests

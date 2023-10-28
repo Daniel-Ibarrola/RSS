@@ -1,13 +1,16 @@
 services:
 
   rss-api:
+    build:
+      context: ./services/cap-api
+      dockerfile: Dockerfile.prod
     command: >
       sh -c "
         flask wait-for-db &&
         flask db upgrade &&
         gunicorn --bind 0.0.0.0:5005 alerts.wsgi:app"
     env_file:
-      - services/cap-api/api.env
+      - services/cap-api/.env
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5005/" ]
       interval: 3m
@@ -15,7 +18,6 @@ services:
       retries: 3
     ports:
       - "5005:5005"
-
 
   postgres:
     image: postgres:15.2-alpine
@@ -26,3 +28,21 @@ services:
       - POSTGRES_PASSWORD=abc123
     ports:
       - "54321:5432"
+
+  cap-generator:
+    restart: unless-stopped
+    build:
+      context: ./services/cap-gen
+      dockerfile: Dockerfile.prod
+    image: cap-gen:latest
+    container_name: cap-generator
+    env_file:
+      - services/cap-gen/.env
+    environment:
+      - CONFIG=prod
+    entrypoint: [
+      "python",
+      "rss/main.py"
+    ]
+    volumes:
+      - ./services/cap-gen/feeds:/feeds
