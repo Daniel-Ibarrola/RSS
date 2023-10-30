@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.1 (30/10/2023)
+- Added a trailing slash "/" to endpoints who didn't have it.
+
+
 ## v1.8.0 (30/10/2023)
 
 - Created a flask blueprint for the alerts api. 
