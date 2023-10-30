@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 
 from rss.api import db
-from rss.api.models import Alert, State, get_region_codes, query_alerts
+from rss.api.alerts.models import Alert, State, get_region_codes, query_alerts
 from rss.cap.alert import Alert as CapAlert
 
 

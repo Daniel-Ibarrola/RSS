@@ -13,11 +13,12 @@ from rss.api import create_app, db
 @pytest.fixture
 def wait_for_api():
     start = time.time()
-    url = API_CONFIG.API_URL
+    url = f"{API_CONFIG.API_URL}/ping"
     while time.time() - start < 10:
         try:
-            requests.get(url)
-            return
+            res = requests.get(url)
+            if res.json()["message"] == "ok":
+                return
         except requests.ConnectionError:
             continue
 

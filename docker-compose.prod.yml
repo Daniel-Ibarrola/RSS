@@ -5,7 +5,7 @@ services:
       sh -c "
         flask wait-for-db &&
         flask db upgrade &&
-        gunicorn --bind 0.0.0.0:5005 rss.api.wsgi:app"
+        gunicorn --bind 0.0.0.0:5000 rss.api.wsgi:app"
     env_file:
       - api.env
 #    restart: unless-stopped
@@ -15,7 +15,7 @@ services:
       timeout: 10s
       retries: 3
     ports:
-      - "5005:5005"
+      - "5000:5000"
 
 
   postgres:

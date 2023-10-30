@@ -16,6 +16,9 @@ def create_app(configuration: APIConfig = API_CONFIG):
 
     db.init_app(app)
 
+    from rss.api.alerts import api as api_blueprint
+    app.register_blueprint(api_blueprint, url_prefix="/api/v1")
+
     if isinstance(configuration, DevAPIConfig):
         CORS(app)
     Migrate(app, db)
