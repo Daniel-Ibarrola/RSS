@@ -168,6 +168,9 @@ only used when the alert is an update of a previous one.
 }
 ```
 
+**Notes**:
+- If identifier is set to 'latest' the response will be the latest registered alert.
+
 #### List alerts
 
 - **Endpoint**: GET /alerts/
@@ -218,34 +221,12 @@ only used when the alert is an update of a previous one.
     }
 ```
 
-#### Get last alert
-
-- **Endpoint**: GET /alerts/latest/
-- **Description**: Get the latest alert.
-- **Response Format**: JSON
-- **Response Example**:
-
-```json
-{
-  "time": "2023-09-13T15:36:41",
-  "states": [40, 41],
-  "region": 40101,
-  "is_event": false,
-  "id": "AlertID3",
-  "references": ["ALERTID1", "ALERTID2"]
-}
-```
-
 
 #### Get cap file by identifier
 
 - **Endpoint**: GET /alerts/{identifier}/cap/
 - **Description**: Get the alert with the given identifier in CAP file format.
-- **Parameters**:
-  - `{save}`: Whether to download a cap file or return the contents of the cap file on the json response.
-Can only take the values true or false. 
-- **Response Format**: CAP file or JSON
-
+- **Response Format**: CAP file (xml)
 
 ## Region codes
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from rss.api.config import DevAPIConfig, ProdAPIConfig
 from rss.api import create_app, db, API_CONFIG
-from rss.api.models import Alert, State
+from rss.api.alerts.models import Alert, State
 from rss.services import MessageProcessor
 from rss.cap.states import STATES
 from rss.cap.regions import REGIONS

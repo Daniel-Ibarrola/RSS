@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.8.0 (30/10/2023)
+
+- Created a flask blueprint for the alerts api. 
+- Removed `GET /alerts/latest/`. The latest alert can be retrieved with the
+endpoint `GET /alerts/{identifier}` with the identifier set to 'latest'
+- Removed optional argument 'save' from `GET /alerts/{identifier}/cap/`. This endpoint
+always returns the cap file in xml format.
+- Restored `GET /cap/latest` and marked it as deprecated.
+
 ## v.1.7.0 (25/09/2023)
 Renamed API endpoints and organized them by resource.
 - Renamed ` POST /new_alert` to `POST /alerts/`.
@@ -7,7 +16,7 @@ Renamed API endpoints and organized them by resource.
 - Renamed `GET /cap/{identidier}` to `GET /alerts/{identifier}/cap/`. This endpoint takes
 the optional argument 'save' that takes on the values 'true' or 'false'. If set to 'true' indicates
 to download the cap file. Else, the cap files contents are returned as part of the JSON response.
-- Removed `GET /cap_contents/{identifier}` as its now part of the `/alertst/{identifier}/cap/` endpoint.
+- Removed `GET /cap_contents/{identifier}` as its now part of the `/alerts/{identifier}/cap/` endpoint.
 
 ## v1.6.0 (19/09/2023)
 

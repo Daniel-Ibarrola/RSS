@@ -74,8 +74,8 @@ class APIClient:
 
     def get_cap_file(self, identifier: str) -> requests.Response:
         """ Returns a response with the contents of the solicited cap file as string"""
-        return requests.get(f"{self.base_url}/alerts/{identifier}/cap?save=false")
+        return requests.get(f"{self.base_url}/alerts/{identifier}/cap")
 
     def get_last_alert(self) -> requests.Response:
         """ Fetch the last published alert. """
-        return requests.get(f"{self.base_url}/alerts/latest/")
+        return requests.get(f"{self.base_url}/alerts/latest")
