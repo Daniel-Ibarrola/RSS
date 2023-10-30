@@ -70,7 +70,7 @@ def get_alerts():
     })
 
 
-@api.route("/alerts/<identifier>")
+@api.route("/alerts/<identifier>/")
 def get_alert(identifier):
     """ Returns the alert with the given identifier.
 
@@ -98,7 +98,7 @@ def latest_cap_file():
             "Content-Disposition", "attachment", filename="sasmex.cap"
         )
         return response
-    return errors.not_found(f"No alerts wew found")
+    return errors.not_found(f"No alerts were found")
 
 
 @api.route("/alerts/<identifier>/cap/")
