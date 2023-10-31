@@ -1,19 +1,18 @@
 import datetime
 import random
+import string
 
+from rss.cap.states import STATES
+from rss.cap.regions import REGIONS
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from rss.api.config import DevAPIConfig, ProdAPIConfig
-from rss.api import create_app, db, API_CONFIG
-from rss.api.models import Alert, State
-from rss.services import MessageProcessor
-from rss.cap.states import STATES
-from rss.cap.regions import REGIONS
+from alerts import create_app, db, CONFIG
+from alerts.alerts.models import Alert, State
 
 
 def clear_database() -> None:
-    engine = create_engine(DevAPIConfig.SQLALCHEMY_DATABASE_URI)
+    engine = create_engine(CONFIG.SQLALCHEMY_DATABASE_URI)
     engine.connect()
     session = sessionmaker(bind=engine)()
 
@@ -23,17 +22,27 @@ def clear_database() -> None:
     session.close()
 
 
+def alert_id(date: datetime) -> str:
+    # TODO: move function to rss package
+    month = f"{date.month:02d}"
+    day = f"{date.day:02d}"
+    hour = f"{date.hour:02d}"
+    minute = f"{date.minute:02d}"
+    second = f"{date.second:02d}"
+    date = str(date.year) + month + day + hour + minute + second
+    random_str = ''.join(random.choices(
+        string.ascii_uppercase + string.digits, k=6))
+
+    return date + "-" + random_str
+
+
 def generate_fake_alerts():
     """ Generate fake alerts and put then in the database.
     """
-    if "prod" in API_CONFIG.NAME or isinstance(API_CONFIG, ProdAPIConfig):
-        print("Cannot generate alerts in production mode. Exiting...")
-        return
-
     print("Adding new alerts to DB")
     clear_database()
 
-    app = create_app(DevAPIConfig())
+    app = create_app(CONFIG)
 
     end_date = datetime.date.today()
     end_date = datetime.datetime(year=end_date.year, month=end_date.month, day=end_date.day)
@@ -73,7 +82,7 @@ def generate_fake_alerts():
     with app.app_context():
         for ii in range(len(dates)):
             if day_choices[ii]:
-                identifier = MessageProcessor.alert_id(dates[ii])
+                identifier = alert_id(dates[ii])
                 states = [State(state_id=random.choice(state_list))]
                 region = random.choice(region_list)
                 if extra_state[ii]:
@@ -113,4 +122,3 @@ def generate_fake_alerts():
 
 if __name__ == "__main__":
     generate_fake_alerts()
-

@@ -41,5 +41,8 @@ api-unit-tests: ## Run unit tests.
 api-integration-tests: ## Run integration tests.
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/integration
 
+seed-db:  ## Add multiple alerts to the database
+	docker compose exec rss-api flask seed-db
+
 logs:  ## View the logs.
 	docker compose logs --tail=25 rss-api

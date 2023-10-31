@@ -12,11 +12,12 @@ from alerts.config import api_configs
 @pytest.fixture
 def wait_for_api():
     start = time.time()
-    url = CONFIG.API_URL
+    url = f"{CONFIG.API_URL}/ping"
     while time.time() - start < 10:
         try:
-            requests.get(url)
-            return
+            res = requests.get(url)
+            if res.json()["message"] == "ok":
+                return
         except requests.ConnectionError:
             continue
 

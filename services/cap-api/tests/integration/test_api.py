@@ -2,6 +2,7 @@ import datetime
 
 from bs4 import BeautifulSoup
 import pytest
+import requests
 from rss.cap.alert import Alert
 
 from alerts import CONFIG
@@ -119,10 +120,10 @@ class TestCapFile:
         res = client.get_cap_file(identifier="ALERT2")
         assert res.ok
 
-        contents = BeautifulSoup(res.json()["contents"], "xml")
-        assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
+        xml = BeautifulSoup(res.content, "xml")
+        assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
 
-        alert = contents.feed.entry.content.alert
+        alert = xml.feed.entry.content.alert
         assert alert.identifier.string == "CIRES_ALERT2"
         assert alert.sent.string == dates[2].isoformat(timespec="seconds") + "-06:00"
 
@@ -133,10 +134,23 @@ class TestCapFile:
         res = client.get_cap_file(identifier="latest")
         assert res.ok
 
-        contents = BeautifulSoup(res.json()["contents"], "xml")
-        assert contents.feed.title.string == "SASMEX-CIRES RSS Feed"
+        xml = BeautifulSoup(res.content, "xml")
+        assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
 
-        alert = contents.feed.entry.content.alert
+        alert = xml.feed.entry.content.alert
+        assert alert.identifier.string == "CIRES_ALERT3"
+
+    @pytest.mark.usefixtures("postgres_session")
+    @pytest.mark.usefixtures("wait_for_api")
+    def test_get_last_cap_file_deprecated_route(self):
+        post_alerts()
+        res = requests.get(client.base_url + "/cap/latest")
+        assert res.ok
+
+        xml = BeautifulSoup(res.content, "xml")
+        assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
+
+        alert = xml.feed.entry.content.alert
         assert alert.identifier.string == "CIRES_ALERT3"
 
 

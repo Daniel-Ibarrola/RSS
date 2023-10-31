@@ -1,10 +1,10 @@
 import datetime
 from typing import Optional
 
-from rss.services.api_client import APIClient
 from rss.cap.alert import Alert
-from rss.cap.states import STATES, STATES_CODES
+from rss.cap.states import STATES_CODES
 
+from alerts.client.api_client import APIClient
 
 
 class AlertFetchError(ValueError):

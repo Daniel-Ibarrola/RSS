@@ -16,7 +16,11 @@ def create_app(configuration: Config = CONFIG):
 
     db.init_app(app)
 
+    from alerts.alerts import api as api_blueprint
+    app.register_blueprint(api_blueprint, url_prefix="/api/v1")
+
     if isinstance(configuration, DevConfig):
         CORS(app)
+
     Migrate(app, db)
     return app

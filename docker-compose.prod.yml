@@ -8,7 +8,7 @@ services:
       sh -c "
         flask wait-for-db &&
         flask db upgrade &&
-        gunicorn --bind 0.0.0.0:5005 alerts.wsgi:app"
+        gunicorn --bind 0.0.0.0:5000 alerts.wsgi:app"
     env_file:
       - services/cap-api/.env
     healthcheck:
@@ -17,7 +17,7 @@ services:
       timeout: 10s
       retries: 3
     ports:
-      - "5005:5005"
+      - "5000:5000"
 
   postgres:
     image: postgres:15.2-alpine
@@ -34,7 +34,7 @@ services:
       context: ./services/client
       dockerfile: Dockerfile.prod
     ports:
-      - "5173:80"
+      - "80:80"
 
   cap-generator:
     restart: unless-stopped
