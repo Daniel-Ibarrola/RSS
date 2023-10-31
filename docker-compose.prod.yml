@@ -26,6 +26,8 @@ services:
       # Note user and db name will be the same
       - POSTGRES_USER=rss
       - POSTGRES_PASSWORD=abc123
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
       - "54321:5432"
 

@@ -7,6 +7,8 @@ sasmex/
 *.log
 *.cap
 *.rss
+*.dump
 build/
 src/build/
 env.sh
+postgres-data/

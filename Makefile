@@ -14,6 +14,9 @@ dev:  ## Start the API, DB, client and cap generator in development mode.
 prod: ## Start the API, DB, client and cap generator in production mode.
 	docker compose -f docker-compose.prod.yml up
 
+prod-web: ## Start the API, DB, and client in production mode.
+	docker compose -f docker-compose.prod.yml up rss-api rss-client postgres
+
 web-dev: ## Start the API, DB and client in dev mode. Does not start cap generator.
 	docker compose up rss-api rss-client postgres
 
@@ -43,6 +46,9 @@ api-integration-tests: ## Run integration tests.
 
 seed-db:  ## Add multiple alerts to the database
 	docker compose exec rss-api flask seed-db
+
+restore_db:  ## Restore the postgres database from a backup file (requires file and user args)
+	docker cp $(file) rss-db:/$(file) && docker compose exec postgres pg_restore -U $(user) -d rss $(file)
 
 logs:  ## View the logs.
 	docker compose logs --tail=25 rss-api
