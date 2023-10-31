@@ -58,7 +58,7 @@ const Feed = () => {
                                     alt="sasmex-rss logo"
                                     src="ciresFeedLogo2b.png"
                                 />
-                            <strong> <a href={alertsURL + "latest/cap/?save=true"}>Último CAP</a></strong>
+                            <strong> <a href={alertsURL + "latest/cap/"}>Último CAP</a></strong>
                         </Card.Header>
                         <Card.Body>
                             {lastAlert.isError && <FailFetch />}

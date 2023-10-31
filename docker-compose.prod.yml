@@ -34,7 +34,7 @@ services:
       context: ./services/client
       dockerfile: Dockerfile.prod
     ports:
-      - "80:80"
+      - "5173:80"
 
   cap-generator:
     restart: unless-stopped
