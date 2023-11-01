@@ -50,5 +50,11 @@ seed-db:  ## Add multiple alerts to the database
 restore_db:  ## Restore the postgres database from a backup file (requires file and user args)
 	docker cp $(file) rss-db:/$(file) && docker compose exec postgres pg_restore -U $(user) -d rss $(file)
 
+ssl-certificate: ## Generate an ssl certificate for https. Must run with production config in server
+	docker compose -f docker-compose.prod.yml run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ -d rss.sasmex.net
+
+nginx-https: ## Update nginx config to accept https requests after obtaining and ssl certificate
+	cp services/client/nginx/rss.sasmex.net.conf services/client/nginx/https.conf && docker compose -f docker-compose.prod.yml restart
+
 logs:  ## View the logs.
 	docker compose logs --tail=25 rss-api
