@@ -1,14 +1,16 @@
 services:
 
   rss-api:
+    build:
+      context: ./services/cap-api
+      dockerfile: Dockerfile.prod
     command: >
       sh -c "
         flask wait-for-db &&
         flask db upgrade &&
-        gunicorn --bind 0.0.0.0:5000 rss.api.wsgi:app"
+        gunicorn --bind 0.0.0.0:5000 alerts.wsgi:app"
     env_file:
-      - api.env
-#    restart: unless-stopped
+      - services/cap-api/.env
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5005/" ]
       interval: 3m
@@ -17,13 +19,45 @@ services:
     ports:
       - "5000:5000"
 
-
   postgres:
     image: postgres:15.2-alpine
     container_name: rss-db
-    environment:
-      # Note user and db name will be the same
-      - POSTGRES_USER=rss
-      - POSTGRES_PASSWORD=abc123
+    env_file:
+      - services/cap-api/.env
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  rss-client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile.prod
     ports:
-      - "54321:5432"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./services/client/nginx/https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+
+  cap-generator:
+    build:
+      context: ./services/cap-gen
+      dockerfile: Dockerfile.prod
+    image: cap-gen:latest
+    container_name: cap-generator
+    env_file:
+      - services/cap-gen/.env
+    environment:
+      - CONFIG=prod
+    entrypoint: [
+      "python",
+      "/src/capgen/main.py"
+    ]
+    volumes:
+      - ./services/cap-gen/feeds:/feeds

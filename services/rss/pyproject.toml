@@ -1,0 +1,27 @@
+# pyproject.toml
+
+[build-system]
+requires      = [
+    "setuptools>=65.5.0",
+    "Babel>=2.13.1"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rss"
+version = "1.7.0"
+description = "Package for creating RSS feeds for earthquakes in CAP format."
+readme = "README.md"
+authors = [{ name = "Daniel Ibarrola", email = "daniel.ibarrola.sanchez@gmail.com" }]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["earthquake", "alerts", "cap", "rss"]
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/Daniel-Ibarrola/RSS.git"

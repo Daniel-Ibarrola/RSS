@@ -1,7 +1,0 @@
--r common.txt
-beautifulsoup4==4.12.2
-bumpver==2023.1126
-pytest==7.2.2
-pytest-mock==3.10.0
-pytest-timeout==2.1.0
-lxml==4.9.2

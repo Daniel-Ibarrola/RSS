@@ -1,0 +1,6 @@
+-r requirements.txt
+beautifulsoup4==4.12.2
+bs4==0.0.1
+lxml==4.9.3
+pytest==7.4.3
+soupsieve==2.5

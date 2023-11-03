@@ -1,12 +1,15 @@
 .idea/
 venv/
-src/rss.egg-info/
+*.egg-info/
 *.pyc
 sasmex/
 *.pickle
 *.log
 *.cap
 *.rss
+*.dump
 build/
 src/build/
 env.sh
+postgres-data/
+certbot/

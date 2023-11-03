@@ -1,0 +1,6 @@
+-r common.txt
+beautifulsoup4==4.12.2
+lxml==4.9.3
+pytest==7.4.3
+pytest-mock==3.12.0
+pytest-timeout==2.2.0

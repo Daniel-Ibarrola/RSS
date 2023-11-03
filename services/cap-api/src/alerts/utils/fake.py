@@ -1,0 +1,124 @@
+import datetime
+import random
+import string
+
+from rss.cap.states import STATES
+from rss.cap.regions import REGIONS
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+
+from alerts import create_app, db, CONFIG
+from alerts.alerts.models import Alert, State
+
+
+def clear_database() -> None:
+    engine = create_engine(CONFIG.SQLALCHEMY_DATABASE_URI)
+    engine.connect()
+    session = sessionmaker(bind=engine)()
+
+    session.execute(text("DELETE FROM states"))
+    session.execute(text("DELETE FROM alerts"))
+    session.commit()
+    session.close()
+
+
+def alert_id(date: datetime) -> str:
+    # TODO: move function to rss package
+    month = f"{date.month:02d}"
+    day = f"{date.day:02d}"
+    hour = f"{date.hour:02d}"
+    minute = f"{date.minute:02d}"
+    second = f"{date.second:02d}"
+    date = str(date.year) + month + day + hour + minute + second
+    random_str = ''.join(random.choices(
+        string.ascii_uppercase + string.digits, k=6))
+
+    return date + "-" + random_str
+
+
+def generate_fake_alerts():
+    """ Generate fake alerts and put then in the database.
+    """
+    print("Adding new alerts to DB")
+    clear_database()
+
+    app = create_app(CONFIG)
+
+    end_date = datetime.date.today()
+    end_date = datetime.datetime(year=end_date.year, month=end_date.month, day=end_date.day)
+    start_date = end_date - datetime.timedelta(days=365)
+    print(f"Start date: {start_date}")
+    print(f"End date: {end_date}")
+
+    dates = []
+    current_date = start_date
+    time_delta = datetime.timedelta(days=1)
+    while current_date <= end_date:
+        dates.append(current_date)
+        current_date += time_delta
+
+    options = (True, False)
+    day_choices = random.choices(
+        options,
+        weights=[0.5, 0.5],
+        k=len(dates))
+    event_choices = random.choices(
+        options,
+        weights=[0.2, 0.8],
+        k=len(dates))
+    references_choices = random.choices(
+        options,
+        weights=[0.4, 0.6],
+        k=len(dates))
+    extra_state = random.choices(
+        options,
+        weights=[0.5, 0.5],
+        k=len(dates))
+
+    state_list = list(STATES.keys())
+    region_list = list(REGIONS.keys())
+
+    id_list = []
+    with app.app_context():
+        for ii in range(len(dates)):
+            if day_choices[ii]:
+                identifier = alert_id(dates[ii])
+                states = [State(state_id=random.choice(state_list))]
+                region = random.choice(region_list)
+                if extra_state[ii]:
+                    states.append(State(state_id=random.choice(state_list)))
+
+                if references_choices[ii] and ii > 1:
+                    # Reference the previous alert
+                    references = Alert.get_references([id_list[-1]])
+                    alert = Alert(
+                        time=dates[ii],
+                        states=states,
+                        region=region,
+                        is_event=event_choices[ii],
+                        identifier=identifier,
+                        references=references
+                    )
+                else:
+                    alert = Alert(
+                        time=dates[ii],
+                        states=states,
+                        region=region,
+                        is_event=event_choices[ii],
+                        identifier=identifier,
+                    )
+
+                db.session.add(alert)
+                db.session.commit()
+                print(f"Added new alert {alert}")
+                id_list.append(identifier)
+
+        n_alerts = len(db.session.execute(db.select(Alert)).all())
+        print(f"Total number of alerts {n_alerts}")
+
+    print(id_list)
+    print("DONE")
+
+
+if __name__ == "__main__":
+    generate_fake_alerts()
