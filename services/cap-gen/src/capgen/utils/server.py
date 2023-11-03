@@ -3,7 +3,7 @@ from socketlib import Server, send_msg
 from socketlib.utils.logger import get_module_logger
 import time
 
-from rss import CONFIG
+from capgen import CONFIG
 
 
 MESSAGES = [

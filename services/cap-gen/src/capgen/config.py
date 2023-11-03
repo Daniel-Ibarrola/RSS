@@ -9,7 +9,6 @@ class Config:
     """ Configuration for the cap genertaor program.
     """
     NAME = "dev"
-    # rss.main.py config
     ALERT_TIME = int(os.environ.get("ALERT_TIME", 5))
     MSG_TIME = int(os.environ.get("MSG_TIME", 5))
     ALERT_FILE_NAME = "test_alert"
@@ -48,7 +47,6 @@ class ProdConfig(Config):
         - CLIENT_PORT
     """
     NAME = "prod"
-    # rss.main.py config
     ALERT_TIME = 60
     MSG_TIME = 60
     ALERT_FILE_NAME = "sasmex"

@@ -12,7 +12,7 @@ dev:  ## Start the API, DB, client and cap generator in development mode.
 	docker compose up -d && docker compose logs -f
 
 prod: ## Start the API, DB, client and cap generator in production mode.
-	docker compose -f docker-compose.prod.yml up
+	docker compose -f docker-compose.prod.yml up  rss-api rss-client postgres cap-generator
 
 prod-web: ## Start the API, DB, and client in production mode.
 	docker compose -f docker-compose.prod.yml up -d rss-api rss-client postgres
@@ -21,7 +21,7 @@ web-dev: ## Start the API, DB and client in dev mode. Does not start cap generat
 	docker compose up rss-api rss-client postgres
 
 generator-dev: ## Start the cap generator in dev mode.
-	docker compose up cap-generator alerts-service
+	docker compose up cap-generator alerts-server
 
 generator:  ## Start the cap generator in production mode.
 	docker compose -f docker-compose.prod.yml up -d cap-generator

@@ -58,5 +58,5 @@ class FeedPoster(AbstractService):
                 self._logger.info("Posted new alert to API")
             elif self._logger:
                 self._logger.info(
-                    f"Failed to post alert to API "
+                    f"Failed to post alert to {self.client.base_url} "
                     f"Status code: {res.status_code}")

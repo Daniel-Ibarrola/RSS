@@ -46,7 +46,6 @@ services:
       - ./certbot/conf/:/etc/letsencrypt/:rw
 
   cap-generator:
-    restart: unless-stopped
     build:
       context: ./services/cap-gen
       dockerfile: Dockerfile.prod
@@ -58,7 +57,7 @@ services:
       - CONFIG=prod
     entrypoint: [
       "python",
-      "rss/main.py"
+      "/src/capgen/main.py"
     ]
     volumes:
       - ./services/cap-gen/feeds:/feeds

@@ -75,12 +75,12 @@ services:
       - CLIENT_PORT=12250
     entrypoint: [
       "python",
-      "rss/main.py"
+      "/src/capgen/main.py"
     ]
     volumes:
-      - ./src:/src
-      - ./tests:/tests
-      - ./feeds:/feeds
+      - ./services/cap-gen/src:/src
+      - ./services/cap-gen/tests:/tests
+      - ./services/cap-gen/feeds:/feeds
 
   alerts-server:
     build:
@@ -94,8 +94,7 @@ services:
       - CLIENT_PORT=12250
     entrypoint: [
       "python",
-      "rss/test/server.py"
+      "/src/capgen/utils/server.py"
     ]
     volumes:
-      - ./src:/src
-      - ./tests:/tests
+        - ./services/cap-gen/src:/src

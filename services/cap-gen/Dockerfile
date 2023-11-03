@@ -6,8 +6,6 @@ COPY src/ /src/
 COPY tests/ /tests/
 COPY feeds/ /feeds/
 
-# Install curl to perform health checks
-RUN apk add --no-cache curl
 # Git is necessary to install the rss dependency
 RUN apk add --no-cache git
 
