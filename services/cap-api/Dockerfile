@@ -11,7 +11,7 @@ RUN apk add --no-cache curl
 RUN apk add --no-cache git
 
 # TODO: can we find another way to install the rss module without git?
-RUN pip install "git+https://github.com/Daniel-Ibarrola/RSS.git@ecs#subdirectory=services/rss" \
+RUN pip install "git+https://github.com/Daniel-Ibarrola/RSS.git#subdirectory=services/rss" \
     && pip install -r /requirements/dev.txt \
     && pip install -e .
 
