@@ -6,7 +6,6 @@ from rss.cap.states import STATES_CODES
 
 from alerts.client.api_client import APIClient
 
-
 class AlertFetchError(ValueError):
     pass
 

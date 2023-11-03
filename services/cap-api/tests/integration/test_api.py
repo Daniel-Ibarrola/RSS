@@ -98,7 +98,6 @@ class TestAlertsAPI:
     @pytest.mark.usefixtures("wait_for_api")
     def test_get_last_alert(self):
         last_alert_date = post_alerts()[-1]
-
         res = client.get_last_alert()
         assert res.ok
         assert res.json() == {
