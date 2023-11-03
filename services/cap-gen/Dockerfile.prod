@@ -4,9 +4,9 @@ COPY pyproject.toml /pyproject.toml
 COPY requirements/ /requirements/
 COPY src/ /src/
 COPY tests/ /tests/
-COPY feeds/ /feeds/
 
 # Git is necessary to install the rss dependency
+RUN mkdir /feeds
 RUN apk add --no-cache git
 
 # TODO: can we find another way to install the rss module without git?
