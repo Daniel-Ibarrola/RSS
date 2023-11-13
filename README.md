@@ -89,6 +89,18 @@ Run the cap generator as well as the testing server with:
 make generator-dev
 ```
 
+### Testing production configuration locally
+
+Before running in production you can test that everything works locally by running the containers
+with the following command:
+
+```shell
+make prod-http
+```
+
+This will create a very similar configuration to the one with `make prod-web`, the difference is that
+the nginx server will only listen for http traffic in port 80.
+
 ## Testing
 
 ### API

@@ -12,10 +12,13 @@ dev:  ## Start the API, DB, client and cap generator in development mode.
 	docker compose up -d && docker compose logs -f
 
 prod: ## Start the API, DB, client and cap generator in production mode.
-	docker compose -f docker-compose.prod.yml up  rss-api rss-client postgres cap-generator
+	docker compose -f docker-compose.prod.yml up rss-api rss-client postgres cap-generator
 
-prod-web: ## Start the API, DB, and client in production mode.
+prod-web: ## Start the API, DB, and client in production mode (must be run in production server).
 	docker compose -f docker-compose.prod.yml up -d rss-api rss-client postgres
+
+prod-http: ## Start the API, DB, and client in production mode. Client only accepts http traffic on port 80.
+	docker compose -f docker-compose.prod.yml up rss-api rss-client-http postgres
 
 web-dev: ## Start the API, DB and client in dev mode. Does not start cap generator.
 	docker compose up rss-api rss-client postgres
@@ -60,7 +63,7 @@ api-integration-tests: ## Run integration tests.
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/integration
 
 client-tests: ## Run client unit tests
-	docker compose exec rssc-client npm run test
+	docker compose exec rss-client npm run test
 
 cap-gen-test: ## Run cap-gen unit tests
 	docker compose run --rm --no-deps --entrypoint=pytest cap-generator /tests/unit

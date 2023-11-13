@@ -5,7 +5,7 @@ services:
     build:
       context: ./services/cap-api
       dockerfile: Dockerfile
-    image: rss-api:latest
+    image: rss-api-dev:latest
     container_name: rss-api
     command: >
       sh -c "
@@ -50,6 +50,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
+    image: rss-client-dev:latest
+    container_name: rss-client
     volumes:
       - ./services/client/src:/app/src
       - ./services/client/test:/app/tests
@@ -64,7 +66,7 @@ services:
     build:
       context: ./services/cap-gen
       dockerfile: Dockerfile
-    image: cap-gen:latest
+    image: cap-gen-dev:latest
     container_name: cap-generator
     environment:
       - CONFIG=dev
@@ -86,7 +88,7 @@ services:
     build:
       context: ./services/cap-gen
       dockerfile: Dockerfile
-    image: cap-gen:latest
+    image: cap-gen-dev:latest
     container_name: cap-server
     environment:
       - CONFIG=dev

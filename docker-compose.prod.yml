@@ -4,6 +4,8 @@ services:
     build:
       context: ./services/cap-api
       dockerfile: Dockerfile.prod
+    image: rss-api-prod:latest
+    container_name: rss-api
     command: >
       sh -c "
         flask wait-for-db &&
@@ -20,17 +22,23 @@ services:
       - "5000:5000"
 
   postgres:
-    image: postgres:15.2-alpine
+    build:
+      context: ./services/cap-api/db
+      dockerfile: Dockerfile
+    image: rss-db:latest
     container_name: rss-db
     env_file:
       - services/cap-api/.env
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+      - ./pg_backup:/pg_backup/
 
   rss-client:
     build:
       context: ./services/client
       dockerfile: Dockerfile.prod
+    image: rss-client-prod:latest
+    container_name: rss-client
     ports:
       - "80:80"
       - "443:443"
@@ -38,6 +46,15 @@ services:
       - ./services/client/nginx/https.conf:/etc/nginx/conf.d/default.conf:ro
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  rss-client-http:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile.staging
+    image: rss-client-staging:latest
+    container_name: rss-client
+    ports:
+      - "80:80"
 
   certbot:
     image: certbot/certbot:latest
@@ -49,7 +66,7 @@ services:
     build:
       context: ./services/cap-gen
       dockerfile: Dockerfile.prod
-    image: cap-gen:latest
+    image: cap-gen-prod:latest
     container_name: cap-generator
     env_file:
       - services/cap-gen/.env

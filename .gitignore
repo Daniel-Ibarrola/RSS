@@ -13,3 +13,4 @@ src/build/
 env.sh
 postgres-data/
 certbot/
+pg_backup/
