@@ -5,6 +5,7 @@ services:
       context: ./services/cap-api
       dockerfile: Dockerfile.prod
     image: rss-api-prod:latest
+    restart: always
     container_name: rss-api
     command: >
       sh -c "
@@ -25,6 +26,7 @@ services:
     build:
       context: ./services/cap-api/db
       dockerfile: Dockerfile
+    restart: always
     image: rss-db:latest
     container_name: rss-db
     env_file:
@@ -37,6 +39,7 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile.prod
+    restart: always
     image: rss-client-prod:latest
     container_name: rss-client
     ports:
@@ -63,6 +66,7 @@ services:
       - ./certbot/conf/:/etc/letsencrypt/:rw
 
   cap-generator:
+    restart: always
     build:
       context: ./services/cap-gen
       dockerfile: Dockerfile.prod
