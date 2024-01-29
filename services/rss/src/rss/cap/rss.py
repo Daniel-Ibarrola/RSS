@@ -167,7 +167,7 @@ class RSSFeed:
             msg_type = "Update"
 
         text_tags = [
-            ("identifier", "CIRES_" + self._alert.id),
+            ("identifier", "CIRES" + self._alert.id),
             ("sender", sender),
             ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("status", status),
@@ -257,6 +257,7 @@ class RSSFeed:
         for tag in text_tags:
             self._add_text_tag(info, tag[0], tag[1])
         self._add_parameter_tag(info, "SAME", "CIV")
+        self._add_parameter_tag(info, "messageIdentifier", "4370")
 
         # Area tag
         area = self._create_area_tag()

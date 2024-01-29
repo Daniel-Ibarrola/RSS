@@ -15,7 +15,7 @@ prod: ## Start the API, DB, client and cap generator in production mode.
 	docker compose -f docker-compose.prod.yml up rss-api rss-client postgres cap-generator
 
 prod-web: ## Start the API, DB, and client in production mode (must be run in production server).
-	docker compose -f docker-compose.prod.yml up -d rss-api rss-client postgres
+	docker compose -f docker-compose.prod.yml up -d rss-api rss-client postgres --build
 
 prod-http: ## Start the API, DB, and client in production mode. Client only accepts http traffic on port 80.
 	docker compose -f docker-compose.prod.yml up rss-api rss-client-http postgres
@@ -27,7 +27,7 @@ generator-dev: ## Start the cap generator in dev mode.
 	docker compose up cap-generator alerts-server
 
 generator:  ## Start the cap generator in production mode.
-	docker compose -f docker-compose.prod.yml up -d cap-generator
+	docker compose -f docker-compose.prod.yml up -d cap-generator --build
 
 down: ## Remove all containers.
 	docker compose down --remove-orphans

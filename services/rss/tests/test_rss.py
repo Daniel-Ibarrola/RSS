@@ -36,10 +36,10 @@ class TestCapAlert:
 
     def test_alert_tag(self, cap_xml):
         alert = cap_xml.feed.entry.content.alert
-        sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5).\
-            isoformat(timespec="seconds") + "-06:00"
+        sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5). \
+                        isoformat(timespec="seconds") + "-06:00"
 
-        assert alert.identifier.string == "CIRES_TEST-ALERT"
+        assert alert.identifier.string == "CIRESTEST-ALERT"
         assert alert.sender.string == "cires.org.mx"
         assert alert.sent.string == sent_time
         assert alert.status.string == "Actual"
@@ -48,8 +48,8 @@ class TestCapAlert:
 
     def test_info_tag(self, cap_xml):
         info = cap_xml.feed.entry.alert.info
-        expire_date = datetime(year=2023, month=3, day=13, hour=16, minute=8, second=5).\
-            isoformat(timespec="seconds") + "-06:00"
+        expire_date = datetime(year=2023, month=3, day=13, hour=16, minute=8, second=5). \
+                          isoformat(timespec="seconds") + "-06:00"
 
         assert info.language.string == "es-MX"
         assert info.category.string == "Geo"
@@ -171,7 +171,7 @@ class TestCapEvent:
         sent_time = datetime(year=2023, month=3, day=13, hour=16, minute=7, second=5). \
                         isoformat(timespec="seconds") + "-06:00"
 
-        assert alert.identifier.string == "CIRES_TEST-EVENT"
+        assert alert.identifier.string == "CIRESTEST-EVENT"
         assert alert.sender.string == "cires.org.mx"
         assert alert.sent.string == sent_time
         assert alert.status.string == "Actual"
@@ -203,9 +203,14 @@ class TestCapEvent:
         assert info.web.string == "https://rss.sasmex.net"
         assert info.contact.string == "infoCAP@cires-ac.mx"
 
-        parameter = info.parameter
-        assert parameter.valueName.string == "SAME"
-        assert parameter.value.string == "CIV"
+        parameters = info.find_all("parameter")
+        assert len(parameters) == 2
+
+        assert parameters[0].valueName.string == "SAME"
+        assert parameters[0].value.string == "CIV"
+
+        assert parameters[1].valueName.string == "messageIdentifier"
+        assert parameters[1].value.string == "4370"
 
     def test_area_tag(self, cap_event_xml):
         info = cap_event_xml.feed.entry.alert.info

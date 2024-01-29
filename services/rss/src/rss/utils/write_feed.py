@@ -27,3 +27,13 @@ def write_cap_file(
     feed = create_feed(alert, is_test=is_test)
     write_feed_to_file(save_path, feed)
     print(f"CAP file written to {save_path}")
+
+
+if __name__ == "__main__":
+    write_cap_file(
+        datetime.datetime.now().isoformat(),
+        ["CDMX"],
+        41201,
+        "alert",
+        "../../../feeds/test.xml"
+    )
