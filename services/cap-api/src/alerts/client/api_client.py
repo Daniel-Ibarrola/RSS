@@ -11,9 +11,13 @@ from alerts import CONFIG
 class APIClient:
     """ Client to post and get alerts from our API"""
 
-    def __init__(self, base_url: str = CONFIG.API_URL):
+    def __init__(
+            self,
+            base_url: str = CONFIG.API_URL,
+            credentials: tuple[str, str] = (CONFIG.API_USER, CONFIG.API_PASSWORD)
+    ):
         self.base_url = base_url + "/api/v1"
-        self.credentials = (CONFIG.API_USER, CONFIG.API_PASSWORD)
+        self.credentials = credentials
 
     def post_alert(self, alert: Alert, save_path: str = "") -> requests.Response:
         """ Post a new alert. """

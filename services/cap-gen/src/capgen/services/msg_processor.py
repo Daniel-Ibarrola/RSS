@@ -120,11 +120,7 @@ class MessageProcessor(AbstractService):
         hour = f"{date.hour:02d}"
         minute = f"{date.minute:02d}"
         second = f"{date.second:02d}"
-        date = str(date.year) + month + day + hour + minute + second
-        random_str = ''.join(random.choices(
-            string.ascii_uppercase + string.digits, k=6))
-
-        return date + "-" + random_str
+        return str(date.year) + month + day + hour + minute + second
 
     @staticmethod
     def _alert_str(alert: Alert) -> str:
@@ -132,4 +128,6 @@ class MessageProcessor(AbstractService):
         return f"Alert(time={alert.time.isoformat()}, " \
                f"states={alert.states}," \
                f"region={alert.region}) " \
-               f"refs={[a.id for a in refs]})"
+               f"refs={[a.id for a in refs]} " \
+               f"id={alert.id} " \
+               f"is_event={alert.is_event})"

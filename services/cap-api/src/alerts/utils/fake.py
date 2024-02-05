@@ -1,6 +1,5 @@
 import datetime
 import random
-import string
 
 from rss.cap.states import STATES
 from rss.cap.regions import REGIONS
@@ -9,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from alerts import create_app, db, CONFIG
 from alerts.alerts.models import Alert, State
+from alerts.utils.alert_id import alert_id
 
 
 def clear_database() -> None:
@@ -20,20 +20,6 @@ def clear_database() -> None:
     session.execute(text("DELETE FROM alerts"))
     session.commit()
     session.close()
-
-
-def alert_id(date: datetime) -> str:
-    # TODO: move function to rss package
-    month = f"{date.month:02d}"
-    day = f"{date.day:02d}"
-    hour = f"{date.hour:02d}"
-    minute = f"{date.minute:02d}"
-    second = f"{date.second:02d}"
-    date = str(date.year) + month + day + hour + minute + second
-    random_str = ''.join(random.choices(
-        string.ascii_uppercase + string.digits, k=6))
-
-    return date + "-" + random_str
 
 
 def generate_fake_alerts():
