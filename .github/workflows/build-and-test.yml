@@ -26,6 +26,9 @@ jobs:
             services/rss/requirements.txt
             services/cap-api/requirements/dev.txt
 
+      - name: Install RSS dependencies
+        run: pip install -r services/rss/requirements-dev.txt
+
       - name: Install RSS library
         run: pip install -e ./services/rss
 
