@@ -2,11 +2,11 @@
 FROM node:19
 
 WORKDIR /app
-COPY package.json /app/package.json
-COPY package-lock.json /app/package-lock.json
+COPY client/package.json /app/package.json
+COPY client/package-lock.json /app/package-lock.json
 
 RUN npm ci
-COPY . /app
+COPY client /app
 
 # start app
 CMD ["npm", "run", "dev"]

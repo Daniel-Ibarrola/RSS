@@ -3,8 +3,8 @@ services:
 
   rss-api:
     build:
-      context: ./services/cap-api
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: cap-api/Dockerfile
     image: rss-api-dev:latest
     container_name: rss-api
     command: >
@@ -48,8 +48,8 @@ services:
   rss-client:
     stdin_open: true
     build:
-      context: ./services/client
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: client/Dockerfile
     image: rss-client-dev:latest
     container_name: rss-client
     volumes:
@@ -64,8 +64,8 @@ services:
 
   cap-generator:
     build:
-      context: ./services/cap-gen
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: cap-gen/Dockerfile
     image: cap-gen-dev:latest
     container_name: cap-generator
     environment:
@@ -86,8 +86,8 @@ services:
 
   alerts-server:
     build:
-      context: ./services/cap-gen
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: cap-gen/Dockerfile
     image: cap-gen-dev:latest
     container_name: cap-server
     environment:
