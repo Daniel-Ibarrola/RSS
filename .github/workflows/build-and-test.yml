@@ -11,24 +11,80 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  api-tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            services/rss/requirements.txt
+            services/cap-api/requirements/dev.txt
 
-      - name: Build Docker images
-        run: docker compose build
+      - name: Install RSS library
+        run: pip install ./services/rss
+
+      - name: Install API dependencies
+        run: pip install -r services/cap-api/requirements/dev.txt
+
+      - name: Install API package
+        run: pip install -e services/cap-api
 
       - name: Run API unit tests
-        run: docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/unit
+        run: pytest services/cap-api/tests/unit
+
+  cap-generator-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            services/rss/requirements.txt
+            services/cap-gen/requirements/dev.txt
+
+      - name: Install RSS library
+        run: pip install ./services/rss
+
+      - name: Install CAP Generator dependencies
+        run: pip install -r services/cap-gen/requirements/dev.txt
+
+      - name: Install CAP Generator package
+        run: pip install -e services/cap-gen
 
       - name: Run CAP Generator unit tests
-        run: docker compose run --rm --no-deps --entrypoint=pytest cap-generator /tests/unit
+        run: pytest services/cap-gen/tests/unit
+
+  client-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/client/package-lock.json
+
+      - name: Install client dependencies
+        working-directory: services/client
+        run: npm ci
 
       - name: Run client unit tests
-        run: docker compose run --rm rss-client npm run test
+        working-directory: services/client
+        run: npm run test
