@@ -1,4 +1,3 @@
-version: "3"
 services:
 
   rss-api:
@@ -59,8 +58,8 @@ services:
       - ./services/client/vite.config.js:/app/vite.config.js
     ports:
       - "5173:5173"
-    env_file:
-      - services/client/.env
+    environment:
+      - VITE_MAPS_API_KEY="TEST_KEY"
 
   cap-generator:
     build:

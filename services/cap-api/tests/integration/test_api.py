@@ -123,7 +123,7 @@ class TestCapFile:
         assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
 
         alert = xml.feed.entry.content.alert
-        assert alert.identifier.string == "CIRES_ALERT2"
+        assert alert.identifier.string == "CIRESALERT2"
         assert alert.sent.string == dates[2].isoformat(timespec="seconds") + "-06:00"
 
     @pytest.mark.usefixtures("postgres_session")
@@ -137,7 +137,7 @@ class TestCapFile:
         assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
 
         alert = xml.feed.entry.content.alert
-        assert alert.identifier.string == "CIRES_ALERT3"
+        assert alert.identifier.string == "CIRESALERT3"
 
     @pytest.mark.usefixtures("postgres_session")
     @pytest.mark.usefixtures("wait_for_api")
@@ -150,7 +150,7 @@ class TestCapFile:
         assert xml.feed.title.string == "SASMEX-CIRES RSS Feed"
 
         alert = xml.feed.entry.content.alert
-        assert alert.identifier.string == "CIRES_ALERT3"
+        assert alert.identifier.string == "CIRESALERT3"
 
 
 class TestAuthentication:

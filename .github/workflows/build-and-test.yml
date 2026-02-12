@@ -11,8 +11,33 @@ on:
       - main
 
 jobs:
+  rss-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            services/rss/requirements.txt
+            services/cap-api/requirements/dev.txt
+
+      - name: Install RSS dependencies
+        run: pip install -r services/rss/requirements-dev.txt
+
+      - name: Install RSS library
+        run: pip install -e ./services/rss
+
+      - name: Run RSS unit tests
+        run: pytest services/rss/tests/
+
   api-tests:
     runs-on: ubuntu-latest
+    needs: rss-tests
 
     steps:
       - name: Checkout code
@@ -41,6 +66,7 @@ jobs:
 
   cap-generator-tests:
     runs-on: ubuntu-latest
+    needs: rss-tests
 
     steps:
       - name: Checkout code
@@ -88,3 +114,20 @@ jobs:
       - name: Run client unit tests
         working-directory: services/client
         run: npm run test
+
+  api-integration-tests:
+    runs-on: ubuntu-latest
+    needs: api-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start services
+        run: docker compose up -d rss-api postgres
+
+      - name: Run API integration tests
+        run: docker compose exec -T rss-api pytest /tests/integration
