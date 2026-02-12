@@ -21,7 +21,7 @@ def wait_for_api():
         except requests.ConnectionError:
             continue
 
-    pytest.fail("Could not connect to API")
+    pytest.fail(f"Could not connect to API at {url}")
 
 
 def wait_for_postgres():

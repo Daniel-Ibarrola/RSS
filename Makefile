@@ -60,7 +60,7 @@ api-unit-tests: ## Run unit tests.
 	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/unit
 
 api-integration-tests: ## Run integration tests.
-	docker compose run --rm --no-deps --entrypoint=pytest rss-api /tests/integration
+	docker compose exec rss-api pytest /tests/integration
 
 client-tests: ## Run client unit tests
 	docker compose exec rss-client npm run test

@@ -126,8 +126,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker images
-        run: docker compose build
+      - name: Start services
+        run: docker compose up -d rss-api postgres
 
       - name: Run API integration tests
-        run: docker compose run --rm api pytest services/api/tests/integration
+        run: docker compose exec -T rss-api pytest /tests/integration
