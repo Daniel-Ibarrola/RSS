@@ -167,7 +167,7 @@ class RSSFeed:
             msg_type = "Update"
 
         text_tags = [
-            ("identifier", "CIRES_" + self._alert.id),
+            ("identifier", "CIRES" + self._alert.id),
             ("sender", sender),
             ("sent", self._alert.time.isoformat(timespec="seconds") + "-06:00"),
             ("status", status),
