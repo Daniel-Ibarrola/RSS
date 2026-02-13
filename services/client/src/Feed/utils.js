@@ -11,6 +11,7 @@ export const getTitle = (states, region, time, isEvent=false) => {
         hour: "numeric",
         minute: "numeric",
         second: "numeric",
+        hour12: false
     });
     dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
     const statesStr = states.map(c => STATES[c]).join("/");
