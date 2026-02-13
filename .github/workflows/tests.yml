@@ -9,6 +9,8 @@ on:
     branches:
       - develop
       - main
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   rss-tests:
@@ -16,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5

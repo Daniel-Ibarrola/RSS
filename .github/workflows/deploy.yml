@@ -1,0 +1,120 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          # CAP API environment variables
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          API_HOST: ${{ secrets.API_HOST }}
+          API_USER: ${{ secrets.API_USER }}
+          API_PASSWORD: ${{ secrets.API_PASSWORD }}
+          CONFIG: ${{ secrets.CONFIG }}
+          # CAP Generator environment variables
+          CAP_GEN_API_URL: ${{ secrets.CAP_GEN_API_URL }}
+          CAP_GEN_API_USER: ${{ secrets.CAP_GEN_API_USER }}
+          CAP_GEN_API_PASSWORD: ${{ secrets.CAP_GEN_API_PASSWORD }}
+          CAP_GEN_CLIENT_IP: ${{ secrets.CAP_GEN_CLIENT_IP }}
+          CAP_GEN_CLIENT_PORT: ${{ secrets.CAP_GEN_CLIENT_PORT }}
+          # Repository info
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          envs: >-
+            DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,
+            API_HOST,API_USER,API_PASSWORD,CONFIG,
+            CAP_GEN_API_URL,CAP_GEN_API_USER,CAP_GEN_API_PASSWORD,
+            CAP_GEN_CLIENT_IP,CAP_GEN_CLIENT_PORT,
+            GITHUB_REPO,GITHUB_SHA
+          script: |
+            cd ~/RSS || exit 1
+
+            # Pull latest code
+            git fetch origin
+            git checkout main
+            git pull origin main
+
+            # Log in to GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images
+            docker pull ghcr.io/${GITHUB_REPO_OWNER}/rss-api-prod:latest
+            docker pull ghcr.io/${GITHUB_REPO_OWNER}/rss-db:latest
+            docker pull ghcr.io/${GITHUB_REPO_OWNER}/rss-client-prod:latest
+            docker pull ghcr.io/${GITHUB_REPO_OWNER}/cap-gen-prod:latest
+
+            # Create/update .env files with secrets
+            cat > services/cap-api/.env <<EOF
+            DB_HOST=${DB_HOST}
+            DB_USER=${DB_USER}
+            DB_PASSWORD=${DB_PASSWORD}
+            DB_NAME=${DB_NAME}
+            API_HOST=${API_HOST}
+            API_USER=${API_USER}
+            API_PASSWORD=${API_PASSWORD}
+            CONFIG=${CONFIG}
+            EOF
+
+            cat > services/cap-gen/.env <<EOF
+            API_URL=${CAP_GEN_API_URL}
+            API_USER=${CAP_GEN_API_USER}
+            API_PASSWORD=${CAP_GEN_API_PASSWORD}
+            CLIENT_IP=${CAP_GEN_CLIENT_IP}
+            CLIENT_PORT=${CAP_GEN_CLIENT_PORT}
+            CONFIG=${CONFIG}
+            EOF
+
+            # Deploy with docker compose
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d rss-api rss-client postgres cap-generator --remove-orphans
+
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 10
+
+            # Check if services are running
+            docker compose -f docker-compose.prod.yml ps
+
+            # Cleanup old images
+            docker image prune -f
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ~/RSS
+
+            # Check if all containers are running
+            if ! docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+              echo "Deployment verification failed: containers not running"
+              exit 1
+            fi
+
+            # Check API health
+            if ! curl -f http://localhost:5000/ > /dev/null 2>&1; then
+              echo "Warning: API health check failed"
+            fi
+
+            echo "Deployment successful!"
+            docker compose -f docker-compose.prod.yml ps
