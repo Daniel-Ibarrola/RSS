@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2  # v1.2.5
         env:
           # CAP API environment variables
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -32,6 +32,8 @@ jobs:
           # Repository info
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -52,7 +54,7 @@ jobs:
             git pull origin main
 
             # Log in to GitHub Container Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
 
             # Pull latest images
             docker pull ghcr.io/${GITHUB_REPO_OWNER}/rss-api-prod:latest
