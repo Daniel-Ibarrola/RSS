@@ -19,16 +19,8 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          API_HOST: ${{ secrets.API_HOST }}
           API_USER: ${{ secrets.API_USER }}
           API_PASSWORD: ${{ secrets.API_PASSWORD }}
-          CONFIG: ${{ secrets.CONFIG }}
-          # CAP Generator environment variables
-          CAP_GEN_API_URL: ${{ secrets.CAP_GEN_API_URL }}
-          CAP_GEN_API_USER: ${{ secrets.CAP_GEN_API_USER }}
-          CAP_GEN_API_PASSWORD: ${{ secrets.CAP_GEN_API_PASSWORD }}
-          CAP_GEN_CLIENT_IP: ${{ secrets.CAP_GEN_CLIENT_IP }}
-          CAP_GEN_CLIENT_PORT: ${{ secrets.CAP_GEN_CLIENT_PORT }}
           # Repository info
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
@@ -41,9 +33,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           envs: >-
             DB_HOST,DB_USER,DB_PASSWORD,DB_NAME,
-            API_HOST,API_USER,API_PASSWORD,CONFIG,
-            CAP_GEN_API_URL,CAP_GEN_API_USER,CAP_GEN_API_PASSWORD,
-            CAP_GEN_CLIENT_IP,CAP_GEN_CLIENT_PORT,
+            API_HOST,API_USER,API_PASSWORD,
             GITHUB_REPO,GITHUB_SHA
           script: |
             cd ~/RSS || exit 1
@@ -68,19 +58,9 @@ jobs:
             DB_USER=${DB_USER}
             DB_PASSWORD=${DB_PASSWORD}
             DB_NAME=${DB_NAME}
-            API_HOST=${API_HOST}
             API_USER=${API_USER}
             API_PASSWORD=${API_PASSWORD}
-            CONFIG=${CONFIG}
-            EOF
-
-            cat > services/cap-gen/.env <<EOF
-            API_URL=${CAP_GEN_API_URL}
-            API_USER=${CAP_GEN_API_USER}
-            API_PASSWORD=${CAP_GEN_API_PASSWORD}
-            CLIENT_IP=${CAP_GEN_CLIENT_IP}
-            CLIENT_PORT=${CAP_GEN_CLIENT_PORT}
-            CONFIG=${CONFIG}
+            CONFIG=prod
             EOF
 
             # Deploy with docker compose
