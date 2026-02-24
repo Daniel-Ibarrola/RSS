@@ -9,8 +9,6 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        // TODO: set target with an env variable
-        // target: "http://localhost:5000"
         target: 'http://rss-api:80',
       },
     },
