@@ -1,0 +1,19 @@
+services:
+  cap-generator:
+    # Use pre-built image from GitHub Container Registry when deploying
+    # build:
+    #   context: ./services/cap-gen
+    #   dockerfile: Dockerfile.prod
+    image: ghcr.io/${GITHUB_REPO_OWNER:-local}/cap-gen-prod:latest
+    restart: always
+    container_name: cap-generator
+    env_file:
+      - services/cap-gen/.env
+    environment:
+      - CONFIG=prod
+    entrypoint: [
+      "python",
+      "/src/capgen/main.py"
+    ]
+    volumes:
+      - ./services/cap-gen/feeds:/feeds

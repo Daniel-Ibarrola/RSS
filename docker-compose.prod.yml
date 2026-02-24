@@ -37,7 +37,7 @@ services:
 
   rss-client:
     build:
-      context: ./services/client
+      context: services/client
       dockerfile: Dockerfile.prod
     restart: always
     image: rss-client-prod:latest
@@ -53,7 +53,7 @@ services:
 
   rss-client-http:
     build:
-      context: ./services/client
+      context: services/client
       dockerfile: Dockerfile.staging
     image: rss-client-staging:latest
     container_name: rss-client

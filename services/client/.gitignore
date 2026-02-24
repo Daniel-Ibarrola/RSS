@@ -12,8 +12,6 @@ dist
 dist-ssr
 *.local
 
-cap.zip
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,9 +22,3 @@ cap.zip
 *.njsproj
 *.sln
 *.sw?
-
-# Cap alerts
-*.cap
-*.xml
-
-.env
