@@ -1,10 +1,12 @@
 services:
 
   rss-api:
-    build:
-      context: ./services/cap-api
-      dockerfile: Dockerfile.prod
-    image: rss-api-prod:latest
+    # Use pre-built image from GitHub Container Registry when deploying
+    # To build locally, uncomment the build section and comment out the image line
+    # build:
+    #   context: ./services/cap-api
+    #   dockerfile: Dockerfile.prod
+    image: ghcr.io/${GITHUB_REPO_OWNER:-local}/rss-api-prod:latest
     restart: always
     container_name: rss-api
     command: >
@@ -14,8 +16,10 @@ services:
         gunicorn --bind 0.0.0.0:5000 alerts.wsgi:app"
     env_file:
       - services/cap-api/.env
+    depends_on:
+      - postgres
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5005/" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/" ]
       interval: 3m
       timeout: 10s
       retries: 3
@@ -23,11 +27,12 @@ services:
       - "5000:5000"
 
   postgres:
-    build:
-      context: ./services/cap-api/db
-      dockerfile: Dockerfile
+    # Use pre-built image from GitHub Container Registry when deploying
+    # build:
+    #   context: ./services/cap-api/db
+    #   dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPO_OWNER:-local}/rss-db:latest
     restart: always
-    image: rss-db:latest
     container_name: rss-db
     env_file:
       - services/cap-api/.env
@@ -36,11 +41,12 @@ services:
       - ./pg_backup:/pg_backup/
 
   rss-client:
-    build:
-      context: ./services/client
-      dockerfile: Dockerfile.prod
+    # Use pre-built image from GitHub Container Registry when deploying
+    # build:
+    #   context: ./services/client
+    #   dockerfile: Dockerfile.prod
+    image: ghcr.io/${GITHUB_REPO_OWNER:-local}/rss-client-prod:latest
     restart: always
-    image: rss-client-prod:latest
     container_name: rss-client
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     ports:
@@ -52,11 +58,12 @@ services:
       - ./certbot/conf/:/etc/nginx/ssl/:ro
 
   rss-client-http:
-    build:
-      context: ./services/client
-      dockerfile: Dockerfile.staging
-    image: rss-client-staging:latest
-    container_name: rss-client
+    # Use pre-built image from GitHub Container Registry when deploying
+    # build:
+    #   context: ./services/client
+    #   dockerfile: Dockerfile.staging
+    image: ghcr.io/${GITHUB_REPO_OWNER:-local}/rss-client-staging:latest
+    container_name: rss-client-http
     ports:
       - "80:80"
 
@@ -66,21 +73,3 @@ services:
     volumes:
       - ./certbot/www:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
-
-  cap-generator:
-    restart: always
-    build:
-      context: ./services/cap-gen
-      dockerfile: Dockerfile.prod
-    image: cap-gen-prod:latest
-    container_name: cap-generator
-    env_file:
-      - services/cap-gen/.env
-    environment:
-      - CONFIG=prod
-    entrypoint: [
-      "python",
-      "/src/capgen/main.py"
-    ]
-    volumes:
-      - ./services/cap-gen/feeds:/feeds
