@@ -1,6 +1,5 @@
 import { Map } from './components/map/Map';
 
-import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AlertsTable } from '@/components/alerts-table/AlertsTable.tsx';
 

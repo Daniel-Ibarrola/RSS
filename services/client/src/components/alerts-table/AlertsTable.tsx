@@ -7,7 +7,7 @@ export const AlertsTable = () => {
     error,
     data: alerts,
   } = useQuery({
-    queryKey: ['latestAlert'],
+    queryKey: ['alerts'],
     queryFn: getAlerts,
   });
 
@@ -15,7 +15,11 @@ export const AlertsTable = () => {
 
   if (error) return 'An error has occurred: ' + error.message;
 
-  console.log(alerts);
-
-  return <div>AlertsTable</div>;
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full">
+      {alerts?.map((alert) => (
+        <div key={alert.id}>{alert.id}</div>
+      ))}
+    </div>
+  );
 };

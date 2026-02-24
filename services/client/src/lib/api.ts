@@ -1,4 +1,4 @@
-import type { Alert } from '@/lib/alterts.ts';
+import type { Alert } from '@/lib/alerts.ts';
 
 const BASE_URL = '/api/v1';
 
