@@ -1,12 +1,19 @@
-import { Button } from '@/components/ui/button';
+import { Map } from './components/map/Map';
 
 import './App.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AlertsTable } from '@/components/alerts-table/AlertsTable.tsx';
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <div className="flex items-center justify-center w-screen h-screen text-blue-500">
-      <Button variant="default">Click me</Button>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className="flex flex-col items-center justify-center w-screen h-screen text-blue-500">
+        <Map />
+        <AlertsTable />
+      </div>
+    </QueryClientProvider>
   );
 }
 
