@@ -36,7 +36,7 @@ describe('AlertsTable', () => {
         </QueryClientProvider>,
       );
 
-      expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Loading')).toBeInTheDocument();
     });
 
     it('renders error message on failure', async () => {
@@ -71,7 +71,7 @@ describe('AlertsTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.queryByText(/loading.../i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
       });
 
       expect(screen.getByText('Fecha')).toBeInTheDocument();
@@ -101,7 +101,7 @@ describe('AlertsTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.queryByText(/loading.../i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
       });
 
       expect(screen.getByText('2026-02-24 07:46:20')).toBeInTheDocument();
