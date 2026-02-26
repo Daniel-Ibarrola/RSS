@@ -8,9 +8,13 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex flex-col items-center justify-center w-screen h-screen text-blue-500">
-        <Map />
-        <AlertsTable />
+      <div className="flex flex-col items-center justify-center text-blue-500">
+        <div className="p-4">
+          <Map />
+        </div>
+        <div className="p-4">
+          <AlertsTable />
+        </div>
       </div>
     </QueryClientProvider>
   );

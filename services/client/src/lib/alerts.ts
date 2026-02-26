@@ -6,3 +6,8 @@ export interface Alert {
   states: number[];
   time: string;
 }
+
+export enum EventType {
+  Alert = 'Alerta',
+  Event = 'Evento',
+}

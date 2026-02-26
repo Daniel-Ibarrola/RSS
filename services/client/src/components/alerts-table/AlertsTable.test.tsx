@@ -61,8 +61,12 @@ describe('AlertsTable', () => {
 
   describe('Data Rendering', () => {
     it('Renders Headers', async () => {
-      const mockAlerts: Alert[] = [];
-      vi.mocked(getAlerts).mockResolvedValue(mockAlerts);
+      vi.mocked(getAlerts).mockResolvedValue({
+        alerts: [],
+        count: 0,
+        next: null,
+        previous: null,
+      });
 
       render(
         <QueryClientProvider client={queryClient}>
@@ -87,12 +91,17 @@ describe('AlertsTable', () => {
           id: '20260224074620',
           is_event: true,
           references: [],
-          region: 42210,
+          region: 42237,
           states: [42],
           time: '2026-02-24T07:46:20',
         },
       ];
-      vi.mocked(getAlerts).mockResolvedValue(mockAlerts);
+      vi.mocked(getAlerts).mockResolvedValue({
+        alerts: mockAlerts,
+        count: 1,
+        next: null,
+        previous: null,
+      });
 
       render(
         <QueryClientProvider client={queryClient}>
@@ -106,9 +115,9 @@ describe('AlertsTable', () => {
 
       expect(screen.getByText('2026-02-24 07:46:20')).toBeInTheDocument();
       expect(screen.getByText('Oaxaca')).toBeInTheDocument();
-      expect(screen.getByText('Oaxaca')).toBeInTheDocument();
+      expect(screen.getByText('Oax Centro')).toBeInTheDocument();
       expect(screen.getByText('Evento')).toBeInTheDocument();
-      expect(screen.getByText('20260224074620')).toBeInTheDocument();
+      expect(screen.getByText('20260224074620.cap')).toBeInTheDocument();
     });
   });
 });

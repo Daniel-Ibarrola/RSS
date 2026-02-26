@@ -2,7 +2,14 @@ import type { Alert } from '@/lib/alerts.ts';
 
 const BASE_URL = '/api/v1';
 
-export async function getAlerts(): Promise<Alert[]> {
+interface AlertsResponse {
+  alerts: Alert[];
+  count: number;
+  next: number | null;
+  previous: number | null;
+}
+
+export async function getAlerts(): Promise<AlertsResponse> {
   const alertsUrl = BASE_URL + '/alerts/';
   const response = await fetch(alertsUrl);
   return await response.json();

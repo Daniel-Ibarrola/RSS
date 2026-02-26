@@ -16,8 +16,6 @@ export const Map = () => {
 
   if (error) return 'An error has occurred: ' + error.message;
 
-  console.log(alert);
-
   return (
     <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string}>
       <GoogleMap
