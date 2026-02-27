@@ -68,6 +68,8 @@ export const AlertsTable = () => {
     queryFn: getAlerts,
   });
 
+  // tanstack table is currently incompatible with react compiler
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: alertsResponse?.alerts ?? [],
     columns,
@@ -79,7 +81,7 @@ export const AlertsTable = () => {
   if (error) return <p>Ha ocurrido un error: {error.message}</p>;
 
   return (
-    <div className="w-full">
+    <div className="w-full rounded-md border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
