@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { getLatestAlert } from '@/lib/api.ts';
 import { APIProvider, Map as GoogleMap } from '@vis.gl/react-google-maps';
+import type { Coords } from '@/lib/coords.ts';
+import { regionCoords } from '@/lib/coords.ts';
+import { Circle } from '@/components/map/circle.tsx';
+
+const center: Coords = { lat: 19.4287, lng: -99.12766 }; // centers the map in Mexico
 
 export const Map = () => {
   const {
@@ -16,15 +21,29 @@ export const Map = () => {
 
   if (error) return 'An error has occurred: ' + error.message;
 
+  const alertCoords = alert?.region ? regionCoords[alert.region] : null;
+
   return (
     <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string}>
       <GoogleMap
         className="w-80 h-80"
-        defaultCenter={{ lat: 22.54992, lng: 0 }}
-        defaultZoom={3}
+        defaultCenter={center}
+        defaultZoom={6}
         gestureHandling="greedy"
         disableDefaultUI
-      />
+      >
+        {alertCoords && (
+          <Circle
+            radius={50000}
+            center={alertCoords}
+            strokeColor={'#0c4cb3'}
+            strokeOpacity={1}
+            strokeWeight={3}
+            fillColor={'#3b82f6'}
+            fillOpacity={0.3}
+          />
+        )}
+      </GoogleMap>
     </APIProvider>
   );
 };
