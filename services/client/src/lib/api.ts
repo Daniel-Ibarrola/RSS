@@ -5,7 +5,6 @@
 import type { Alert } from '@/lib/alerts.ts';
 
 const BASE_URL = '/api/v1';
-export const CAP_FILE_URL = BASE_URL + '/alerts/cap/?save=true';
 export const LATEST_CAP_FILE_URL = BASE_URL + '/alerts/latest/cap/';
 
 /**
@@ -17,6 +16,10 @@ interface AlertsResponse {
   next: number | null;
   previous: number | null;
 }
+
+export const getCapFileUrl = (alertId: string): string => {
+  return BASE_URL + `/alerts/${alertId}/cap/?save=true`;
+};
 
 /**
  * Fetches a list of alerts from the API.
