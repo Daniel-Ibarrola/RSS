@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { BASE_URL, getLatestAlert } from '@/lib/api.ts';
+import { getLatestAlert, LATEST_CAP_FILE_URL } from '@/lib/api.ts';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import {
   Alert as ShadAlert,
@@ -57,7 +57,7 @@ export const MapCard = () => {
           />
           <a
             className="text-blue-500 underline font-bold"
-            href={BASE_URL + '/alerts/latest/cap/'}
+            href={LATEST_CAP_FILE_URL}
           >
             Último CAP
           </a>

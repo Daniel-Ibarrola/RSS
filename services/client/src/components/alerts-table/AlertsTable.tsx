@@ -5,7 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { getAlerts } from '@/lib/api.ts';
+import { CAP_FILE_URL, getAlerts } from '@/lib/api.ts';
 import { type Alert, EventType } from '@/lib/alerts.ts';
 import { STATES } from '@/lib/states.ts';
 import { REGIONS } from '@/lib/regions.ts';
@@ -62,7 +62,11 @@ const columns: ColumnDef<Alert>[] = [
     id: 'file',
     header: 'Archivo',
     cell: ({ row }) => {
-      return `${row.original.id}.cap`;
+      return (
+        <a className="text-blue-500 underline" href={CAP_FILE_URL}>
+          {row.original.id}.cap
+        </a>
+      );
     },
   },
 ];

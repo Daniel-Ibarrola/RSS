@@ -4,7 +4,9 @@
 
 import type { Alert } from '@/lib/alerts.ts';
 
-export const BASE_URL = '/api/v1';
+const BASE_URL = '/api/v1';
+export const CAP_FILE_URL = BASE_URL + '/alerts/cap/?save=true';
+export const LATEST_CAP_FILE_URL = BASE_URL + '/alerts/latest/cap/';
 
 /**
  * Response structure for the alerts list endpoint.
