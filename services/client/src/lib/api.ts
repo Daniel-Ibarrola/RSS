@@ -14,7 +14,7 @@ interface AlertsResponse {
   alerts: Alert[];
   count: number;
   next: number | null;
-  previous: number | null;
+  prev: number | null;
 }
 
 export const getCapFileUrl = (alertId: string): string => {
@@ -26,8 +26,8 @@ export const getCapFileUrl = (alertId: string): string => {
  *
  * @returns {Promise<AlertsResponse>} A promise that resolves to the alerts response.
  */
-export async function getAlerts(): Promise<AlertsResponse> {
-  const alertsUrl = BASE_URL + '/alerts/';
+export async function getAlerts(page = 1): Promise<AlertsResponse> {
+  const alertsUrl = BASE_URL + `/alerts/?page=${page}`;
   const response = await fetch(alertsUrl);
   return await response.json();
 }

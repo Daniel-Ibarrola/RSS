@@ -7,7 +7,7 @@ import type { Alert } from '@/lib/alerts.ts';
 
 vi.mock('@/lib/api', () => ({
   getLatestAlert: vi.fn(),
-  BASE_URL: 'http://localhost:8000/',
+  LATEST_CAP_FILE_URL: 'https://example.com/latest.cap',
 }));
 
 describe('MapCard', () => {

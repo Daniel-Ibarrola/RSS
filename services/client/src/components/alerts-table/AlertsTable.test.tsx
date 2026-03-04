@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AlertsTable } from './AlertsTable';
@@ -10,6 +11,7 @@ import { type Alert } from '@/lib/alerts';
 // Mock the API module
 vi.mock('@/lib/api', () => ({
   getAlerts: vi.fn(),
+  getCapFileUrl: vi.fn(),
 }));
 
 describe('AlertsTable', () => {
@@ -63,7 +65,7 @@ describe('AlertsTable', () => {
         alerts: [],
         count: 0,
         next: null,
-        previous: null,
+        prev: null,
       });
 
       render(
@@ -98,7 +100,7 @@ describe('AlertsTable', () => {
         alerts: mockAlerts,
         count: 1,
         next: null,
-        previous: null,
+        prev: null,
       });
 
       render(
@@ -116,6 +118,184 @@ describe('AlertsTable', () => {
       expect(screen.getByText('Oax Centro')).toBeInTheDocument();
       expect(screen.getByText('Evento')).toBeInTheDocument();
       expect(screen.getByText('20260224074620.cap')).toBeInTheDocument();
+    });
+  });
+
+  describe('Pagination', () => {
+    it('disables previous button on first page', async () => {
+      vi.mocked(getAlerts).mockResolvedValue({
+        alerts: [],
+        count: 0,
+        next: 2,
+        prev: null,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AlertsTable />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      });
+
+      const prevButton = screen.getByLabelText('Go to previous page');
+      expect(prevButton).toHaveClass('pointer-events-none opacity-50');
+    });
+
+    it('disables next button on last page', async () => {
+      vi.mocked(getAlerts).mockResolvedValue({
+        alerts: [],
+        count: 0,
+        next: null,
+        prev: 1,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AlertsTable />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      });
+
+      const nextButton = screen.getByLabelText('Go to next page');
+      expect(nextButton).toHaveClass('pointer-events-none opacity-50');
+    });
+
+    it('navigates to next page when next button is clicked', async () => {
+      const user = userEvent.setup();
+      const page1Alerts: Alert[] = [
+        {
+          id: '20260224074620',
+          is_event: true,
+          references: [],
+          region: 42237,
+          states: [42],
+          time: '2026-02-24T07:46:20',
+        },
+      ];
+      const page2Alerts: Alert[] = [
+        {
+          id: '20260223123456',
+          is_event: false,
+          references: [],
+          region: 42237,
+          states: [42],
+          time: '2026-02-23T12:34:56',
+        },
+      ];
+
+      vi.mocked(getAlerts)
+        .mockResolvedValueOnce({
+          alerts: page1Alerts,
+          count: 2,
+          next: 2,
+          prev: null,
+        })
+        .mockResolvedValueOnce({
+          alerts: page2Alerts,
+          count: 2,
+          next: null,
+          prev: 1,
+        });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AlertsTable />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText('20260224074620.cap')).toBeInTheDocument();
+
+      const nextButton = screen.getByLabelText('Go to next page');
+      await user.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('20260223123456.cap')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('20260224074620.cap')).not.toBeInTheDocument();
+    });
+
+    it('navigates to previous page when previous button is clicked', async () => {
+      const user = userEvent.setup();
+      const page1Alerts: Alert[] = [
+        {
+          id: '20260224074620',
+          is_event: true,
+          references: [],
+          region: 42237,
+          states: [42],
+          time: '2026-02-24T07:46:20',
+        },
+      ];
+      const page2Alerts: Alert[] = [
+        {
+          id: '20260223123456',
+          is_event: false,
+          references: [],
+          region: 42237,
+          states: [42],
+          time: '2026-02-23T12:34:56',
+        },
+      ];
+
+      vi.mocked(getAlerts)
+        .mockResolvedValueOnce({
+          alerts: page1Alerts,
+          count: 2,
+          next: 2,
+          prev: null,
+        })
+        .mockResolvedValueOnce({
+          alerts: page2Alerts,
+          count: 2,
+          next: null,
+          prev: 1,
+        })
+        .mockResolvedValueOnce({
+          alerts: page1Alerts,
+          count: 2,
+          next: 2,
+          prev: null,
+        });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <AlertsTable />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByText('20260224074620.cap')).toBeInTheDocument();
+
+      // Navigate to page 2
+      const nextButton = screen.getByLabelText('Go to next page');
+      await user.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('20260223123456.cap')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('20260224074620.cap')).not.toBeInTheDocument();
+
+      // Navigate back to page 1
+      const prevButton = screen.getByLabelText('Go to previous page');
+      await user.click(prevButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('20260224074620.cap')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('20260223123456.cap')).not.toBeInTheDocument();
     });
   });
 });

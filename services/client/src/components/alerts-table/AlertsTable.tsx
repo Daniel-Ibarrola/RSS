@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   type ColumnDef,
@@ -18,6 +19,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table.tsx';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from '@/components/ui/pagination.tsx';
 import { AlertCircleIcon } from 'lucide-react';
 import {
   Alert as AlertMessage,
@@ -81,13 +89,15 @@ const columns: ColumnDef<Alert>[] = [
  * @returns {JSX.Element} The rendered AlertsTable component.
  */
 export const AlertsTable = () => {
+  const [page, setPage] = useState(1);
+
   const {
     isPending,
     error,
     data: alertsResponse,
   } = useQuery({
-    queryKey: ['alerts'],
-    queryFn: getAlerts,
+    queryKey: ['alerts', page],
+    queryFn: () => getAlerts(page),
   });
 
   // tanstack table is currently incompatible with react compiler
@@ -109,45 +119,80 @@ export const AlertsTable = () => {
       </AlertMessage>
     );
 
+  if (!alertsResponse) {
+    console.error('No alert data available');
+    return null;
+  }
+
+  const hasNext = alertsResponse.next !== null;
+  const hasPrevious = alertsResponse.prev !== null;
+
   return (
-    <div className="w-full rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+    <div className="space-y-4">
+      <div className="w-full rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center">
-                No hay alertas.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  No hay alertas.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setPage((p) => p - 1)}
+              className={
+                hasPrevious
+                  ? 'cursor-pointer'
+                  : 'pointer-events-none opacity-50'
+              }
+            />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => setPage((p) => p + 1)}
+              className={
+                hasNext ? 'cursor-pointer' : 'pointer-events-none opacity-50'
+              }
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 };
