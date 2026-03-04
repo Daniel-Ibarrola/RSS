@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getLatestAlert } from '@/lib/api.ts';
+import { BASE_URL, getLatestAlert } from '@/lib/api.ts';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import {
   Alert as ShadAlert,
@@ -14,7 +14,12 @@ import {
   CardTitle,
 } from '@/components/ui/card.tsx';
 import { Map } from '@/components/map/Map.tsx';
+import { getAlertDescription } from '@/lib/alerts.ts';
 
+/**
+ * Component for displaying the latest CAP alert.
+ * It includes a short description of the alert, and a map with the alert's location.
+ */
 export const MapCard = () => {
   const {
     isPending,
@@ -44,10 +49,22 @@ export const MapCard = () => {
   return (
     <Card className="mx-auto w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Último CAP</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <img
+            src="/ciresFeedLogo2b.png"
+            alt="CIRES Logo"
+            className="object-contain"
+          />
+          <a
+            className="text-blue-500 underline font-bold"
+            href={BASE_URL + '/alerts/latest/cap/'}
+          >
+            Último CAP
+          </a>
+        </CardTitle>
         <CardDescription>
-          <p>{alert.time}</p>
-          <p>Severidad: menor</p>
+          <p className="font-bold">{getAlertDescription(alert)}</p>
+          <p>Severidad: {alert.is_event ? 'Menor' : 'Mayor'}</p>
         </CardDescription>
       </CardHeader>
       <Map alert={alert} />

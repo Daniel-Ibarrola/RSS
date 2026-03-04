@@ -7,6 +7,7 @@ import type { Alert } from '@/lib/alerts.ts';
 
 vi.mock('@/lib/api', () => ({
   getLatestAlert: vi.fn(),
+  BASE_URL: 'http://localhost:8000/',
 }));
 
 describe('MapCard', () => {
@@ -57,9 +58,9 @@ describe('MapCard', () => {
   it('renders alert data and link to cap file', async () => {
     const mockAlert: Alert = {
       id: '20260302153939',
-      is_event: false,
+      is_event: true,
       references: [],
-      region: 41201,
+      region: 41209,
       states: [],
       time: '2026-03-02T15:39:39',
     };
@@ -78,7 +79,7 @@ describe('MapCard', () => {
 
     expect(
       screen.getByText(
-        "'Lunes, 2 de marzo de 2026, 3:39:39 p.m. Sismo en SanMarcos Gro.'",
+        'Lunes, 2 de marzo de 2026, 15:39:39 Sismo en Guerrero.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('Severidad: Menor')).toBeInTheDocument();

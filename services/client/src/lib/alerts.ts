@@ -1,3 +1,6 @@
+import { STATES } from '@/lib/states.ts';
+import { REGIONS } from '@/lib/regions.ts';
+
 /**
  * Represents an alert or event in the system.
  */
@@ -25,3 +28,28 @@ export enum EventType {
   Alert = 'Alerta',
   Event = 'Evento',
 }
+
+/**
+ * Returns a human-readable description of the alert.
+ * @param alert
+ */
+export const getAlertDescription = (alert: Alert) => {
+  const date = new Date(alert.time);
+  let dateStr = date.toLocaleDateString('es-MX', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+  });
+  dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+  const statesStr = alert.states.map((c) => STATES[c]).join('/');
+
+  if (alert.is_event) {
+    return `${dateStr} Sismo en ${REGIONS[alert.region]}.`;
+  }
+  return `${dateStr} Alerta en ${statesStr} por sismo en ${REGIONS[alert.region]}.`;
+};
