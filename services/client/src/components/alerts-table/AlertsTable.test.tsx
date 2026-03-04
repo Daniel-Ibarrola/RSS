@@ -51,9 +51,7 @@ describe('AlertsTable', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(
-            new RegExp(`Ha ocurrido un error: ${errorMessage}`, 'i'),
-          ),
+          screen.getByText(new RegExp(`${errorMessage}`, 'i')),
         ).toBeInTheDocument();
       });
     });

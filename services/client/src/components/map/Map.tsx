@@ -3,9 +3,12 @@ import { getLatestAlert } from '@/lib/api.ts';
 import { APIProvider, Map as GoogleMap } from '@vis.gl/react-google-maps';
 import type { Coords } from '@/lib/coords.ts';
 import { regionCoords } from '@/lib/coords.ts';
-import { Circle } from '@/components/map/circle.tsx';
-import { Polygon } from '@/components/map/polygon.tsx';
+import { Circle } from '@/components/map/Circle.tsx';
+import { Polygon } from '@/components/map/Polygon.tsx';
 import { statePolygons } from '@/lib/polygons.ts';
+import { Spinner } from '@/components/ui/spinner.tsx';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx';
+import { AlertCircleIcon } from 'lucide-react';
 
 const center: Coords = { lat: 19.4287, lng: -99.12766 }; // centers the map in Mexico
 
@@ -19,13 +22,25 @@ export const Map = () => {
     queryFn: getLatestAlert,
   });
 
-  if (isPending) return 'Loading...';
+  if (isPending) return <Spinner />;
 
-  if (error) return 'An error has occurred: ' + error.message;
+  if (error)
+    return (
+      <Alert variant="destructive">
+        <AlertCircleIcon />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error.message}</AlertDescription>
+      </Alert>
+    );
 
-  const alertCoords = alert?.region ? regionCoords[alert.region] : null;
-  const showCircle = alert?.is_event && alertCoords;
-  const showPolygons = !alert?.is_event && alert?.states;
+  if (!alert) {
+    console.error('No alert data available');
+    return null;
+  }
+
+  const alertCoords = alert.region ? regionCoords[alert.region] : null;
+  const showCircle = alert.is_event && alertCoords;
+  const showPolygons = !alert.is_event && alert.states;
 
   return (
     <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string}>

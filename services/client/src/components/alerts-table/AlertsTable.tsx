@@ -18,6 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table.tsx';
+import { AlertCircleIcon } from 'lucide-react';
+import {
+  Alert as AlertMessage,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert.tsx';
 
 const columns: ColumnDef<Alert>[] = [
   {
@@ -78,7 +84,14 @@ export const AlertsTable = () => {
 
   if (isPending) return <Spinner />;
 
-  if (error) return <p>Ha ocurrido un error: {error.message}</p>;
+  if (error)
+    return (
+      <AlertMessage variant="destructive">
+        <AlertCircleIcon />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error.message}</AlertDescription>
+      </AlertMessage>
+    );
 
   return (
     <div className="w-full rounded-md border">
