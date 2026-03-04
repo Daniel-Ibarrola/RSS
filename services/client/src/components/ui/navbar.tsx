@@ -3,7 +3,7 @@ import { Separator } from '@/components/ui/separator';
 export function Navbar() {
   return (
     <header className="w-full">
-      <div className="container mx-auto flex h-16 items-center px-4 bg-gray-800">
+      <div className="mx-auto flex h-16 items-center px-4 bg-gray-800">
         <div className="mr-4 flex h-8 w-8 items-center justify-center bg-gray-800 rounded-md text-primary-foreground font-bold">
           <img
             src="/cires.png"
