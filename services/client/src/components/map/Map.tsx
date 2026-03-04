@@ -1,19 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
-import { getLatestAlert } from '@/lib/api.ts';
 import { APIProvider, Map as GoogleMap } from '@vis.gl/react-google-maps';
 import type { Coords } from '@/lib/coords.ts';
 import { regionCoords } from '@/lib/coords.ts';
 import { Circle } from '@/components/map/Circle.tsx';
 import { Polygon } from '@/components/map/Polygon.tsx';
 import { statePolygons } from '@/lib/polygons.ts';
-import { Spinner } from '@/components/ui/spinner.tsx';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx';
-import { AlertCircleIcon } from 'lucide-react';
+import type { Alert } from '@/lib/alerts.ts';
 
 /**
  * Default center coordinates for the map (Mexico City).
  */
 const center: Coords = { lat: 19.4287, lng: -99.12766 };
+
+interface MapProps {
+  alert: Alert;
+}
 
 /**
  * Component that renders a Google Map to display alert information.
@@ -22,32 +22,7 @@ const center: Coords = { lat: 19.4287, lng: -99.12766 };
  *
  * @returns {JSX.Element | null} The rendered Map component or null if no data.
  */
-export const Map = () => {
-  const {
-    isPending,
-    error,
-    data: alert,
-  } = useQuery({
-    queryKey: ['latestAlert'],
-    queryFn: getLatestAlert,
-  });
-
-  if (isPending) return <Spinner />;
-
-  if (error)
-    return (
-      <Alert variant="destructive">
-        <AlertCircleIcon />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error.message}</AlertDescription>
-      </Alert>
-    );
-
-  if (!alert) {
-    console.error('No alert data available');
-    return null;
-  }
-
+export const Map = ({ alert }: MapProps) => {
   const alertCoords = alert.region ? regionCoords[alert.region] : null;
   const showCircle = alert.is_event && alertCoords;
   const showPolygons = !alert.is_event && alert.states;
@@ -55,7 +30,7 @@ export const Map = () => {
   return (
     <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string}>
       <GoogleMap
-        className="w-80 h-80"
+        className="h-80 w-full p-2"
         defaultCenter={center}
         defaultZoom={6}
         gestureHandling="greedy"

@@ -1,19 +1,11 @@
 import '@testing-library/jest-dom';
-
 import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Map } from './Map';
-import { getLatestAlert } from '@/lib/api';
 import { type Alert } from '@/lib/alerts';
 import type { ReactNode } from 'react';
 import type { CircleProps } from './Circle';
 import type { PolygonProps } from './Polygon';
-
-// Mock the API module
-vi.mock('@/lib/api', () => ({
-  getLatestAlert: vi.fn(),
-}));
 
 // Mock Google Maps components
 vi.mock('@vis.gl/react-google-maps', () => ({
@@ -45,128 +37,42 @@ vi.mock('./Polygon', () => ({
 }));
 
 describe('Map', () => {
-  let queryClient: QueryClient;
+  it('renders Circle when alert is an event with region', async () => {
+    const mockAlert: Alert = {
+      id: '20260224074620',
+      is_event: true,
+      references: [],
+      region: 42237,
+      states: [42],
+      time: '2026-02-24T07:46:20',
+    };
 
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-    vi.clearAllMocks();
+    render(<Map alert={mockAlert} />);
+
+    expect(screen.getByTestId('api-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('google-map')).toBeInTheDocument();
+    expect(screen.getByTestId('circle')).toBeInTheDocument();
+    expect(screen.queryByTestId('polygon')).not.toBeInTheDocument();
   });
 
-  describe('Loading and error states', () => {
-    it('renders loading state initially', () => {
-      vi.mocked(getLatestAlert).mockReturnValue(new Promise(() => {}));
+  it('renders Polygons when alert is not an event and has states', async () => {
+    const mockAlert: Alert = {
+      id: '20260224074620',
+      is_event: false,
+      references: [],
+      region: 42237,
+      states: [42, 43],
+      time: '2026-02-24T07:46:20',
+    };
 
-      render(
-        <QueryClientProvider client={queryClient}>
-          <Map />
-        </QueryClientProvider>,
-      );
+    render(<Map alert={mockAlert} />);
 
-      expect(screen.getByLabelText('Loading')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
     });
 
-    it('renders error message on failure', async () => {
-      const errorMessage = 'Failed to fetch alert';
-      vi.mocked(getLatestAlert).mockRejectedValue(new Error(errorMessage));
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <Map />
-        </QueryClientProvider>,
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(new RegExp(`${errorMessage}`, 'i')),
-        ).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Map rendering with alert data', () => {
-    it('renders map container when data is loaded', async () => {
-      const mockAlert: Alert = {
-        id: '20260224074620',
-        is_event: false,
-        references: [],
-        region: 41201,
-        states: [],
-        time: '2026-02-24T07:46:20',
-      };
-
-      vi.mocked(getLatestAlert).mockResolvedValue(mockAlert);
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <Map />
-        </QueryClientProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('api-provider')).toBeInTheDocument();
-      expect(screen.getByTestId('google-map')).toBeInTheDocument();
-    });
-
-    it('renders Circle when alert is an event with region', async () => {
-      const mockAlert: Alert = {
-        id: '20260224074620',
-        is_event: true,
-        references: [],
-        region: 42237,
-        states: [42],
-        time: '2026-02-24T07:46:20',
-      };
-
-      vi.mocked(getLatestAlert).mockResolvedValue(mockAlert);
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <Map />
-        </QueryClientProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('circle')).toBeInTheDocument();
-      expect(screen.queryByTestId('polygon')).not.toBeInTheDocument();
-    });
-
-    it('renders Polygons when alert is not an event and has states', async () => {
-      const mockAlert: Alert = {
-        id: '20260224074620',
-        is_event: false,
-        references: [],
-        region: 42237,
-        states: [42, 43],
-        time: '2026-02-24T07:46:20',
-      };
-
-      vi.mocked(getLatestAlert).mockResolvedValue(mockAlert);
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <Map />
-        </QueryClientProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
-      });
-
-      const polygons = screen.queryAllByTestId('polygon');
-      expect(polygons.length).toBeGreaterThan(0);
-      expect(screen.queryByTestId('circle')).not.toBeInTheDocument();
-    });
+    const polygons = screen.queryAllByTestId('polygon');
+    expect(polygons.length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('circle')).not.toBeInTheDocument();
   });
 });
