@@ -6,6 +6,10 @@ import { Navbar } from '@/components/ui/navbar.tsx';
 
 const queryClient = new QueryClient();
 
+/**
+ * The main application component that sets up the React Query client and
+ * the layout of the application, including the navbar, map, and alerts table.
+ */
 function App() {
   return (
     <QueryClientProvider client={queryClient}>

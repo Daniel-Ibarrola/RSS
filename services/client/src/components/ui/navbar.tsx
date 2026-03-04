@@ -1,5 +1,10 @@
 import { Separator } from '@/components/ui/separator';
 
+/**
+ * Navigation bar component that displays the application logo and title.
+ *
+ * @returns {JSX.Element} The rendered Navbar component.
+ */
 export function Navbar() {
   return (
     <header className="w-full">

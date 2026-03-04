@@ -18,12 +18,15 @@ export type PolygonProps = google.maps.PolygonOptions & PolygonEventProps;
 
 export type PolygonRef = Ref<google.maps.Polygon | null>;
 
+/**
+ * Custom hook to manage the lifecycle of a google.maps.Polygon instance.
+ * Handles options updates, map binding, and event listeners.
+ *
+ * @param {PolygonProps} props - The options and event handlers for the polygon.
+ * @returns {React.MutableRefObject<google.maps.Polygon>} A ref to the polygon instance.
+ */
 function usePolygon(props: PolygonProps) {
-  const {
-    onMouseOver,
-    onMouseOut,
-    ...polygonOptions
-  } = props;
+  const { onMouseOver, onMouseOut, ...polygonOptions } = props;
 
   const polygon = useRef<google.maps.Polygon>(new google.maps.Polygon());
 
@@ -68,7 +71,7 @@ function usePolygon(props: PolygonProps) {
     ];
 
     return () => {
-      listeners.forEach(listener => listener.remove());
+      listeners.forEach((listener) => listener.remove());
     };
   }, [onMouseOver, onMouseOut]);
 
@@ -76,7 +79,12 @@ function usePolygon(props: PolygonProps) {
 }
 
 /**
- * Component to render a polygon on a map
+ * Component to render a polygon on a Google Map.
+ * This component must be used within a `<Map>` component.
+ *
+ * @param {PolygonProps} props - The options and event handlers for the polygon.
+ * @param {PolygonRef} ref - An optional ref to access the underlying google.maps.Polygon instance.
+ * @returns {null} This component doesn't render any DOM elements.
  */
 export const Polygon = forwardRef((props: PolygonProps, ref: PolygonRef) => {
   const polygon = usePolygon(props);

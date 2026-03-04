@@ -1,5 +1,9 @@
 import { type Coords } from './coords.ts';
 
+/**
+ * Mapping of state IDs to their corresponding polygon coordinates.
+ * Used to highlight affected states on the map for general alerts.
+ */
 export const statePolygons: Record<number, Coords[]> = {
   40: [
     { lng: -98.23597442933914, lat: 17.92411146620965 },

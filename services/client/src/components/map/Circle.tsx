@@ -18,12 +18,15 @@ export type CircleProps = google.maps.CircleOptions & CircleEventProps;
 
 export type CircleRef = Ref<google.maps.Circle | null>;
 
+/**
+ * Custom hook to manage the lifecycle of a google.maps.Circle instance.
+ * Handles options updates, map binding, and event listeners.
+ *
+ * @param {CircleProps} props - The options and event handlers for the circle.
+ * @returns {React.MutableRefObject<google.maps.Circle>} A ref to the circle instance.
+ */
 function useCircle(props: CircleProps) {
-  const {
-    onMouseOver,
-    onMouseOut,
-    ...circleOptions
-  } = props;
+  const { onMouseOver, onMouseOut, ...circleOptions } = props;
 
   const circle = useRef<google.maps.Circle>(new google.maps.Circle());
 
@@ -68,7 +71,7 @@ function useCircle(props: CircleProps) {
     ];
 
     return () => {
-      listeners.forEach(listener => listener.remove());
+      listeners.forEach((listener) => listener.remove());
     };
   }, [onMouseOver, onMouseOut]);
 
@@ -76,7 +79,12 @@ function useCircle(props: CircleProps) {
 }
 
 /**
- * Component to render a circle on a map
+ * Component to render a circle on a Google Map.
+ * This component must be used within a `<Map>` component.
+ *
+ * @param {CircleProps} props - The options and event handlers for the circle.
+ * @param {CircleRef} ref - An optional ref to access the underlying google.maps.Circle instance.
+ * @returns {null} This component doesn't render any DOM elements.
  */
 export const Circle = forwardRef((props: CircleProps, ref: CircleRef) => {
   const circle = useCircle(props);

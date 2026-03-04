@@ -10,8 +10,18 @@ import { Spinner } from '@/components/ui/spinner.tsx';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx';
 import { AlertCircleIcon } from 'lucide-react';
 
-const center: Coords = { lat: 19.4287, lng: -99.12766 }; // centers the map in Mexico
+/**
+ * Default center coordinates for the map (Mexico City).
+ */
+const center: Coords = { lat: 19.4287, lng: -99.12766 };
 
+/**
+ * Component that renders a Google Map to display alert information.
+ * Shows a circle if it's an event (e.g., earthquake epicenter) or polygons
+ * if it's a general alert covering multiple states.
+ *
+ * @returns {JSX.Element | null} The rendered Map component or null if no data.
+ */
 export const Map = () => {
   const {
     isPending,

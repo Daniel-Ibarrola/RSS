@@ -1,3 +1,6 @@
+/**
+ * Mapping of state IDs to their human-readable names.
+ */
 export const STATES: Record<number, string> = {
   40: 'CDMX',
   41: 'Guerrero',

@@ -1,3 +1,6 @@
+/**
+ * Mapping of region IDs to their human-readable names.
+ */
 export const REGIONS: Record<number, string> = {
   41201: 'Petatlan Gro',
   41202: 'Petatlan Gro',

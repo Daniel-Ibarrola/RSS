@@ -25,6 +25,9 @@ import {
   AlertTitle,
 } from '@/components/ui/alert.tsx';
 
+/**
+ * Column definitions for the alerts table using TanStack Table.
+ */
 const columns: ColumnDef<Alert>[] = [
   {
     accessorKey: 'time',
@@ -64,6 +67,12 @@ const columns: ColumnDef<Alert>[] = [
   },
 ];
 
+/**
+ * Component that displays a table of alerts fetched from the API.
+ * Uses React Query for data fetching and TanStack Table for table management.
+ *
+ * @returns {JSX.Element} The rendered AlertsTable component.
+ */
 export const AlertsTable = () => {
   const {
     isPending,

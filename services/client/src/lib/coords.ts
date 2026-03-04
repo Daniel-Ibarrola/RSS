@@ -1,8 +1,17 @@
+/**
+ * Represents geographic coordinates with latitude and longitude.
+ */
 export interface Coords {
+  /** Latitude in decimal degrees. */
   lat: number;
+  /** Longitude in decimal degrees. */
   lng: number;
 }
 
+/**
+ * Mapping of region IDs to their corresponding geographic coordinates.
+ * Used to center circles on the map for event-based alerts.
+ */
 export const regionCoords: Record<number, Coords> = {
   40101: { lat: 19.38714, lng: -99.15771 },
   40102: { lat: 19.314858, lng: -99.174865 },
