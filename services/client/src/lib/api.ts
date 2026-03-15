@@ -17,6 +17,14 @@ interface AlertsResponse {
   prev: number | null;
 }
 
+export interface AlertFilters {
+  state?: number;
+  region?: string;
+  startDate?: string;
+  endDate?: string;
+  type?: 'all' | 'event' | 'alert';
+}
+
 export const getCapFileUrl = (alertId: string): string => {
   return BASE_URL + `/alerts/${alertId}/cap/?save=true`;
 };
@@ -26,8 +34,17 @@ export const getCapFileUrl = (alertId: string): string => {
  *
  * @returns {Promise<AlertsResponse>} A promise that resolves to the alerts response.
  */
-export async function getAlerts(page = 1): Promise<AlertsResponse> {
-  const alertsUrl = BASE_URL + `/alerts/?page=${page}`;
+export async function getAlerts(
+  page = 1,
+  filters: AlertFilters = {},
+): Promise<AlertsResponse> {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    ...Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== undefined),
+    ),
+  });
+  const alertsUrl = `${BASE_URL}/alerts/?${queryParams.toString()}`;
   const response = await fetch(alertsUrl);
   return await response.json();
 }
